@@ -192,7 +192,7 @@ static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilde
     return TRUE;
 }
 
-static GVariantBuilder *encode_parsers ()
+static GVariantBuilder *encode_parsers (void)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssa(ss))"));
     mirage_enumerate_parsers((MirageEnumParserInfoCallback)append_parser_to_builder, builder, NULL);
@@ -207,7 +207,7 @@ static gboolean append_writer_to_builder (MirageWriterInfo *info, GVariantBuilde
     return TRUE;
 }
 
-static GVariantBuilder *encode_writers ()
+static GVariantBuilder *encode_writers (void)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
     mirage_enumerate_writers((MirageEnumWriterInfoCallback)append_writer_to_builder, builder, NULL);
@@ -231,7 +231,7 @@ static gboolean append_filter_stream_to_builder (MirageFilterStreamInfo *info, G
     return TRUE;
 }
 
-static GVariantBuilder *encode_filter_streams ()
+static GVariantBuilder *encode_filter_streams (void)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssba(ss))"));
     mirage_enumerate_filter_streams((MirageEnumFilterStreamInfoCallback)append_filter_stream_to_builder, builder, NULL);

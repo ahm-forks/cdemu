@@ -1605,6 +1605,9 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                 guint8 tmp_buf[16];
                 if (read_sector_data(NULL, disc, current_address, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: Q */, tmp_buf, NULL) != 16) {
                     CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address);
+                    /* Return error instead of garbage data */
+                    cdemu_device_write_sense(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR);
+                    return FALSE;
                 }
 
                 /* Copy ADR/CTL, track number and index */
@@ -1634,6 +1637,13 @@ static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cd
                         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address+correction);
                         break;
                     }
+                }
+
+                if ((tmp_buf[0] & 0x0F) != 0x01) {
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: could not find sector with Mode-1 Q subchannel (original target sector = 0x%X)!\n", __debug__, current_address);
+                    /* Return error instead of garbage data */
+                    cdemu_device_write_sense(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR);
+                    return FALSE;
                 }
 
                 /* In Q-subchannel, first MSF is relative, second absolute... in

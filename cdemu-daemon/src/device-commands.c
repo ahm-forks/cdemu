@@ -152,7 +152,6 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
         }
     }
     memcpy(ptr, tmp_buf, tmp_len);
-    ptr += tmp_len;
     read_length += tmp_len;
 
     /* Release sector */

@@ -231,6 +231,7 @@ static gboolean cdemu_device_recording_reserve_track  (CdemuDevice *self G_GNUC_
 
 struct RECORDING_DataFormat
 {
+    gboolean valid;
     gint main_size;
     gint subchannel_size;
     gint subchannel_format;
@@ -239,30 +240,34 @@ struct RECORDING_DataFormat
 
 static const struct RECORDING_DataFormat recording_data_formats[] = {
     /* 0: 2352 bytes - raw data */
-    {2352, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {TRUE, 2352, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
     /* 1: 2368 bytes - raw data with P-Q subchannel */
-    {2352, 16, MIRAGE_SUBCHANNEL_Q, MIRAGE_SECTOR_RAW},
+    {TRUE, 2352, 16, MIRAGE_SUBCHANNEL_Q, MIRAGE_SECTOR_RAW},
     /* 2: 2448 bytes - raw data with cooked R-W subchannel */
-    {2352, 96, MIRAGE_SUBCHANNEL_RW, MIRAGE_SECTOR_RAW},
+    {TRUE, 2352, 96, MIRAGE_SUBCHANNEL_RW, MIRAGE_SECTOR_RAW},
     /* 3: 2448 bytes - raw data with raw P-W subchannel */
-    {2352, 96, MIRAGE_SUBCHANNEL_PW, MIRAGE_SECTOR_RAW},
+    {TRUE, 2352, 96, MIRAGE_SUBCHANNEL_PW, MIRAGE_SECTOR_RAW},
     /* 4-7: reserved */
-    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
-    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
-    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
-    {0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
     /* 8: 2048 bytes - Mode 1 user data */
-    {2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE1},
+    {TRUE, 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE1},
     /* 9: 2336 bytes - Mode 2 user data */
-    {2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2},
+    {TRUE, 2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2},
     /* 10: 2048 bytes - Mode 2 Form 1 user data */
-    {2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
+    {TRUE, 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
     /* 11: 2056 bytes - Mode 2 Form 1 with subheader */
-    {2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
-    /* 2324 bytes - Mode 2 Form 2 user data */
-    {2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM2},
-    /* 2332 bytes - Mode 2 (Form 1, Form 2 or mixed) with subheader */
-    {2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_MIXED},
+    {TRUE, 2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1},
+    /* 12: 2324 bytes - Mode 2 Form 2 user data */
+    {TRUE, 2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM2},
+    /* 13: 2332 bytes - Mode 2 (Form 1, Form 2 or mixed) with subheader */
+    {TRUE, 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_MIXED},
+    /* 14: reserved */
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
+    /* 15: vendor specific */
+    {FALSE, 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW},
 };
 
 
@@ -380,6 +385,12 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
         format = &recording_data_formats[8]; /* Force format 8: 2048 bytes - Mode 1 user data */
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (forcing data block type 8 due to medium type)\n", __debug__, num_sectors, start_address, format->sector_type);
     }
+    if (!format->valid) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type!\n", __debug__);
+        cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+        return FALSE;
+    }
+
     gint sector_type = format->sector_type;
 
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
@@ -629,7 +640,12 @@ static gboolean cdemu_device_raw_recording_write_sectors (CdemuDevice *self, gin
     gboolean succeeded = TRUE;
 
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-    const struct RECORDING_DataFormat *format = &recording_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
+    const struct RECORDING_DataFormat *format = &recording_data_formats[p_0x05->data_block_type];
+    if (!format->valid) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type (%d)!\n", __debug__, p_0x05->data_block_type);
+        cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+        return FALSE;
+    }
 
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {

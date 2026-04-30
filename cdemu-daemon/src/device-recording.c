@@ -763,7 +763,7 @@ static const struct SAO_SubchannelFormat *sao_subchannel_formats_find (gint form
 
     format >>= 6;
 
-    for (guint i = 0; i < G_N_ELEMENTS(sao_main_formats); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(sao_subchannel_formats); i++) {
         if (sao_subchannel_formats[i].format == format) {
             descriptor = &sao_subchannel_formats[i];
             break;

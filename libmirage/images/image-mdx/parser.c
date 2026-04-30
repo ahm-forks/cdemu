@@ -795,7 +795,7 @@ static gboolean mirage_parser_mdx_parse_cdtext_data (MirageParserMdx *self, GErr
 {
     const MDX_DescriptorHeader *descriptor_header = (MDX_DescriptorHeader *)self->priv->descriptor_data; /* Endianness has been fixed up already. */
     MirageSession *session;
-    gboolean succeeded;
+    gboolean succeeded = TRUE;
 
     /* Ensure the declared CD-TEXT data length is a multiple of CD-TEXT
      * data pack (18 bytes) */

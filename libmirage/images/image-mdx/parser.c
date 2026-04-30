@@ -562,7 +562,7 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
              * the subsequent fragments begin at the start of their corresponding
              * files */
             guint64 main_offset = (j == 0) ?
-                main_offset = track_block->start_offset :
+                track_block->start_offset :
                 0;
 
             /* Determine fragment's length; this corresponds to the declared

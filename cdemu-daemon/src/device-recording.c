@@ -877,7 +877,20 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__);
 
             main_format_ptr = sao_main_formats_find(self->priv->sao_leadin_format);
+            if (!main_format_ptr) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!\n", __debug__, self->priv->sao_leadin_format);
+                cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
+
             subchannel_format_ptr = sao_subchannel_formats_find(self->priv->sao_leadin_format);
+            if (!subchannel_format_ptr) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!\n", __debug__, self->priv->sao_leadin_format);
+                cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
 
             cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
@@ -943,13 +956,29 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
             }
 
             /* Get data format for this fragment */
+            /* NOTE: as noted in cdemu_device_sao_recording_parse_cue_sheet(),
+             * we abuse the fragment's main channel format to store the
+             * data form supplied by CUE sheet! */
             gint format = mirage_fragment_main_data_get_format(cue_fragment);
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data type for subsequent sectors: 0x%X)!\n", __debug__, format);
 
             /* Find corresponding format descriptors */
             main_format_ptr = sao_main_formats_find(format);
+            if (!main_format_ptr) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!\n", __debug__, format);
+                cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
+
             subchannel_format_ptr = sao_subchannel_formats_find(format);
+            if (!subchannel_format_ptr) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!\n", __debug__, format);
+                cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
         }
 
         /* Make sure we have data format descriptors set */

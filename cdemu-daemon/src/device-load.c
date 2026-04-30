@@ -333,8 +333,6 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error)
 
 gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
 {
-    gboolean succeeded;
-
     g_mutex_lock(self->priv->device_mutex);
 
     /* This call is the equivalent of the user pressing the mechanical
@@ -346,7 +344,7 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
     self->priv->media_event = MEDIA_EVENT_EJECTREQUEST;
 
     /* Attempt the actual unload */
-    succeeded = cdemu_device_unload_disc_private(self, error);
+    cdemu_device_unload_disc_private(self, error);
 
     g_mutex_unlock(self->priv->device_mutex);
 
@@ -354,6 +352,5 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
      * with errors when device is most likely locked, and will be
      * unloaded by HAL/udev/udisksd2 upon reception of the above-set
      * eject request event ...*/
-    succeeded = TRUE;
-    return succeeded;
+    return TRUE;
 }

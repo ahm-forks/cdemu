@@ -296,6 +296,9 @@ int main (int argc, char **argv)
     if (!mirage_initialize(&error)) {
         g_warning(Q_("Failed to initialize libMirage: %s!\n"), error->message);
         g_error_free(error);
+        if (logfile) {
+            fclose(logfile);
+        }
         return -1;
     }
 

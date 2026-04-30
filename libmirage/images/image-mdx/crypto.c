@@ -198,12 +198,16 @@ static gboolean _mdx_crypto_decipher_encryption_header (
         return FALSE;
     }
 
+    /* Encrypted data area starts at key_data_checksum field */
+    guint8 *encrypted_data = (guint8 *)(header) + offsetof(MDX_EncryptionHeader, key_data_checksum);
+    const gsize encrypted_data_length = sizeof(MDX_EncryptionHeader) - offsetof(MDX_EncryptionHeader, key_data_checksum);
+
     /* Main encryption header uses CBC, the data encryption header uses LRW */
     if (main_header) {
         succeeded = mdx_crypto_decipher_buffer_cbc(
             crypt_handle,
-            (guint64 *)(&header->key_data_checksum), /* first field in encrypted-data area */
-            sizeof(MDX_EncryptionHeader) - offsetof(MDX_EncryptionHeader, key_data_checksum),
+            (guint64 *)encrypted_data,
+            encrypted_data_length,
             (const guint64 *)master_key, /* IV (16 bytes) at the start of master key buffer */
             &local_error
         );
@@ -219,8 +223,8 @@ static gboolean _mdx_crypto_decipher_encryption_header (
         succeeded = mdx_crypto_decipher_buffer_lrw(
             crypt_handle,
             gfmul_table,
-            (guint8 *)(&header->key_data_checksum), /* first field in encrypted-data area */
-            sizeof(MDX_EncryptionHeader) - offsetof(MDX_EncryptionHeader, key_data_checksum),
+            encrypted_data,
+            encrypted_data_length,
             1, /* Sector number = 1 */
             &local_error
         );

@@ -295,36 +295,41 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
 
 static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *self, GError **error)
 {
-    MirageStream **streams;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening streams\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->num_segments);
 
     /* Allocate space for streams */
-    self->priv->streams = streams = g_try_new(MirageStream *, self->priv->num_segments);
-    if (!streams) {
+    self->priv->streams = g_try_new(MirageStream *, self->priv->num_segments);
+    if (!self->priv->streams) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
 
     /* Fill in existing stream */
-    streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
+    self->priv->streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
 
-    const gchar *original_filename = mirage_stream_get_filename(streams[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, original_filename);
+    const gchar *original_filename = mirage_stream_get_filename(self->priv->streams[0]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, original_filename);
 
     /* Create the rest of the streams */
     for (gint s = 1; s < self->priv->num_segments; s++) {
+        GError *local_error = NULL;
         gchar *filename = create_filename_func(original_filename, s);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, filename);
-        streams[s] = mirage_contextual_create_input_stream (MIRAGE_CONTEXTUAL(self), filename, error);
-        if (!streams[s]) {
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
+
+        self->priv->streams[s] = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, &local_error);
+        if (!self->priv->streams[s]) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s\n", __debug__, s, filename, local_error->message);
+            g_error_free(local_error);
+            g_free(filename);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
+
         g_free(filename);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened streams\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened %d streams!\n\n", __debug__, self->priv->num_segments);
 
     return TRUE;
 }

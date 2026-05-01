@@ -32,6 +32,10 @@ struct _MirageFilterStreamIszPrivate
 {
     ISZ_Header header;
 
+    /* Multi-part filename format */
+    gint volname_format;
+    gchar *volname_prefix;
+
     /* Segment list */
     ISZ_Segment *segments;
     gint num_segments;
@@ -118,17 +122,61 @@ static inline void mirage_filter_stream_isz_deobfuscate (guint8 *data, gint leng
 /**********************************************************************\
  *                     Part filename generation                       *
 \**********************************************************************/
-static gchar *create_filename_func (const gchar *main_filename, gint index)
+static gboolean mirage_filter_stream_isz_determine_name_format (const gchar *main_filename, gint *format_type, gchar **prefix)
 {
-    gchar *ret_filename = g_strdup(main_filename);
+    /* Supported formats, in order to test them (longest suffix to shortest) */
+    static const struct {
+        gchar *suffix;
+        gint format;
+    } formats[] = {
+        {".part001.isz", VOLNAME_FORMAT_TYPE3},
+        {".part01.isz", VOLNAME_FORMAT_TYPE2},
+        {".isz", VOLNAME_FORMAT_STANDARD},
+    };
 
-    if (index) {
-        /* Replace last two characters with index */
-        gchar *position = ret_filename + strlen(ret_filename) - 2;
-        g_snprintf(position, 3, "%02i", index);
+    const gsize len = strlen(main_filename);
+
+    for (guint i = 0; i < G_N_ELEMENTS(formats); i++) {
+        const gsize suffix_len = strlen(formats[i].suffix);
+
+        /* We require non-empty prefix part */
+        if (len <= suffix_len) {
+            continue;
+        }
+
+        /* Since we are interested in matching only the ASCII suffix,
+         * we can use strncasecmp() */
+        if (strncasecmp(main_filename + (len - suffix_len), formats[i].suffix, suffix_len) == 0) {
+            *format_type = formats[i].format;
+            *prefix = g_strndup(main_filename, len - suffix_len);
+            return TRUE;
+        }
     }
 
-    return ret_filename;
+    return FALSE;
+}
+
+static gchar *mirage_filter_stream_isz_format_part_filename (const gchar *prefix, gint format_type, gint index)
+{
+    gchar *filename = NULL;
+
+    switch (format_type) {
+        case VOLNAME_FORMAT_STANDARD:
+        {
+            filename = g_strdup_printf("%s.i%02d", prefix, index);
+            break;
+        }
+        case VOLNAME_FORMAT_TYPE2: {
+            filename = g_strdup_printf("%s.part%02d.isz", prefix, index + 1);
+            break;
+        }
+        case VOLNAME_FORMAT_TYPE3: {
+            filename = g_strdup_printf("%s.part%03d.isz", prefix, index + 1);
+            break;
+        }
+    }
+
+    return filename;
 }
 
 
@@ -308,15 +356,13 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
 
     /* Fill in existing stream */
     self->priv->streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
-
-    const gchar *original_filename = mirage_stream_get_filename(self->priv->streams[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, original_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, mirage_stream_get_filename(self->priv->streams[0]));
 
     /* Create the rest of the streams */
     for (gint s = 1; s < self->priv->num_segments; s++) {
         MirageFileStream *stream;
         GError *local_error = NULL;
-        gchar *filename = create_filename_func(original_filename, s);
+        gchar *filename = mirage_filter_stream_isz_format_part_filename(self->priv->volname_prefix, self->priv->volname_format, s);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
 
@@ -608,6 +654,13 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         return FALSE;
     }
 
+    /* Determine naming scheme */
+    if (!mirage_filter_stream_isz_determine_name_format(mirage_stream_get_filename(stream), &self->priv->volname_format, &self->priv->volname_prefix)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to determine part naming scheme!"));
+        return FALSE;
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: naming format: %d, prefix: %s\n", __debug__, self->priv->volname_format, self->priv->volname_prefix);
+
     /* Read segment table if one exists */
     if (header->seg_offs) {
         if (!mirage_filter_stream_isz_read_segments(self, error)) {
@@ -852,6 +905,9 @@ static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
         Q_("Compressed ISO images (*.isz)"), "application/x-isz"
     );
 
+    self->priv->volname_format = VOLNAME_FORMAT_STANDARD;
+    self->priv->volname_prefix = NULL;
+
     self->priv->num_segments = 0;
     self->priv->segments = NULL;
 
@@ -868,6 +924,8 @@ static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
 static void mirage_filter_stream_isz_finalize (GObject *gobject)
 {
     MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(gobject);
+
+    g_free(self->priv->volname_prefix);
 
     for (gint s = 0; s < self->priv->num_segments; s++) {
         if (!self->priv->streams[s]) {

@@ -103,5 +103,12 @@ typedef struct
     guint64 adj_offset; /* Offset adjusted relative to start of segment data */
 } ISZ_Chunk; /* length depending on ptr_len */
 
+typedef enum
+{
+    VOLNAME_FORMAT_STANDARD, /* volname.isz, volname.i01, volname.i02, ... */
+    VOLNAME_FORMAT_TYPE2, /* volname.part01.isz, volname.part02.isz, volname.part03.isz, ... */
+    VOLNAME_FORMAT_TYPE3, /* volname.part001.isz, volname.part002.isz, volname.part003.isz, ... */
+} ISZ_VolNameFormat;
+
 
 G_END_DECLS

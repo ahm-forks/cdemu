@@ -232,24 +232,24 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
         }
 
         /* Fill in data for segments */
+        guint32 prev_segment_left_size = 0;
         for (gint s = 0; s < self->priv->num_segments; s++) {
             ISZ_Segment *cur_segment = &self->priv->segments[s];
-            ISZ_Segment *prev_segment = &self->priv->segments[s - 1];
 
             cur_segment->first_chunk_num = sector_count;
             cur_segment->size = header->segment_size;
 
             if (s == self->priv->num_segments - 1) {
                 cur_segment->num_chunks = header->num_blocks - sector_count;
-                cur_segment->chunk_offs = header->data_offs + prev_segment->left_size;
+                cur_segment->chunk_offs = header->data_offs + prev_segment_left_size;
                 cur_segment->left_size = 0;
             } else if (s > 0) {
-                cur_segment->num_chunks = (cur_segment->size - header->header_size - prev_segment->left_size) / header->block_size;
-                if ((cur_segment->size - header->header_size - prev_segment->left_size) % header->block_size) {
+                cur_segment->num_chunks = (cur_segment->size - header->header_size - prev_segment_left_size) / header->block_size;
+                if ((cur_segment->size - header->header_size - prev_segment_left_size) % header->block_size) {
                     cur_segment->num_chunks++;
                 }
-                cur_segment->chunk_offs = header->data_offs + prev_segment->left_size;
-                cur_segment->left_size = (cur_segment->size - header->header_size - prev_segment->left_size) % header->block_size;
+                cur_segment->chunk_offs = header->data_offs + prev_segment_left_size;
+                cur_segment->left_size = (cur_segment->size - header->header_size - prev_segment_left_size) % header->block_size;
             } else {
                 cur_segment->num_chunks = (cur_segment->size - header->header_size) / header->block_size;
                 if ((cur_segment->size - header->header_size) % header->block_size) {
@@ -258,6 +258,8 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
                 cur_segment->chunk_offs = header->data_offs;
                 cur_segment->left_size = (cur_segment->size - header->header_size) % header->block_size;
             }
+
+            prev_segment_left_size = cur_segment->left_size;
 
             sector_count += cur_segment->num_chunks;
 

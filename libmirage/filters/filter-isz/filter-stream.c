@@ -298,7 +298,7 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->num_segments);
 
     /* Allocate space for streams */
-    self->priv->streams = g_try_new(MirageStream *, self->priv->num_segments);
+    self->priv->streams = g_try_new0(MirageStream *, self->priv->num_segments);
     if (!self->priv->streams) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
@@ -862,6 +862,9 @@ static void mirage_filter_stream_isz_finalize (GObject *gobject)
     MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(gobject);
 
     for (gint s = 0; s < self->priv->num_segments; s++) {
+        if (!self->priv->streams[s]) {
+            continue;
+        }
         g_object_unref(self->priv->streams[s]);
     }
     g_free(self->priv->streams);

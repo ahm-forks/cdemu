@@ -575,15 +575,6 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
-
-    /* Only perform parsing on the first file in a set */
-    const gchar *original_filename = mirage_stream_get_filename(stream);
-    if (!mirage_helper_has_suffix(original_filename, ".isz")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
-        return FALSE;
-    }
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISZ header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, header->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u\n", __debug__, header->header_size);
@@ -608,6 +599,13 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n\n", __debug__, header->checksum2, ~header->checksum2);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  (note: image does not contain checksums)\n\n", __debug__);
+    }
+
+    /* Allow only first file in the set */
+    if (header->seg_num != 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file is not the first file of a set (has seg_num=%d instead of 0)!\n", __debug__, header->seg_num);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
+        return FALSE;
     }
 
     /* Read segment table if one exists */

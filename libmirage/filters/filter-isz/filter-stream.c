@@ -314,19 +314,29 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
 
     /* Create the rest of the streams */
     for (gint s = 1; s < self->priv->num_segments; s++) {
+        MirageFileStream *stream;
         GError *local_error = NULL;
         gchar *filename = create_filename_func(original_filename, s);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
 
-        self->priv->streams[s] = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, &local_error);
-        if (!self->priv->streams[s]) {
+        /* Directly create an instance of MirageFileStream, instead of
+         * going through mirage_contextual_create_input_stream(). Using
+         * the latter would try to instantiate ISZ filter again, and that
+         * would fail due to file not being the first one in the set. While
+         * we could demote the corresponding error in mirage_filter_stream_isz_open()
+         * from MIRAGE_ERROR_STREAM_ERROR to MIRAGE_ERROR_CANNOT_HANDLE,
+         * that would effectively result in creation of a MirageFileStream. */
+        stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
+        if (!mirage_file_stream_open(stream, filename, FALSE, &local_error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s\n", __debug__, s, filename, local_error->message);
             g_error_free(local_error);
+            g_object_unref(stream);
             g_free(filename);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
+        self->priv->streams[s] = MIRAGE_STREAM(stream);
 
         g_free(filename);
     }

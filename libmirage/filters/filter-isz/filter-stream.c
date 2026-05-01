@@ -386,7 +386,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     }
 
     /* Allocate part index */
-    self->priv->parts = g_try_new(ISZ_Chunk, self->priv->num_parts);
+    self->priv->parts = g_try_new0(ISZ_Chunk, self->priv->num_parts);
     if (!self->priv->parts) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for chunk table!"));
         return FALSE;

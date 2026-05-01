@@ -593,12 +593,10 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum1: 0x%x (actually: 0x%x)\n", __debug__, header->checksum1, ~header->checksum1);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_size: %u\n", __debug__, header->data_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown: %u\n", __debug__, header->unknown);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n", __debug__, header->checksum2, ~header->checksum2);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n\n", __debug__, header->checksum2, ~header->checksum2);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  (note: image does not contain checksums)\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  (note: image does not contain checksums)\n\n", __debug__);
     }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Read segment table if one exists */
     if (header->seg_offs) {

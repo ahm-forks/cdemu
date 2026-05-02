@@ -6,6 +6,7 @@ project(${filter_name} LANGUAGES C)
 # Dependencies
 find_package(ZLIB 1.2.4)
 find_package(BZip2 1.0.0)
+pkg_check_modules(LIBGCRYPT libgcrypt IMPORTED_TARGET)
 
 # Build
 if(ZLIB_FOUND AND BZIP2_FOUND)
@@ -17,6 +18,11 @@ if(ZLIB_FOUND AND BZIP2_FOUND)
     target_link_libraries(${filter_name} PRIVATE mirage)
     target_link_libraries(${filter_name} PRIVATE BZip2::BZip2)
     target_link_libraries(${filter_name} PRIVATE ZLIB::ZLIB)
+
+    if(LIBGCRYPT_FOUND)
+        target_link_libraries(${filter_name} PRIVATE PkgConfig::LIBGCRYPT)
+        target_compile_definitions(${filter_name} PRIVATE HAVE_LIBGCRYPT)
+    endif()
 
     # On OS X, we need to explicitly enable dynamic resolving of undefined symbols
     if(APPLE)

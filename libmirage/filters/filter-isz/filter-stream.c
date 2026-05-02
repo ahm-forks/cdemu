@@ -19,6 +19,10 @@
 
 #include "filter-isz.h"
 
+#if defined(HAVE_LIBGCRYPT)
+#include <gcrypt.h>
+#endif
+
 #define __debug__ "ISZ-FilterStream"
 
 
@@ -58,6 +62,11 @@ struct _MirageFilterStreamIszPrivate
     /* Compression streams */
     z_stream  zlib_stream;
     bz_stream bzip2_stream;
+
+    /* Decryption */
+#if defined(HAVE_LIBGCRYPT)
+    gcry_cipher_hd_t crypt_handle;
+#endif
 };
 
 
@@ -118,6 +127,50 @@ static inline void mirage_filter_stream_isz_deobfuscate (guint8 *data, gint leng
     }
 }
 
+
+/**********************************************************************\
+ *                          Data decryption                           *
+\**********************************************************************/
+#if defined(HAVE_LIBGCRYPT)
+
+static gboolean mirage_filter_stream_isz_initialize_decryption (MirageFilterStreamIsz *self, const gchar *password, int mode, GError **error)
+{
+    gpg_error_t rc;
+    int algo;
+
+    /* Initialize cipher: AES-128/192/256 in CBC mode */
+    switch (mode) {
+        case AES128: {
+            algo = GCRY_CIPHER_AES128;
+            break;
+        }
+        case AES192: {
+            algo = GCRY_CIPHER_AES192;
+            break;
+        }
+        case AES256: {
+            algo = GCRY_CIPHER_AES256;
+            break;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unsupported encryption type!");
+            return FALSE;
+        }
+    }
+
+    rc = gcry_cipher_open(&self->priv->crypt_handle, algo, GCRY_CIPHER_MODE_CBC, 0);
+    if (rc != 0) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize AES cipher! Error code: %d (%X)!", rc, rc);
+        return FALSE;
+    }
+
+
+    /* TODO: figure out how to derive key from password, and what is used for IV */
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Encrypted images are not supported yet!");
+    return FALSE;
+}
+
+#endif
 
 /**********************************************************************\
  *                     Part filename generation                       *
@@ -661,6 +714,60 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: naming format: %d, prefix: %s\n", __debug__, self->priv->volname_format, self->priv->volname_prefix);
 
+    /* Check if image is encrypted */
+    switch (header->encryption_type) {
+        case NONE: {
+            break;
+        }
+        case AES128:
+        case AES192:
+        case AES256: {
+#if defined(HAVE_LIBGCRYPT)
+            GVariant *password_value;
+            gchar *password;
+            GError *local_error = NULL;
+
+            /* Password is needed to decrypt an encrypted image... */
+            password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
+            if (password_value) {
+                password = g_variant_dup_string(password_value, NULL);
+            } else {
+                /* Get password from user via password function */
+                password = mirage_contextual_obtain_password(MIRAGE_CONTEXTUAL(self), NULL);
+            }
+
+            if (!password) {
+                /* Password not provided (or password function is not set) */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Image is encrypted!"));
+                return FALSE;
+            }
+
+            /* Initialize crypto context for decryption */
+            if (!mirage_filter_stream_isz_initialize_decryption(self, password, header->encryption_type, &local_error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to initialize decryption: %s\n", __debug__, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize decryption: %s"), local_error->message);
+                g_error_free(local_error);
+                g_free(password);
+                return FALSE;
+            }
+
+            g_free(password);
+            break;
+#else
+            /* libMirage / ISZ plugin was built without libgcrypt */
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Support for image decryption is missing!"));
+            return FALSE;
+#endif
+        }
+        case PASSWORD: /* Marked as "not-used" in the spec */
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: unsupported encryption mode: %d", __debug__, header->encryption_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unsupported encryption mode!"));
+            return FALSE;
+        }
+    }
+
     /* Read segment table if one exists */
     if (header->seg_offs) {
         if (!mirage_filter_stream_isz_read_segments(self, error)) {
@@ -919,6 +1026,10 @@ static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
     self->priv->cached_part = -1;
     self->priv->inflate_buffer = NULL;
     self->priv->io_buffer = NULL;
+
+#if defined(HAVE_LIBGCRYPT)
+    self->priv->crypt_handle = NULL;
+#endif
 }
 
 static void mirage_filter_stream_isz_finalize (GObject *gobject)
@@ -942,6 +1053,13 @@ static void mirage_filter_stream_isz_finalize (GObject *gobject)
 
     inflateEnd(&self->priv->zlib_stream);
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
+
+#if defined(HAVE_LIBGCRYPT)
+    if (self->priv->crypt_handle) {
+        gcry_cipher_close(self->priv->crypt_handle);
+        self->priv->crypt_handle = NULL;
+    }
+#endif
 
     /* Chain up to the parent class */
     G_OBJECT_CLASS(mirage_filter_stream_isz_parent_class)->finalize(gobject);

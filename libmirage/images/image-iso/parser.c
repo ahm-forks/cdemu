@@ -115,9 +115,13 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     }
     file_length = mirage_stream_tell(stream);
 
-    /* Make sure the file is large enough; INF8090 requires a track to
-     * be at least four seconds long */
-    if (file_length < 4*75*2048) {
+    /* Make sure the file is large enough. INF8090 requires a track to
+     * be at least four seconds long; on the other hand, it seems to
+     * be possible to create an ISO image with a single empty file,
+     * which amounts to 25 sectors. Therefore, use this as the first
+     * check, and let the pattern-matching part confirm whether this is
+     * a tiny ISO image or not. */
+    if (file_length < 25 * 2048) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file is too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: file is too small!"));
         return FALSE;
@@ -209,7 +213,14 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
 
     /* Now that we have ruled out any possible combination for a data
      * track, if the stream length is multiple of 2352, we assume that
-     * we are dealing with audio track data */
+     * we are dealing with audio track data. As noted earlier, INF8090
+     * requires a track to be at least four seconds long. */
+    if (file_length < 4*75*2352) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file is too small!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: file is too small!"));
+        return FALSE;
+    }
+
     if (file_length % 2352 == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is multiple of 2352; assuming file contains audio track data...\n", __debug__);
         file_info->main_data_size = 2352;

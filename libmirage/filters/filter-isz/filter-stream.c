@@ -476,7 +476,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
     gint ret, original_size;
     gint last_segment = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index...\n", __debug__);
 
     self->priv->num_parts = header->num_blocks;
     original_size = header->total_sectors * header->sect_size;
@@ -598,6 +598,38 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
                      __debug__, i, cur_part->type, cur_part->offset, cur_part->adj_offset, cur_part->length, cur_part->segment);*/
     }
 
+    /* Display number of parts */
+    if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
+        gint num_zero = 0;
+        gint num_raw = 0;
+        gint num_zlib = 0;
+        gint num_bzip2 = 0;
+
+        for (guint i = 0; i < self->priv->num_parts; i++) {
+            const ISZ_Chunk *cur_part = &self->priv->parts[i];
+            switch (cur_part->type) {
+                case ZERO: {
+                    num_zero++;
+                    break;
+                }
+                case DATA: {
+                    num_raw++;
+                    break;
+                }
+                case ZLIB: {
+                    num_zlib++;
+                    break;
+                }
+                case BZ2: {
+                    num_bzip2++;
+                    break;
+                }
+            }
+        }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d; zero=%d, raw=%d, zlib=%d, bzip2=%d\n", __debug__, self->priv->num_parts, num_zero, num_raw, num_zlib, num_bzip2);
+    }
+
     /* Initialize zlib stream */
     zlib_stream->zalloc = Z_NULL;
     zlib_stream->zfree = Z_NULL;
@@ -642,7 +674,7 @@ static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read part index\n\n", __debug__);
 
     return TRUE;
 }

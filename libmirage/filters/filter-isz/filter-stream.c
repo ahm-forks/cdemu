@@ -236,7 +236,7 @@ static gchar *mirage_filter_stream_isz_format_part_filename (const gchar *prefix
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_read_segment_table (MirageFilterStreamIsz *self, GError **error)
 {
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
 
@@ -245,7 +245,7 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
     gint ret;
     gboolean count_done = FALSE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading segments\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading segment table...\n", __debug__);
 
     /* Position at the beginning of the segment table */
     if (!mirage_stream_seek(stream, header->seg_offs, G_SEEK_SET, NULL)) {
@@ -254,7 +254,6 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
     }
 
     /* Read segments */
-
     for (gint s = 0;; s++) {
         ISZ_Segment cur_segment;
 
@@ -301,24 +300,24 @@ static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *s
         } else {
             self->priv->segments[s] = cur_segment;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %2d: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__, s,
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: segment %2d: size=%" G_GINT64_MODIFIER "u num_chunks=%u first_chunk=%u chunk_offs=%u left_size=%u\n", __debug__, s,
                          cur_segment.size, cur_segment.num_chunks, cur_segment.first_chunk_num,
                          cur_segment.chunk_offs, cur_segment.left_size);
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read %d segments\n\n", __debug__, self->priv->num_segments);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read segment table with %d segments\n\n", __debug__, self->priv->num_segments);
 
     return TRUE;
 }
 
-static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterStreamIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_construct_segment_table (MirageFilterStreamIsz *self, GError **error)
 {
     ISZ_Header *header = &self->priv->header;
 
     gint sector_count = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment table\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: constructing segment table...\n", __debug__);
 
     if (header->segment_size) {
         /* Allocate segments */
@@ -364,7 +363,7 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
 
             sector_count += cur_segment->num_chunks;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %2d: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__, s,
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: segment %2d: size=%" G_GINT64_MODIFIER "u num_chunks=%u first_chunk=%u chunk_offs=%u left_size=%u\n", __debug__, s,
                          cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
                          cur_segment->chunk_offs, cur_segment->left_size);
         }
@@ -386,12 +385,12 @@ static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterS
         cur_segment->chunk_offs = header->data_offs;
         cur_segment->left_size = 0;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   0: %" G_GINT64_MODIFIER "u %u %u %u %u\n", __debug__,
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: segment %2d: size=%" G_GINT64_MODIFIER "u num_chunks=%u first_chunk=%u chunk_offs=%u left_size=%u\n", __debug__, 0,
                      cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
                      cur_segment->chunk_offs, cur_segment->left_size);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully created a new segment table\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully constructed segment table for %d segments\n", __debug__, self->priv->num_segments);
 
     return TRUE;
 }
@@ -768,15 +767,15 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         }
     }
 
-    /* Read segment table if one exists */
+    /* Read segment table if it exists; otherwise, construct it manually. */
     if (header->seg_offs) {
-        if (!mirage_filter_stream_isz_read_segments(self, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing segments failed!\n\n", __debug__);
+        if (!mirage_filter_stream_isz_read_segment_table(self, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read segment table!\n\n", __debug__);
             return FALSE;
         }
     } else {
-        if (!mirage_filter_stream_isz_create_new_segment_table(self, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment failed!\n\n", __debug__);
+        if (!mirage_filter_stream_isz_construct_segment_table(self, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to construct segment table!\n\n", __debug__);
             return FALSE;
         }
     }

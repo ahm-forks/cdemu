@@ -136,20 +136,26 @@ static inline void mirage_filter_stream_isz_deobfuscate (guint8 *data, gint leng
 static gboolean mirage_filter_stream_isz_initialize_decryption (MirageFilterStreamIsz *self, const gchar *password, int mode, GError **error)
 {
     gpg_error_t rc;
-    int algo;
+    gint algo;
+    guint key_size;
 
-    /* Initialize cipher: AES-128/192/256 in CBC mode */
+    /* Initialize AES-128/192/256 cipher. The ISZ spec incorrectly claims
+     * that CBC mode is used; ECB is used, with user-supplied password used
+     * directly as the key. */
     switch (mode) {
         case AES128: {
             algo = GCRY_CIPHER_AES128;
+            key_size = 16;
             break;
         }
         case AES192: {
             algo = GCRY_CIPHER_AES192;
+            key_size = 24;
             break;
         }
         case AES256: {
             algo = GCRY_CIPHER_AES256;
+            key_size = 32;
             break;
         }
         default: {
@@ -158,19 +164,52 @@ static gboolean mirage_filter_stream_isz_initialize_decryption (MirageFilterStre
         }
     }
 
-    rc = gcry_cipher_open(&self->priv->crypt_handle, algo, GCRY_CIPHER_MODE_CBC, 0);
+    rc = gcry_cipher_open(&self->priv->crypt_handle, algo, GCRY_CIPHER_MODE_ECB, 0);
     if (rc != 0) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize AES cipher! Error code: %d (%X)!", rc, rc);
         return FALSE;
     }
 
+    guint8 master_key[key_size];
+    memset(master_key, 0, key_size);
 
-    /* TODO: figure out how to derive key from password, and what is used for IV */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Encrypted images are not supported yet!");
-    return FALSE;
+    gsize len = strlen(password);
+    if (len > key_size) {
+        len = key_size;
+    }
+    memcpy(master_key, password, len);
+
+    rc = gcry_cipher_setkey(self->priv->crypt_handle, master_key, key_size);
+    if (rc != 0) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to set key! Error code: %d (%X)!", rc, rc);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 #endif
+
+static gint mirage_filter_stream_isz_decrypt_data_block (MirageFilterStreamIsz *self, guint8 *data, gsize length)
+{
+#if defined(HAVE_LIBGCRYPT)
+    if (self->priv->crypt_handle) {
+        /* NOTE: unaligned part of buffer is left un-encrypted */
+        gpg_error_t rc = gcry_cipher_decrypt(self->priv->crypt_handle, data, length & ~15, NULL, 0);
+        if (rc != 0) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decrypt raw chunk - gcry_cipher_decrypt() failed with error code: %d!\n", __debug__, rc);
+            return -1;
+        }
+    }
+#else
+    (void)self;
+    (void)data;
+    (void)length;
+#endif
+
+    return 0;
+}
+
 
 /**********************************************************************\
  *                     Part filename generation                       *
@@ -791,7 +830,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
             return FALSE;
 #endif
         }
-        case PASSWORD: /* Marked as "not-used" in the spec */
+        case PASSWORD: /* Marked as "not-used" in the spec - was basic XOR of data bytes with (cycled) password. */
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: unsupported encryption mode: %d", __debug__, header->encryption_type);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unsupported encryption mode!"));
@@ -920,12 +959,17 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
         /* Read a part, either zero, raw or compressed */
         if (part->type == ZERO) {
             /* Return a zero-filled buffer */
-            memset (self->priv->inflate_buffer, 0, self->priv->inflate_buffer_size);
+            memset(self->priv->inflate_buffer, 0, self->priv->inflate_buffer_size);
         } else if (part->type == DATA) {
-            /* Read uncompressed part */
-            gssize ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
-            if ((gsize)ret != part->length) {
+            /* Read uncompressed data chunk */
+            gssize read_bytes = mirage_filter_stream_isz_read_raw_chunk(self, self->priv->inflate_buffer, part_idx);
+            if ((gsize)read_bytes != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                return -1;
+            }
+
+            /* Decrypt if necessary */
+            if (mirage_filter_stream_isz_decrypt_data_block(self, self->priv->inflate_buffer, read_bytes) < 0) {
                 return -1;
             }
         } else if (part->type == ZLIB) {
@@ -933,31 +977,34 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             gint zlib_ret;
             gssize read_bytes;
 
-            /* Reset inflate engine */
+            /* Read compressed data chunk */
+            read_bytes = mirage_filter_stream_isz_read_raw_chunk(self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read compressed chunk!\n", __debug__);
+                return -1;
+            }
+
+            /* If data is encrypted, decrypt it before attempting to decompress */
+            if (mirage_filter_stream_isz_decrypt_data_block(self, self->priv->io_buffer, read_bytes) < 0) {
+                return -1;
+            }
+
+            /* Reset inflate engine, and inflate whole part */
             zlib_ret = inflateReset2(zlib_stream, 15);
             if (zlib_ret != Z_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
                 return -1;
             }
 
-            /* Uncompress whole part */
             zlib_stream->avail_in = part->length;
             zlib_stream->next_in = self->priv->io_buffer;
             zlib_stream->avail_out = self->priv->inflate_buffer_size;
             zlib_stream->next_out = self->priv->inflate_buffer;
 
-            /* Read some compressed data */
-            read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if ((gsize)read_bytes != part->length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
-                return -1;
-            }
-
-            /* Inflate */
             do {
                 zlib_ret = inflate(zlib_stream, Z_NO_FLUSH);
                 if (zlib_ret == Z_NEED_DICT || zlib_ret == Z_MEM_ERROR || zlib_ret == Z_DATA_ERROR) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!\n", __debug__, zlib_stream->msg);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate data: %s!\n", __debug__, zlib_stream->msg);
                     return -1;
                 }
             } while (zlib_stream->avail_in);
@@ -966,39 +1013,42 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             int bz_ret;
             gssize read_bytes;
 
-            /* Reset decompress engine */
-            bz_ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
-            if (bz_ret != BZ_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
+            /* Read compressed data chunk */
+            read_bytes = mirage_filter_stream_isz_read_raw_chunk(self, self->priv->io_buffer, part_idx);
+            if ((gsize)read_bytes != part->length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read compressed chunk!\n", __debug__);
                 return -1;
             }
 
-            /* Uncompress whole part */
-            bzip2_stream->avail_in = part->length;
-            bzip2_stream->next_in = (gchar *)self->priv->io_buffer;
-            bzip2_stream->avail_out = self->priv->inflate_buffer_size;
-            bzip2_stream->next_out = (gchar *)self->priv->inflate_buffer;
-
-            /* Read some compressed data */
-            read_bytes = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
-            if ((gsize)read_bytes != part->length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+            /* If data is encrypted, decrypt it before attempting to decompress */
+            if (mirage_filter_stream_isz_decrypt_data_block(self, self->priv->io_buffer, read_bytes) < 0) {
                 return -1;
             }
 
             /* Restore a correct header */
             memcpy(self->priv->io_buffer, "BZh", 3);
 
-            /* Inflate */
+            /* Reset decompression engine, and decompress whole part */
+            bz_ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
+            if (bz_ret != BZ_OK) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
+                return -1;
+            }
+
+            bzip2_stream->avail_in = part->length;
+            bzip2_stream->next_in = (gchar *)self->priv->io_buffer;
+            bzip2_stream->avail_out = self->priv->inflate_buffer_size;
+            bzip2_stream->next_out = (gchar *)self->priv->inflate_buffer;
+
             do {
                 bz_ret = BZ2_bzDecompress(bzip2_stream);
                 if (bz_ret < 0) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, bz_ret);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decompress data: %d!\n", __debug__, bz_ret);
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
 
-            /* Uninitialize decompress engine */
+            /* Uninitialize decompression engine */
             bz_ret = BZ2_bzDecompressEnd(bzip2_stream);
             if (bz_ret != BZ_OK) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
@@ -1006,7 +1056,7 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
             }
         } else {
             /* We should never get here... */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown chunk type %u!\n", __debug__, part->type);
             return -1;
         }
 

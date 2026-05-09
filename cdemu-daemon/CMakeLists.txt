@@ -33,8 +33,7 @@ pkg_check_modules(AO REQUIRED ao>=0.8.0 IMPORTED_TARGET)
 
 # Global definitions
 set(CMAKE_C_STANDARD 99) # Enable C99
-
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     if(PEDANTIC_MODE)

@@ -95,7 +95,7 @@ configure_file(${PROJECT_SOURCE_DIR}/libmirage.pc.in ${PROJECT_BINARY_DIR}/libmi
 
 # Global definitions
 set(CMAKE_C_STANDARD 99) # Enable C99
-if(CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable additional warnings
     add_definitions(-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     if(PEDANTIC_MODE)

@@ -931,9 +931,18 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
 
     guint32 max_chunk_size = 0;
 
+    const gint format_version = self->priv->header.format_version;
+
     /* Compute chunk table size */
     tmp_chunks_len = self->priv->chunk_data_offset - self->priv->chunk_table_offset;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing chunk table (length: %d bytes, from 0x%X to 0x%X)...\n", __debug__, tmp_chunks_len, self->priv->chunk_table_offset, self->priv->chunk_data_offset);
+
+    /* Sanity check */
+    if (tmp_chunks_len <= 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: tmp_chunks_len (%d) should be greater than 0, but is not!\n", __debug__, tmp_chunks_len);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
+        return FALSE;
+    }
 
     /* Allocate temporary buffer */
     tmp_chunks_data = g_try_new(guint8, tmp_chunks_len);
@@ -961,7 +970,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     }
 
     /* Compute number of chunks */
-    switch (self->priv->header.format_version) {
+    switch (format_version) {
         case FORMAT_VERSION1: {
             /* 3-byte fields */
             num_chunks = tmp_chunks_len / 3;
@@ -972,6 +981,13 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
             num_chunks = (tmp_chunks_len * 8) / (self->priv->bitsize_type + self->priv->bitsize_length);
             break;
         }
+    }
+
+    /* Sanity check */
+    if (num_chunks <= 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: num_chunks (%d) should be greater than 0, but is not!\n", __debug__, num_chunks);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
+        return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: chunk table: %d entries\n", __debug__, num_chunks);
@@ -989,14 +1005,14 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
         return FALSE;
     }
 
-    for (gint i = 0; i < self->priv->num_chunks; i++) {
+    for (gint i = 0; i < num_chunks; i++) {
         DAA_Chunk *chunk = &self->priv->chunk_table[i];
 
         guint32 tmp_chunk_length = 0;
         gint tmp_compression_type = -1;
         gchar *compression_type_string = "unknown";
 
-        switch (self->priv->header.format_version) {
+        switch (format_version) {
             case FORMAT_VERSION1: {
                 gint off = i*3;
                 tmp_chunk_length = (tmp_chunks_data[off+0] << 16) | (tmp_chunks_data[off+2] << 8) | tmp_chunks_data[off+1];

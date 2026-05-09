@@ -215,7 +215,7 @@ static gchar *create_filename_func_1 (const gchar *main_filename, gint index)
     gchar *ret_filename = g_strdup(main_filename);
 
     if (index) {
-        /* Find last occurence of 01. and print index into it */
+        /* Find last occurrence of 01. and print index into it */
         gchar *position = g_strrstr(ret_filename, "01.");
         position += g_snprintf(position, 3, "%02i", index+1);
         *position = '.'; /* Since it got overwritten with terminating 0 */
@@ -230,7 +230,7 @@ static gchar *create_filename_func_2 (const gchar *main_filename, gint index)
     gchar *ret_filename = g_strdup(main_filename);
 
     if (index) {
-        /* Find last occurence of 01. and print index+1 into it */
+        /* Find last occurrence of 01. and print index+1 into it */
         gchar *position = g_strrstr(ret_filename, "001.");
         position += g_snprintf(position, 4, "%03i", index+1);
         *position = '.'; /* Since it got overwritten with terminating 0 */
@@ -661,10 +661,26 @@ static gboolean mirage_filter_stream_daa_read_from_stream (MirageFilterStreamDaa
 /**********************************************************************\
  *                         Descriptor parsing                         *
 \**********************************************************************/
+static gboolean check_filename_suffix (const gchar *filename, const gchar *suffix)
+{
+    const gsize len = strlen(filename);
+    const gsize suffix_len = strlen(suffix);
+
+    /* We require non-empty prefix part */
+    if (len <= suffix_len) {
+        return FALSE;
+    }
+
+    /* Since we are interested in matching only the ASCII suffix,
+     * we can use strncasecmp() */
+    return strncasecmp(filename + (len - suffix_len), suffix, suffix_len) == 0;
+}
+
 static gboolean mirage_filter_stream_daa_parse_descriptor_split (MirageFilterStreamDaa *self, gint descriptor_size, GError **error)
 {
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     DAA_DescriptorSplit descriptor;
+    const gchar *filename;
 
     /* First field is number of parts (files) */
     if (mirage_stream_read(stream, &descriptor, sizeof(descriptor), NULL) != sizeof(descriptor)) {
@@ -680,32 +696,30 @@ static gboolean mirage_filter_stream_daa_parse_descriptor_split (MirageFilterStr
 
     self->priv->num_parts = descriptor.num_parts; /* Set number of parts */
 
-    /* Depending on the filename format, we have a fixed number of 5-byte
+    /* The descriptor data seems to consists of a fixed-number of 5-byte
      * fields, in which part sizes are stored. We don't really need these,
      * as we can get same info from part descriptor of each part file.
-     * However, it can help us determine the filename format. */
-    switch (descriptor_size / 5) {
-        case 99: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
-            self->priv->create_filename_func = create_filename_func_1;
-            break;
-        }
-        case 512: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part001.daa, volname.part002.daa, ...\n", __debug__);
-            self->priv->create_filename_func = create_filename_func_2;
-            break;
-        }
-        case 101: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.daa, volname.d00, ...\n", __debug__);
-            self->priv->create_filename_func = create_filename_func_3;
-            break;
-        }
-        default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename format type!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid filename format type!"));
-            return FALSE;
-        }
+     * In older versions of DAA, the number of entries (99, 101, 512)
+     * could be used to infer the naming scheme; but contemporary images
+     * seem to have significantly larger descriptor. Therefore, try to
+     * determine the naming scheme from the filename. */
+    filename = mirage_stream_get_filename(stream);
+
+    if (check_filename_suffix(filename, ".part001.daa") || check_filename_suffix(filename, ".part001.gbi")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part001.daa, volname.part002.daa, ...\n", __debug__);
+        self->priv->create_filename_func = create_filename_func_2;
+    } else if (check_filename_suffix(filename, ".part01.daa") || check_filename_suffix(filename, ".part01.gbi")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
+        self->priv->create_filename_func = create_filename_func_1;
+    } else if (check_filename_suffix(filename, ".daa") || check_filename_suffix(filename, ".gbi")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.daa, volname.d00, ...\n", __debug__);
+        self->priv->create_filename_func = create_filename_func_3;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to determine part naming scheme!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to determine part naming scheme!"));
+        return FALSE;
     }
+
     mirage_stream_seek(stream, descriptor_size, G_SEEK_CUR, NULL);
 
     return TRUE;

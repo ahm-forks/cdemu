@@ -348,7 +348,6 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
 
             /* 0x0000: Physical information */
             mirage_disc_set_disc_structure(self->priv->disc, 1, 0x0000, cur_ptr, 2048);
-            cur_ptr += 2048;
         }
     }
 }
@@ -758,7 +757,6 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     MirageParserMds *self = MIRAGE_PARSER_MDS(_self);
 
     gboolean succeeded = TRUE;
-    guint8 *cur_ptr;
     MirageStream *stream;
     guint64 read_length;
     gchar signature[17];
@@ -820,11 +818,8 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, MirageStre
     }
 
     /* Parse MDS file */
-    cur_ptr = self->priv->mds_data;
-
-    self->priv->header = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_Header *);
+    self->priv->header = MIRAGE_CAST_PTR(self->priv->mds_data, 0, MDS_Header *);
     mds_header_fix_endian(self->priv->header);
-    cur_ptr += sizeof(MDS_Header);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS header:\n", __debug__);

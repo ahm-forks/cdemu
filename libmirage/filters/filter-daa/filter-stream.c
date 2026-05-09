@@ -880,7 +880,7 @@ static void deobfuscate_chunk_table_daa (guint8 *data, gint size, guint64 iso_si
     }
 }
 
-static inline guint read_bits (guint bits, guint8 *in, guint in_bits, gboolean bits_obfuscated, gint *bits_obfuscation_counter)
+static inline guint read_bits (guint bits, guint8 *in, guint in_bits, gboolean bits_obfuscated, gint *bits_obfuscation_counter, gboolean increment_counter)
 {
     static const guint8 obfuscation_mask[] = {0x0A, 0x35, 0x2D, 0x3F, 0x08, 0x33, 0x09, 0x15};
     guint seek_bits;
@@ -912,7 +912,9 @@ static inline guint read_bits (guint bits, guint8 *in, guint in_bits, gboolean b
     if (bits_obfuscated) {
         gint counter = *bits_obfuscation_counter;
         ret ^= ((counter ^ obfuscation_mask[counter & 7]) & 0xff) * 0x01010101;
-        *bits_obfuscation_counter = counter++;
+        if (increment_counter) {
+            *bits_obfuscation_counter = counter++;
+        }
     }
 
     return ret & mask;
@@ -1021,12 +1023,12 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
             }
             case FORMAT_VERSION2: {
                 /* In version 2, chunk table is bit-packed */
-                tmp_chunk_length = read_bits(self->priv->bitsize_length, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, NULL);
+                tmp_chunk_length = read_bits(self->priv->bitsize_length, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, &bit_obfuscation_counter, FALSE);
                 bit_pos += self->priv->bitsize_length;
 
                 tmp_chunk_length += LZMA_PROPS_SIZE; /* LZMA props size */
 
-                tmp_compression_type = read_bits(self->priv->bitsize_type, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, &bit_obfuscation_counter);
+                tmp_compression_type = read_bits(self->priv->bitsize_type, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, &bit_obfuscation_counter, TRUE);
                 bit_pos += self->priv->bitsize_type;
 
                 /* Detect uncompressed chunk */

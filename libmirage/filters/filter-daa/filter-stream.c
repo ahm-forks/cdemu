@@ -924,7 +924,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     guint8 *tmp_chunks_data;
     gint tmp_chunks_len;
     gint num_chunks = 0;
-    gint tmp_offset = 0;
+    guint64 tmp_offset = 0;
 
     gint bit_pos = 0; /* Bit position */
     gint bit_obfuscation_counter = 0; /* Bit obfuscation counter */
@@ -1044,7 +1044,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
             }
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%i: offset 0x%X, length: 0x%X, compression: %s\n", __debug__, i, tmp_offset, tmp_chunk_length, compression_type_string);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%i: offset 0x%" G_GINT64_MODIFIER "X, length: 0x%X, compression: %s\n", __debug__, i, tmp_offset, tmp_chunk_length, compression_type_string);
 
         chunk->offset = tmp_offset;
         chunk->length = tmp_chunk_length;
@@ -1076,8 +1076,9 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
 \**********************************************************************/
 static gboolean mirage_filter_stream_daa_build_part_table (MirageFilterStreamDaa *self, GError **error)
 {
-    gint tmp_offset = 0;
-    guint64 part_length, tmp_position;
+    guint64 tmp_offset = 0;
+    guint64 part_length;
+    guint64 tmp_position;
     DAA_Part *part;
     gchar *part_filename;
     gchar part_signature[16];

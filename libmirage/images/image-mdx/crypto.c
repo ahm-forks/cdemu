@@ -51,6 +51,11 @@ mdx_crypto_decipher_buffer_lrw (
 
     /* Decipher each 16-byte block */
     for (gsize i = 0; i < len / block_size; i++) {
+        /* Cast the pointer to current 16-byte / 128-bit data block to
+         * our guint128_bbe struct, so we can perform operations on two
+         * 64-bit integers. */
+        guint128_bbe *data_ptr = (guint128_bbe *)(void *)data;
+
         /* Tweak: product of tweak key (F) and tweak index (I) in GF(2^128).
          * Use the table-based multiplication (where table was initialized
          * using the tweak key). */
@@ -60,8 +65,8 @@ mdx_crypto_decipher_buffer_lrw (
         gf128mul_64k_bbe(&tweak, (gf128mul_64k_table *)gfmul_table);
 
         /* XOR with tweak */
-        ((guint128_bbe *)data)->a ^= tweak.a;
-        ((guint128_bbe *)data)->b ^= tweak.b;
+        data_ptr->a ^= tweak.a;
+        data_ptr->b ^= tweak.b;
 
         /* Decipher */
         rc = gcry_cipher_decrypt(crypt_handle, data, block_size, NULL, 0);
@@ -71,8 +76,8 @@ mdx_crypto_decipher_buffer_lrw (
         }
 
         /* XOR with tweak */
-        ((guint128_bbe *)data)->a ^= tweak.a;
-        ((guint128_bbe *)data)->b ^= tweak.b;
+        data_ptr->a ^= tweak.a;
+        data_ptr->b ^= tweak.b;
 
         data += block_size / sizeof(*data);
     }
@@ -206,9 +211,9 @@ static gboolean _mdx_crypto_decipher_encryption_header (
     if (main_header) {
         succeeded = mdx_crypto_decipher_buffer_cbc(
             crypt_handle,
-            (guint64 *)encrypted_data,
+            (guint64 *)(void *)encrypted_data,
             encrypted_data_length,
-            (const guint64 *)master_key, /* IV (16 bytes) at the start of master key buffer */
+            (const guint64 *)(void *)master_key, /* IV (16 bytes) at the start of master key buffer */
             &local_error
         );
     } else {
@@ -360,9 +365,9 @@ guint8 *mdx_crypto_decipher_and_decompress_descriptor(
         gssize block_size = remaining_length > 512 ? 512 : remaining_length;
         gboolean succeeded = mdx_crypto_decipher_buffer_cbc(
             crypt_handle,
-            (guint64 *)data_ptr,
+            (guint64 *)(void *)data_ptr,
             block_size,
-            (guint64 *)header->key_data, /* IV (16 bytes) at the start of master key buffer */
+            (guint64 *)(void *)header->key_data, /* IV (16 bytes) at the start of master key buffer */
             &local_error
         );
         if (!succeeded) {

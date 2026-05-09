@@ -190,7 +190,7 @@ static gchar *mirage_parser_mdx_get_mdf_filename (MirageParserMdx *self, const g
     /* In contrast to MDSv1, MDX/MDSv2 always seems to be using 16-bit (wide)
      * characters, and the field in footer block that used to denote whether
      * wide characters are used or not now has a different meaning. */
-    gunichar2 *tmp_ptr = (gunichar2 *)(self->priv->descriptor_data + footer_block->filename_offset);
+    gunichar2 *tmp_ptr = MIRAGE_CAST_PTR(self->priv->descriptor_data, footer_block->filename_offset, gunichar2 *);
     widechar_filename_fix_endian(tmp_ptr);
     tmp_mdf_filename = g_utf16_to_utf8(tmp_ptr, -1, NULL, NULL, NULL);
 
@@ -1355,7 +1355,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
             return FALSE;
         }
         gf128mul_init_64k_table_bbe(
-            (guint128_bbe *)self->priv->data_encryption_header->key_data,
+            (guint128_bbe *)(void *)self->priv->data_encryption_header->key_data,
             self->priv->gfmul_table
         );
     }

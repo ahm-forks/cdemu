@@ -382,12 +382,12 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 
     /* Sanity check */
     if (!bin_data || bin_length < 1) {
-        return NULL;
+        goto error;
     }
 
     rsrc_fork = g_try_new0(rsrc_fork_t, 1);
     if (!rsrc_fork) {
-        return NULL;
+        goto error;
     }
 
 #if GLIB_CHECK_VERSION(2, 68, 0)
@@ -396,7 +396,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
     raw_data = g_memdup(bin_data, bin_length);
 #endif
     if (!raw_data) {
-        return NULL;
+        goto error;
     }
 
     /* Read and fixup header */
@@ -412,7 +412,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 
     rsrc_fork->type_list = g_array_sized_new(FALSE, TRUE, sizeof(rsrc_type_t), rsrc_raw_map->num_types_minus_one + 1);
     if (!rsrc_fork->type_list) {
-        return NULL;
+        goto error;
     }
 
     /* Loop through resource types */
@@ -430,7 +430,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 
         type_entry.ref_list = g_array_sized_new(FALSE, TRUE, sizeof(rsrc_ref_t), rsrc_raw_type->num_refs_minus_one + 1);
         if (!type_entry.ref_list) {
-            return NULL;
+            goto error;
         }
 
         g_array_append_val(rsrc_fork->type_list, type_entry);
@@ -460,7 +460,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
                 ref_entry.name = g_string_new("");
             }
             if (!ref_entry.name) {
-                return NULL;
+                goto error;
             }
 
             guint32 rsrc_data_offset = (
@@ -485,7 +485,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
                 ref_entry.data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
 #endif
                 if (!ref_entry.data) {
-                    return NULL;
+                    goto error;
                 }
             } else {
                 ref_entry.data = NULL;
@@ -498,6 +498,11 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
     g_free(raw_data);
 
     return rsrc_fork;
+
+error:
+    g_free(raw_data);
+    rsrc_fork_free(rsrc_fork);
+    return NULL;
 }
 
 gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork)
@@ -506,24 +511,24 @@ gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork)
         return FALSE;
     }
 
-    for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
-        rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
-
-        for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
-            rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
-
-            if (rsrc_ref->data) {
-                g_free(rsrc_ref->data);
-            }
-            if (rsrc_ref->name) {
-                g_string_free(rsrc_ref->name, TRUE);
-            }
-        }
-        if (rsrc_type->ref_list) {
-            g_array_free(rsrc_type->ref_list, TRUE);
-        }
-    }
     if (rsrc_fork->type_list) {
+        for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
+            rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
+
+            if (rsrc_type->ref_list) {
+                for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
+                    rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
+
+                    if (rsrc_ref->data) {
+                        g_free(rsrc_ref->data);
+                    }
+                    if (rsrc_ref->name) {
+                        g_string_free(rsrc_ref->name, TRUE);
+                    }
+                }
+                g_array_free(rsrc_type->ref_list, TRUE);
+            }
+        }
         g_array_free(rsrc_fork->type_list, TRUE);
     }
 

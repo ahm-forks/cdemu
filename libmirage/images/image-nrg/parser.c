@@ -206,7 +206,6 @@ static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MirageParserNrg *
 static gboolean mirage_parser_nrg_load_medium_type (MirageParserNrg *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
-    guint8 *cur_ptr;
     guint32 mtyp_data;
 
     /* Look up MTYP block */
@@ -216,10 +215,8 @@ static gboolean mirage_parser_nrg_load_medium_type (MirageParserNrg *self, GErro
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to look up 'MTYP' block!"));
         return FALSE;
     }
-    cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
 
-    mtyp_data = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
-    cur_ptr += sizeof(guint32);
+    mtyp_data = GINT32_FROM_BE(MIRAGE_CAST_DATA(self->priv->nrg_data, blockentry->offset + 8, guint32));
 
     /* Decode medium type */
     NERO_MEDIA_TYPE CD_EQUIV = MEDIA_CD | MEDIA_CDROM;
@@ -399,7 +396,6 @@ static gboolean mirage_parser_nrg_load_etn_data (MirageParserNrg *self, gint ses
 static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
-    guint8 *cur_ptr;
 
     /* Look up CUEX / CUES block */
     if (!self->priv->old_format) {
@@ -412,7 +408,6 @@ static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint ses
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to look up 'CUEX' or 'CUES' block!"));
         return FALSE;
     }
-    cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d CUE blocks\n", __debug__, blockentry->num_subblocks);
     self->priv->num_cue_blocks = blockentry->num_subblocks;
@@ -427,8 +422,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint ses
     }
 
     /* Read CUE blocks */
-    memcpy(self->priv->cue_blocks, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), blockentry->length);
-    cur_ptr += blockentry->length;
+    memcpy(self->priv->cue_blocks, self->priv->nrg_data + blockentry->offset + 8, blockentry->length);
 
     /* Conversion */
     for (guint i = 0; i < blockentry->num_subblocks; i++) {
@@ -879,7 +873,6 @@ end:
 static gboolean mirage_parser_nrg_load_cdtext (MirageParserNrg *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
-    guint8 *cur_ptr;
     guint8 *cdtx_data;
     MirageSession *session;
     gboolean succeeded = TRUE;
@@ -891,10 +884,9 @@ static gboolean mirage_parser_nrg_load_cdtext (MirageParserNrg *self, GError **e
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to look up 'CDTX' block!"));
         return FALSE;
     }
-    cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
 
     /* Read CDTX data */
-    cdtx_data = cur_ptr;
+    cdtx_data = self->priv->nrg_data + blockentry->offset + 8;
 
     session = mirage_disc_get_session_by_index(self->priv->disc, 0, error);
     if (session) {

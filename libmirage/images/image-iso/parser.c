@@ -30,7 +30,6 @@ struct IsoFileInfo
     gint subchannel_data_size;
     gint subchannel_format;
 
-    const gchar *filename;
     MirageStream *stream;
 };
 

@@ -36,23 +36,31 @@ extern const guint8 mirage_pattern_bea01[8];
  * @off: offset in buffer at which to get data
  * @type: data type (i.e. 'guint64')
  *
- * A macro for easy retrieval of data from (unsigned integer) buffer. Mostly to
- * be used in binary image parsers, for example, to retrieve guint32 or guint16
- * value from buffer.
+ * A macro for easy retrieval of typed values from raw data buffer. Mostly to
+ * be used in binary image parsers, for example, to retrieve a guint32 or guint16
+ * value from a buffer.
+ *
+ * <note>
+ * The offset @off within the @buf is applied using the buffer's original type.
+ * </note>
 **/
-#define MIRAGE_CAST_DATA(buf,off,type) (*((type *)(buf+off)))
+#define MIRAGE_CAST_DATA(buf, off, type) (*((type *)(void *)((buf) + (off))))
 
 /**
  * MIRAGE_CAST_PTR:
  * @buf: buffer to place pointer in
  * @off: offset in buffer at which to place pointer
- * @type: pointer type (i.e. 'gchar *')
+ * @type: pointer type (i.e. 'guint32 *')
  *
- * A macro for easy placing of pointers within (unsigned integer) buffer. Mostly
+ * A macro for easy placement of pointers within raw data buffer. Mostly
  * to be used in binary image parsers, for example, to retrieve a string or a
  * structure from buffer.
+ *
+ * <note>
+ * The offset @off within the @buf is applied using the buffer's original type.
+ * </note>
 **/
-#define MIRAGE_CAST_PTR(buf,off,type) ((type)(buf+off))
+#define MIRAGE_CAST_PTR(buf, off, type) ((type)(void *)((buf) + (off)))
 
 /* File finding */
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path);

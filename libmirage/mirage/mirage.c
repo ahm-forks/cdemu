@@ -80,7 +80,7 @@ static const MirageDebugMaskInfo dbg_masks[] = {
 /**********************************************************************\
  *                   Parsers and filter streams                       *
 \**********************************************************************/
-static void initialize_parsers_list ()
+static void initialize_parsers_list (void)
 {
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
 
@@ -92,7 +92,7 @@ static void initialize_parsers_list ()
     }
 }
 
-static void initialize_writers_list ()
+static void initialize_writers_list (void)
 {
     libmirage.writers = g_type_children(MIRAGE_TYPE_WRITER, &libmirage.num_writers);
 
@@ -104,7 +104,7 @@ static void initialize_writers_list ()
     }
 }
 
-static void initialize_filter_streams_list ()
+static void initialize_filter_streams_list (void)
 {
     libmirage.filter_streams = g_type_children(MIRAGE_TYPE_FILTER_STREAM, &libmirage.num_filter_streams);
 

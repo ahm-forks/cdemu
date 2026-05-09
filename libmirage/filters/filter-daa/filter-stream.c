@@ -915,7 +915,7 @@ static gboolean mirage_filter_stream_daa_parse_chunk_table (MirageFilterStreamDa
     gint bit_pos = 0; /* Bit position */
     gint bit_obfuscation_counter = 0; /* Bit obfuscation counter */
 
-    gint max_chunk_size = 0;
+    guint32 max_chunk_size = 0;
 
     /* Compute chunk table size */
     tmp_chunks_len = self->priv->chunk_data_offset - self->priv->chunk_table_offset;

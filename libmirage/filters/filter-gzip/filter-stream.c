@@ -473,7 +473,7 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
     }
 
     /* Copy data */
-    goffset part_offset = position - part->offset;
+    gsize part_offset = position - part->offset;
     count = MIN(count, part->size - part_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);

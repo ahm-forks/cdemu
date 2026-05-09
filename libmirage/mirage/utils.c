@@ -727,8 +727,8 @@ guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, co
 
     const guint32 *crc32_lut = crctab;
 
-    guint32 *current = (guint32 *)data;
-    guint8 *current2 = (guint8 *)data;
+    const guint32 *current = (guint32 *)(void *)data;
+    const guint8 *current2 = data;
 
     g_assert(data && crctab);
 
@@ -743,7 +743,7 @@ guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, co
         }
     } else {
         /* Process any initial un-aligned bytes */
-        guint ub = ((gulong) current) % sizeof(guint64);
+        guint ub = ((gulong)current) % sizeof(guint64);
 
         if (ub) {
             guint temp = ub = sizeof(guint64) - ub;
@@ -752,12 +752,12 @@ guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, co
                 crc = (crc >> 8) ^ CRC32_LUT(0, (crc & 0xFF) ^ *current2++);
             }
 
-            current = (guint32*) ((guint8*) current + ub);
+            current = (const guint32 *)(void *)((guint8 *)current + ub);
             length -= ub;
         }
 
         /* Make sure we are 64-bit aligned here */
-        g_assert((((gulong) current) % sizeof(guint64)) == 0);
+        g_assert((((gulong)current) % sizeof(guint64)) == 0);
 
         /* Process eight bytes at once */
         while (length >= 8) {
@@ -789,7 +789,7 @@ guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, co
             length -= 8;
         }
 
-        current2 = (guint8 *)current;
+        current2 = (const guint8 *)current;
 
         /* Process remaining 1 to 7 bytes */
         while (length--) {
@@ -1102,7 +1102,7 @@ static const guint8 ecc_b_lut[256] = {
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest)
 {
     guint32 edc;
-    guint32 *dest2 = (guint32 *) dest;
+    guint32 *dest2 = (guint32 *)(void *)dest;
 
     edc = mirage_helper_calculate_crc32_fast(src, size, crc32_d8018001_lut, TRUE, FALSE);
     *dest2 = GUINT32_TO_LE(edc);

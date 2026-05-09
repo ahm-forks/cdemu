@@ -439,7 +439,7 @@ static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamM
     gsize to_read = part->in_length;
     gsize have_read = 0;
     goffset part_offs = sizeof(macbinary_header_t) + part->in_offset;
-    gsize part_avail = MIN(part->in_length, header->datafork_len - part->in_offset);
+    gsize part_avail = MIN(part->in_length, (gsize)(header->datafork_len - part->in_offset));
     gint ret;
 
     /* Seek to the position */

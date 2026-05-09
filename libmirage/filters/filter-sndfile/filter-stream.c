@@ -312,14 +312,14 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             }
 
             /* Read frames */
-            read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, NUM_FRAMES);
+            read_length = sf_readf_short(self->priv->sndfile, (short *)(void *)self->priv->buffer, NUM_FRAMES);
             if (!read_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?\n", __debug__);
                 return -1;
             }
         } else {
             gint resampler_error;
-            sf_count_t offset = block*NUM_FRAMES*self->priv->io_ratio;
+            sf_count_t offset = block * NUM_FRAMES * self->priv->io_ratio;
 
             /* Seek to beginning of block; this is in original,
              * non-resampled, stream */
@@ -353,7 +353,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: resampler: read %ld input frames, generated %ld output frames\n", __debug__, self->priv->resampler_data.input_frames_used, self->priv->resampler_data.output_frames_gen);
 
             /* Convert generated frames to short */
-            src_float_to_short_array(self->priv->resample_buffer_out, (short *)self->priv->buffer, NUM_FRAMES*self->priv->format.channels);
+            src_float_to_short_array(self->priv->resample_buffer_out, (short *)(void *)self->priv->buffer, NUM_FRAMES * self->priv->format.channels);
         }
 
         /* Store the number of currently stored block */
@@ -363,7 +363,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     }
 
     /* Copy data */
-    goffset block_offset = position % self->priv->buflen;
+    gsize block_offset = position % self->priv->buflen;
     count = MIN(count, self->priv->buflen - block_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);

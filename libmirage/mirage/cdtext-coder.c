@@ -209,9 +209,9 @@ static gint mirage_cdtext_coder_block2lang (MirageCdTextCoder *self, gint block)
 static void add_crc_to_pack (CDTextEncodedPack *pack)
 {
     guint16 crc;
-    guint16 *dest = (guint16 *) &pack->crc;
+    guint16 *dest = (guint16 *)(void *)&pack->crc;
 
-    crc = mirage_helper_calculate_crc16((guint8 *) pack, 16, crc16_1021_lut, FALSE, TRUE);
+    crc = mirage_helper_calculate_crc16((const guint8 *)pack, 16, crc16_1021_lut, FALSE, TRUE);
 
     *dest = GUINT16_TO_BE(crc);
 }
@@ -607,7 +607,7 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
             /* Current data offset */
             gchar *cur_data = (gchar *)self->priv->cur_pack->data + self->priv->cur_pack_fill;
             /* Length of transfer */
-            gint copy_len = MIN(strlen(cur_data) + 1, 12 - self->priv->cur_pack_fill);
+            gint copy_len = MIN(strlen(cur_data) + 1, (size_t)(12 - self->priv->cur_pack_fill));
 
             /* Copy */
             memcpy(ptr, self->priv->cur_pack->data + self->priv->cur_pack_fill, copy_len);

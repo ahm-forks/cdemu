@@ -469,7 +469,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
                 rsrc_raw_ref->data_offset[0]
             );
 
-            guint32 *rsrc_data_length = (guint32 *)(raw_data + rsrc_raw_header->data_offset + rsrc_data_offset);
+            guint32 *rsrc_data_length = (guint32 *)(void *)(raw_data + rsrc_raw_header->data_offset + rsrc_data_offset);
             gchar *rsrc_data_ptr = (gchar *)(rsrc_data_length + 1);
 
             *rsrc_data_length = GUINT32_FROM_BE(*rsrc_data_length);

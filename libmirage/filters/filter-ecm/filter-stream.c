@@ -499,10 +499,10 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
     }
 
     /* Copy data */
-    gint block_offset = part_offset % block_size;
+    gsize block_offset = part_offset % block_size;
     count = MIN(count, block_size - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GSIZE_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->buffer + skip_bytes + block_offset, count);
 

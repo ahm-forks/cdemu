@@ -449,8 +449,8 @@ static gboolean mirage_fragment_read_main_data_impl (MirageFragment *self, gint 
 
         /* Binary audio files may need to be swapped from BE to LE */
         if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
-            for (gint i = 0; i < read_len; i+=2) {
-                guint16 *ptr = (guint16 *)&data_buffer[i];
+            for (gint i = 0; i < read_len; i += 2) {
+                guint16 *ptr = (guint16 *)(void *)(data_buffer + i);
                 *ptr = GUINT16_SWAP_LE_BE(*ptr);
             }
         }
@@ -509,8 +509,8 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
         swapped_buffer = g_malloc(length);
 
         for (gint i = 0; i < self->priv->main_size; i += 2) {
-            guint16 *in_ptr = (guint16 *)&buffer[i];
-            guint16 *out_ptr = (guint16 *)&swapped_buffer[i];
+            const guint16 *in_ptr = (const guint16 *)(void *)(buffer + i);
+            guint16 *out_ptr = (guint16 *)(void *)(swapped_buffer + i);
             *out_ptr = GUINT16_SWAP_LE_BE(*in_ptr);
         }
     } else {

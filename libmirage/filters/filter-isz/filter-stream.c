@@ -485,8 +485,8 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
 
 static inline void mirage_filter_stream_isz_decode_chunk_ptr(guint8 *chunk_ptr, guint8 ptr_len, guint8 *type, guint32 *length)
 {
-    guint8  temp_buf[sizeof(guint32)] = {0};
-    guint32 *temp_ptr = (guint32 *) temp_buf;
+    guint32 temp_val = 0;
+    guint8 *temp_ptr = (guint8 *)&temp_val;
 
     guint32 chunk_len_bits = ptr_len * 8 - 2;
     guint32 chunk_type_bits = 2;
@@ -496,12 +496,12 @@ static inline void mirage_filter_stream_isz_decode_chunk_ptr(guint8 *chunk_ptr, 
     g_assert(ptr_len <= sizeof(guint32));
 
     for (gint b = 0; b < ptr_len; b++) {
-        temp_buf[b] = chunk_ptr[b];
+        temp_ptr[b] = chunk_ptr[b];
     }
-    *temp_ptr = GUINT32_FROM_LE(*temp_ptr);
+    temp_val = GUINT32_FROM_LE(temp_val);
 
-    *length = *temp_ptr & chunk_len_mask;
-    *type = (*temp_ptr >> chunk_len_bits) & chunk_type_mask;
+    *length = temp_val & chunk_len_mask;
+    *type = (temp_val >> chunk_len_bits) & chunk_type_mask;
 }
 
 static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self, GError **error)
@@ -1067,7 +1067,7 @@ static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, 
     }
 
     /* Copy data */
-    goffset part_offset = position % self->priv->header.block_size;
+    gsize part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);

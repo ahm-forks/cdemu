@@ -66,7 +66,7 @@ struct _MirageFilterStreamPrivate
 
     /* Simplified interface */
     guint64 stream_length;
-    goffset position;
+    guint64 position;
 };
 
 
@@ -343,7 +343,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
     gssize total_read, read_len;
     guint8 *ptr = buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes from position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes from position %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
 
     /* Make sure simplified_partial_read is provided */
     if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read) {
@@ -357,7 +357,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
 
     while (count > 0) {
         /* Check if we're at end of stream */
-        if ((gsize)self->priv->position >= self->priv->stream_length) {
+        if (self->priv->position >= self->priv->stream_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: end of stream reached!\n", __debug__);
             break;
         }
@@ -389,7 +389,7 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
     gssize total_write, write_len;
     const guint8 *ptr = buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes at position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes at position %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)!\n", __debug__, count, count, self->priv->position, self->priv->position);
 
     /* Make sure stream is writable */
     if (!mirage_stream_is_writable(MIRAGE_STREAM(self))) {

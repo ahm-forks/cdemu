@@ -320,30 +320,40 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     rsrc_fork_t  *rsrc_fork = NULL;
     gchar *rsrc_fork_data = NULL;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading descriptor...\n", __debug__);
+
     /* Read and parse resource-fork */
     if (koly_block->xml_offset && koly_block->xml_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains XML resource-fork...\n", __debug__);
+
         rsrc_fork_data = g_try_malloc(koly_block->xml_length);
         if (!rsrc_fork_data) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for XML resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->xml_offset, G_SEEK_SET, NULL);
         if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read XML resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read XML resource-fork!"));
             return FALSE;
         }
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_xml(rsrc_fork_data, koly_block->xml_length);
     } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains binary resource-fork...\n", __debug__);
+
         rsrc_fork_data = g_try_malloc(koly_block->rsrc_fork_length);
         if (!rsrc_fork_data) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for binary resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->rsrc_fork_offset, G_SEEK_SET, NULL);
         if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read binary resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read binary resource-fork!"));
             return FALSE;
         }
@@ -356,6 +366,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
 
     /* Did all go well? */
     if (!rsrc_fork) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse resource-fork!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to parse resource-fork!"));
         return FALSE;
     }
@@ -364,6 +375,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     rsrc_fork_data = NULL;
 
     /* Loop through resource types */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing data from resource-fork...\n", __debug__);
     for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
         rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
 
@@ -371,20 +383,24 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
         for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
             rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__, rsrc_type->type.as_array, rsrc_ref->id, rsrc_ref->name->str);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Data length: %i\n", __debug__, rsrc_ref->attrs, rsrc_ref->data_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing resource:\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %.4s\n", __debug__, rsrc_type->type.as_array);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  id: %i\n", __debug__, rsrc_ref->id);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s\n", __debug__, rsrc_ref->name->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attrs: 0x%04hx\n", __debug__, rsrc_ref->attrs);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data length: %i\n", __debug__, rsrc_ref->data_length);
 
             /* Convert resource endianness */
             if (!memcmp(rsrc_type->type.as_array, "plst", 4)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: This resource contains partition table information.\n\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: this resource contains partition table information - skipping...\n", __debug__);
             } else if (!memcmp(rsrc_type->type.as_array, "cSum", 4)) {
-                csum_block_t *csum_block = (csum_block_t *) rsrc_ref->data;
+                csum_block_t *csum_block = (csum_block_t *)rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(csum_block_t));
                 mirage_filter_stream_dmg_csum_fix_endian(csum_block);
                 mirage_filter_stream_dmg_print_csum_block(self, csum_block);
             } else if (!memcmp(rsrc_type->type.as_array, "size", 4)) {
-                size_block_t *size_block = (size_block_t *) rsrc_ref->data;
+                size_block_t *size_block = (size_block_t *)rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(size_block_t));
                 mirage_filter_stream_dmg_size_fix_endian(size_block);
@@ -401,41 +417,51 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                 g_string_free(nsiz_data, TRUE);
             } else if (!memcmp(rsrc_type->type.as_array, "blkx", 4)) {
                 blkx_block_t *blkx_block = (blkx_block_t *)rsrc_ref->data;
-                blkx_data_t  *blkx_data  = (blkx_data_t *)(rsrc_ref->data + sizeof(blkx_block_t));
+                blkx_data_t *blkx_data = (blkx_data_t *)(rsrc_ref->data + sizeof(blkx_block_t));
 
                 mirage_filter_stream_dmg_blkx_block_fix_endian(blkx_block);
+                mirage_filter_stream_dmg_print_blkx_block(self, blkx_block); /* Prints only blkx header, without data */
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing blkx entry with %d block(s)...\n", __debug__, blkx_block->blocks_run_count);
                 for (guint d = 0; d < blkx_block->blocks_run_count; d++) {
                     mirage_filter_stream_dmg_blkx_data_fix_endian(&blkx_data[d]);
 
-                    /* Update parts count */
                     gint32 block_type = blkx_data[d].block_type;
-
-                    if (block_type == ADC || block_type == ZLIB || block_type == BZLIB ||
-                        block_type == ZERO || block_type == RAW || block_type == IGNORE)
-                    {
-                        self->priv->num_parts++;
-                    } else if (block_type == COMMENT || block_type == TERM) {
-                        /* Do nothing */
-                    } else {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown block type: %d\n", __debug__, block_type);
-                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Encountered unknown block type: %d!"), block_type);
-                        return FALSE;
+                    switch (block_type) {
+                        case ADC:
+                        case ZLIB:
+                        case BZLIB:
+                        case ZERO:
+                        case RAW:
+                        case IGNORE: {
+                            /* Update parts count */
+                            self->priv->num_parts++;
+                            break;
+                        }
+                        case COMMENT:
+                        case TERM: {
+                            /* Do nothing */
+                            break;
+                        }
+                        default: {
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown block type: %d\n", __debug__, block_type);
+                            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Encountered unknown block type: %d!"), block_type);
+                            return FALSE;
+                        }
                     }
                 }
-
-                mirage_filter_stream_dmg_print_blkx_block(self, blkx_block);
             } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type.as_array);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type.as_array);
             }
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finished reading descriptors ...\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing descriptor\n\n", __debug__);
 
     return TRUE;
 }
 
-static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self, GError **error)
+static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg *self, GError **error)
 {
     z_stream *zlib_stream  = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
@@ -447,12 +473,13 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     gint cur_part = 0;
     gint ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: generating part index\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index...\n", __debug__);
 
     /* Allocate part index */
     self->priv->parts = g_try_new(DMG_Part, self->priv->num_parts);
     if (!self->priv->parts) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for index!"));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for part index!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for part index!"));
         return FALSE;
     }
 
@@ -461,16 +488,15 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     /* Loop through resource refs of type 'blkx' */
     rsrc_type = rsrc_find_type(rsrc_fork, "blkx");
     if (!rsrc_type) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to find required 'blkx' type!"));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find required 'blkx' resource type!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to find required 'blkx' resource type!"));
         return FALSE;
     }
 
     for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
-        rsrc_ref_t   *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
+        rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
         blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
-        blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
-
-        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource %3i: %s\n", __debug__, rsrc_ref->id, rsrc_ref->name->str);*/
+        blkx_data_t *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
 
         /* Loop through blocks */
         for (guint n = 0; n < blkx_block->blocks_run_count; n++) {
@@ -492,36 +518,50 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
                 }
             }
 
-            /* Does this block have data? If so then append it. */
-            if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB ||
-                temp_part.type == ZERO || temp_part.type == RAW || temp_part.type == IGNORE)
-            {
-                self->priv->parts[cur_part] = temp_part;
-                cur_part++;
+            /* Update required buffer sizes */
+            switch (temp_part.type) {
+                case ADC:
+                case ZLIB:
+                case BZLIB: {
+                    const guint io_buffer_size = temp_part.in_length;
+                    const guint inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
 
-                /* Update buffer sizes */
-                if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB) {
-                    if (self->priv->io_buffer_size < temp_part.in_length) {
-                        self->priv->io_buffer_size = temp_part.in_length;
-                    }
-                    if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
-                        self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
-                    }
-                } else if (temp_part.type == RAW) {
-                    if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
-                        self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
-                    }
-                } else if (temp_part.type == ZERO || temp_part.type == IGNORE) {
-                    /* Avoid use of buffer for zeros */
-                } else {
+                    self->priv->io_buffer_size = MAX(self->priv->io_buffer_size, io_buffer_size);
+                    self->priv->inflate_buffer_size = MAX(self->priv->inflate_buffer_size, inflate_buffer_size);
+
+                    break;
+                }
+                case RAW: {
+                    /* We are reading RAW data chunks into inflate buffer... */
+                    const guint inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
+                    self->priv->inflate_buffer_size = MAX(self->priv->inflate_buffer_size, inflate_buffer_size);
+                    break;
+                }
+                case ZERO:
+                case IGNORE: {
+                    /* No buffer used */
+                    break;
+                }
+                case COMMENT:
+                case TERM: {
+                     /* Skip */
+                    continue;
+                }
+                default: {
+                    /* Earlier processing in mirage_filter_stream_dmg_read_descriptor()
+                     * has already validated types */
                     g_assert_not_reached();
                 }
             }
+
+            /* Add part to list */
+            self->priv->parts[cur_part] = temp_part;
+            cur_part++;
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u\n", __debug__, self->priv->io_buffer_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u\n", __debug__, self->priv->inflate_buffer_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required I/O buffer size: %u\n", __debug__, self->priv->io_buffer_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required inflate buffer size: %u\n", __debug__, self->priv->inflate_buffer_size);
 
     /* Initialize zlib stream */
     zlib_stream->zalloc = Z_NULL;
@@ -533,6 +573,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     ret = inflateInit2(zlib_stream, 15);
 
     if (ret != Z_OK) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib's inflate! Error: %d\n", __debug__, ret);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
@@ -547,6 +588,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
 
     if (ret != BZ_OK) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize libbz2's decompress! Error: %d\n", __debug__, ret);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize libbz2's decompress (error: %d)!"), ret);
         return FALSE;
     }
@@ -554,6 +596,7 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     /* Allocate inflate buffer */
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for inflate buffer!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for inflate buffer!"));
         return FALSE;
     }
@@ -561,11 +604,12 @@ static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self
     /* Allocate I/O buffer */
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer && self->priv->io_buffer_size) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for I/O buffer!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for I/O buffer!"));
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully generated index\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read part index\n\n", __debug__);
 
     return TRUE;
 }
@@ -578,11 +622,12 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 {
     MirageStream **streams;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening streams\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->koly_block->segment_count);
 
     /* Allocate space for streams */
     self->priv->streams = streams = g_try_new(MirageStream *, self->priv->koly_block->segment_count);
     if (!streams) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for streams!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
@@ -592,31 +637,42 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     self->priv->num_streams++;
 
     const gchar *original_filename = mirage_stream_get_filename(streams[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, original_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, original_filename);
 
     /* Create the rest of the streams */
     for (guint s = 1; s < self->priv->koly_block->segment_count; s++) {
+        MirageStream *stream;
+        GError *local_error = NULL;
         gchar *filename = create_filename_func(original_filename, s);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, filename);
-        streams[s] = mirage_contextual_create_input_stream (MIRAGE_CONTEXTUAL(self), filename, error);
-        if (!streams[s]) {
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
+
+        stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, &local_error);
+        if (!stream) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s\n", __debug__, s, filename, local_error->message);
+            g_error_free(local_error);
+            g_free(filename);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
-        g_free(filename);
+        self->priv->streams[s] = stream;
         self->priv->num_streams++;
+
+        g_free(filename);
     }
 
     /* Allocated space for additional koly blocks */
     self->priv->num_koly_blocks = self->priv->koly_block->segment_count;
     self->priv->koly_block = g_try_renew(koly_block_t, self->priv->koly_block, self->priv->num_koly_blocks);
     if (!self->priv->koly_block) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reallocate memory for koly blocks!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to reallocate memory for koly blocks!"));
         return FALSE;
     }
 
     /* Read the rest of the koly blocks */
     for (guint s = 1; s < self->priv->num_koly_blocks; s++) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading koly block in stream #%d...!\n", __debug__, s);
         for (guint try = 0; try < 2; try++) {
             /* Find koly block either on end (most often) or beginning of file */
             if (try == 0) {
@@ -627,6 +683,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 
             /* Read koly block */
             if (mirage_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read koly block!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to read koly block!"));
                 return FALSE;
             }
@@ -634,6 +691,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
             /* Validate koly block */
             if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
                 if (try == 1) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid koly block!\n", __debug__);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Invalid koly block!"));
                     return FALSE;
                 }
@@ -647,7 +705,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         mirage_filter_stream_dmg_print_koly_block(self, &self->priv->koly_block[s]);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened streams\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened %d streams\n\n", __debug__, self->priv->num_koly_blocks);
 
     return TRUE;
 }
@@ -657,9 +715,6 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
 
     koly_block_t *koly_block = NULL;
-
-    gboolean succeeded = TRUE;
-    gint     ret;
 
     /* Allocate koly block*/
     self->priv->num_koly_blocks = 1;
@@ -702,40 +757,35 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     /* Only perform parsing on the first file in a set */
     if (koly_block->segment_number != 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file is not the first file of a set (has segment_number=%d)!\n", __debug__, koly_block->segment_number);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
         return FALSE;
     }
 
     /* Open streams */
-    ret = mirage_filter_stream_dmg_open_streams(self, error);
-    if (!ret) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to open streams!"));
+    if (!mirage_filter_stream_dmg_open_streams(self, error)) {
         return FALSE;
     }
     /* This have been re-allocated, so update local pointer */
     koly_block = self->priv->koly_block;
 
+    /* Read descriptor */
+    if (!mirage_filter_stream_dmg_read_descriptor(self, stream, error)) {
+        return FALSE;
+    }
+
+    /* Read part index */
+    if (!mirage_filter_stream_dmg_read_part_index(self, error)) {
+        return FALSE;
+    }
+
     /* Set file size */
     mirage_filter_stream_simplified_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
-    /* Read descriptors */
-    succeeded = mirage_filter_stream_dmg_read_descriptor(self, stream, error);
-    if (!succeeded) {
-        goto end;
-    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
-    succeeded = mirage_filter_stream_dmg_read_index (self, error);
-
-end:
-    /* Return result */
-    if (succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
-        return TRUE;
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
-        return FALSE;
-    }
+    return TRUE;
 }
 
 static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *self, guint8 *buffer, gint chunk_num)

@@ -29,7 +29,7 @@ typedef enum
 } ADC_ChunkType;
 
 /* Helper functions */
-static inline ADC_ChunkType adc_chunk_type(guint8 byte)
+static inline ADC_ChunkType adc_chunk_type (guint8 byte)
 {
     ADC_ChunkType chunk_type;
 
@@ -44,7 +44,7 @@ static inline ADC_ChunkType adc_chunk_type(guint8 byte)
     return chunk_type;
 }
 
-static inline guint8 adc_chunk_size(guint8 byte)
+static inline guint8 adc_chunk_size (guint8 byte)
 {
     guint8 chunk_size;
 
@@ -66,7 +66,7 @@ static inline guint8 adc_chunk_size(guint8 byte)
     return chunk_size;
 }
 
-static inline guint16 adc_chunk_offset(guint8 *chunk_start)
+static inline guint16 adc_chunk_offset (const guint8 *chunk_start)
 {
     guint16 chunk_offset;
 
@@ -86,20 +86,21 @@ static inline guint16 adc_chunk_offset(guint8 *chunk_start)
 }
 
 /* Decompression routine */
-gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written)
+gsize adc_decompress (gsize in_size, const guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written)
 {
     gboolean output_full = FALSE;
 
-    guint8 *inp  = input;
+    const guint8 *inp  = input;
     guint8 *outp = output;
 
     ADC_ChunkType chunk_type;
 
-    guint8  chunk_size;
+    guint8 chunk_size;
     guint16 offset;
 
-    if (in_size == 0)
+    if (in_size == 0) {
         return 0;
+    }
 
     while ((gsize)(inp - input) < in_size) {
         chunk_type = adc_chunk_type(*inp);

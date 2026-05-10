@@ -21,4 +21,4 @@
 
 #include <glib.h>
 
-gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written);
+gsize adc_decompress (gsize in_size, const guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written);

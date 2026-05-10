@@ -466,8 +466,8 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
     const koly_block_t *koly_block = &self->priv->koly_blocks[0]; /* First koly block */
-    rsrc_fork_t *rsrc_fork = self->priv->rsrc_fork;
-    rsrc_type_t *rsrc_type = NULL;
+    const rsrc_fork_t *rsrc_fork = self->priv->rsrc_fork;
+    const rsrc_type_t *rsrc_type = NULL;
 
     gint cur_part = 0;
     gint ret;
@@ -493,9 +493,9 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     }
 
     for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
-        rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
-        blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
-        blkx_data_t *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
+        const rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
+        const blkx_block_t *blkx_block = (const blkx_block_t *)rsrc_ref->data;
+        const blkx_data_t *blkx_data  = (const blkx_data_t *)(rsrc_ref->data + sizeof(blkx_block_t));
 
         /* Loop through blocks */
         for (guint n = 0; n < blkx_block->blocks_run_count; n++) {
@@ -878,7 +878,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
 
     /* Find part that corresponds to current position */
     for (guint p = 0; p < self->priv->num_parts; p++) {
-        DMG_Part *cur_part = &self->priv->parts[p];
+        const DMG_Part *cur_part = &self->priv->parts[p];
         guint req_sector = position / DMG_SECTOR_SIZE;
 
         if ((cur_part->first_sector <= req_sector) && (cur_part->first_sector + cur_part->num_sectors >= req_sector)) {
@@ -988,7 +988,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             gsize ret;
 
             /* Read some compressed data */
-            read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            read_bytes = mirage_filter_stream_dmg_read_raw_chunk(self, self->priv->io_buffer, part_idx);
             if ((gsize)read_bytes != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -997,8 +997,8 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Inflate */
             ret = adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * DMG_SECTOR_SIZE, self->priv->inflate_buffer, &written_bytes);
 
-            g_assert (ret == part->in_length);
-            g_assert (written_bytes == part->num_sectors * DMG_SECTOR_SIZE);
+            g_assert(ret == part->in_length);
+            g_assert(written_bytes == part->num_sectors * DMG_SECTOR_SIZE);
         } else {
             /* We should never get here... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);

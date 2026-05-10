@@ -307,7 +307,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
     /* Search resource-fork for NDIF data */
     if (rsrc_fork) {
-        rsrc_ref_t *rsrc_ref = NULL;
+        const rsrc_ref_t *rsrc_ref = NULL;
 
         /* Look up "bcem" resource */
         rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcem", 128);

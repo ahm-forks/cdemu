@@ -43,7 +43,7 @@ typedef struct
 struct _MirageFilterStreamDmgPrivate
 {
     /* koly blocks - one for each segment */
-    koly_block_t *koly_block;
+    koly_block_t *koly_blocks;
     guint num_segments;
 
     /* resource fork */
@@ -51,7 +51,6 @@ struct _MirageFilterStreamDmgPrivate
 
     /* streams */
     MirageStream **streams;
-    guint num_streams;
 
     /* Part list */
     DMG_Part *parts;
@@ -316,7 +315,7 @@ static gchar *create_filename_func (const gchar *main_filename, gint index)
 \**********************************************************************/
 static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg *self, MirageStream *stream, GError **error)
 {
-    koly_block_t *koly_block = self->priv->koly_block;
+    const koly_block_t *koly_block = &self->priv->koly_blocks[0]; /* First koly block */
     rsrc_fork_t  *rsrc_fork = NULL;
     gchar *rsrc_fork_data = NULL;
 
@@ -463,10 +462,10 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
 
 static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg *self, GError **error)
 {
-    z_stream *zlib_stream  = &self->priv->zlib_stream;
+    z_stream *zlib_stream = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
-    koly_block_t *koly_block = self->priv->koly_block;
+    const koly_block_t *koly_block = &self->priv->koly_blocks[0]; /* First koly block */
     rsrc_fork_t *rsrc_fork = self->priv->rsrc_fork;
     rsrc_type_t *rsrc_type = NULL;
 
@@ -620,27 +619,16 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
 \**********************************************************************/
 static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *self, GError **error)
 {
-    MirageStream **streams;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->koly_block->segment_count);
-
-    /* Allocate space for streams */
-    self->priv->streams = streams = g_try_new(MirageStream *, self->priv->koly_block->segment_count);
-    if (!streams) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for streams!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
-        return FALSE;
-    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->num_segments);
 
     /* Fill in existing stream */
-    streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
-    self->priv->num_streams++;
+    self->priv->streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
 
-    const gchar *original_filename = mirage_stream_get_filename(streams[0]);
+    const gchar *original_filename = mirage_stream_get_filename(self->priv->streams[0]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, original_filename);
 
     /* Create the rest of the streams */
-    for (guint s = 1; s < self->priv->koly_block->segment_count; s++) {
+    for (guint s = 1; s < self->priv->num_segments; s++) {
         MirageStream *stream;
         GError *local_error = NULL;
         gchar *filename = create_filename_func(original_filename, s);
@@ -656,53 +644,46 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
             return FALSE;
         }
         self->priv->streams[s] = stream;
-        self->priv->num_streams++;
 
         g_free(filename);
     }
 
-    /* Allocated space for additional koly blocks */
-    self->priv->num_segments = self->priv->koly_block->segment_count;
-    self->priv->koly_block = g_try_renew(koly_block_t, self->priv->koly_block, self->priv->num_segments);
-    if (!self->priv->koly_block) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reallocate memory for koly blocks!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to reallocate memory for koly blocks!"));
-        return FALSE;
-    }
-
     /* Read the rest of the koly blocks */
     for (guint s = 1; s < self->priv->num_segments; s++) {
+        MirageStream *stream = self->priv->streams[s];
+        koly_block_t *koly_block = &self->priv->koly_blocks[s];
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading koly block in stream #%d...!\n", __debug__, s);
         for (guint try = 0; try < 2; try++) {
             /* Find koly block either on end (most often) or beginning of file */
             if (try == 0) {
-                mirage_stream_seek(streams[s], -sizeof(koly_block_t), G_SEEK_END, NULL);
+                mirage_stream_seek(stream, -sizeof(koly_block_t), G_SEEK_END, NULL);
             } else {
-                mirage_stream_seek(streams[s], 0, G_SEEK_SET, NULL);
+                mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
             }
 
             /* Read koly block */
-            if (mirage_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
+            if (mirage_stream_read(stream, koly_block, sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read koly block!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to read koly block!"));
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read koly block!"));
                 return FALSE;
             }
 
             /* Validate koly block */
-            if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
+            if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
                 if (try == 1) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid koly block!\n", __debug__);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Invalid koly block!"));
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid koly block!"));
                     return FALSE;
                 }
             } else {
-                mirage_filter_stream_dmg_koly_block_fix_endian(&self->priv->koly_block[s]);
+                mirage_filter_stream_dmg_koly_block_fix_endian(koly_block);
                 break;
             }
         }
 
         /* Output koly block info */
-        mirage_filter_stream_dmg_print_koly_block(self, &self->priv->koly_block[s]);
+        mirage_filter_stream_dmg_print_koly_block(self, koly_block);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened %d streams\n\n", __debug__, self->priv->num_segments);
@@ -713,16 +694,16 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
-
     koly_block_t *koly_block = NULL;
 
     /* Allocate initial koly block */
     self->priv->num_segments = 1;
-    self->priv->koly_block = koly_block = g_try_new(koly_block_t, self->priv->num_segments);
-    if (!koly_block) {
+    self->priv->koly_blocks = g_try_new(koly_block_t, self->priv->num_segments);
+    if (!self->priv->koly_blocks) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for koly block!"));
         return FALSE;
     }
+    koly_block = &self->priv->koly_blocks[0];
 
     for (guint try = 0; try < 2; try++) {
         /* Find koly block either on end (most often) or beginning of file */
@@ -755,10 +736,40 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     /* Display koly block for debugging purposes */
     mirage_filter_stream_dmg_print_koly_block(self, koly_block);
 
-    /* Only perform parsing on the first file in a set */
-    if (koly_block->segment_number != 1) {
+    /* Only perform parsing on the first file in a segment image.
+     * Note that non-segmented images may have num_segments and
+     * segment_number set either both to 0 or both to 1. */
+    if (koly_block->segment_count > 1 && koly_block->segment_number != 1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file is not the first file of a set (has segment_number=%d)!\n", __debug__, koly_block->segment_number);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
+        return FALSE;
+    }
+
+    /* Determine number of segments */
+    self->priv->num_segments = koly_block->segment_count;
+    if (self->priv->num_segments == 0) {
+        self->priv->num_segments = 1;
+    }
+
+    /* Re-allocate space for additional koly blocks, if necessary */
+    if (self->priv->num_segments > 1) {
+        self->priv->koly_blocks = g_try_renew(koly_block_t, self->priv->koly_blocks, self->priv->num_segments);
+        if (!self->priv->koly_blocks) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reallocate memory for koly blocks!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to reallocate memory for koly blocks!"));
+            return FALSE;
+        }
+        /* Update local pointer to first koly block! */
+        koly_block = &self->priv->koly_blocks[0];
+    }
+
+    /* Allocate space for streams (and make sure to clear the memory,
+     * so that in case of an error, we get NULL pointers for un-initialized
+     * streams). */
+    self->priv->streams = g_try_new0(MirageStream *, self->priv->num_segments);
+    if (!self->priv->streams) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for streams!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
 
@@ -766,8 +777,6 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     if (!mirage_filter_stream_dmg_open_streams(self, error)) {
         return FALSE;
     }
-    /* This have been re-allocated, so update local pointer */
-    koly_block = self->priv->koly_block;
 
     /* Read descriptor */
     if (!mirage_filter_stream_dmg_read_descriptor(self, stream, error)) {
@@ -792,7 +801,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 {
     const DMG_Part *part = &self->priv->parts[chunk_num];
     MirageStream *stream = self->priv->streams[part->segment];
-    koly_block_t *koly_block = &self->priv->koly_block[part->segment];
+    const koly_block_t *koly_block = &self->priv->koly_blocks[part->segment];
 
     gsize to_read = part->in_length;
     gsize have_read = 0;
@@ -824,7 +833,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
         have_read += ret;
         to_read -= ret;
 
-        koly_block = &self->priv->koly_block[part->segment + 1];
+        koly_block = &self->priv->koly_blocks[part->segment + 1];
         stream = self->priv->streams[part->segment + 1];
         part_offs = koly_block->data_fork_offset;
 
@@ -1030,14 +1039,13 @@ static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
         Q_("Apple Disk Image (*.dmg)"), "application/x-apple-diskimage"
     );
 
-    self->priv->koly_block = NULL;
+    self->priv->koly_blocks = NULL;
 
     self->priv->streams = NULL;
 
     self->priv->rsrc_fork = NULL;
 
     self->priv->num_segments = 0;
-    self->priv->num_streams = 0;
 
     self->priv->num_parts = 0;
     self->priv->parts = NULL;
@@ -1051,10 +1059,15 @@ static void mirage_filter_stream_dmg_finalize (GObject *gobject)
 {
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(gobject);
 
-    for (guint s = 0; s < self->priv->num_streams; s++) {
-        g_object_unref(self->priv->streams[s]);
+    if (self->priv->streams) {
+        for (guint s = 0; s < self->priv->num_segments; s++) {
+            MirageStream *stream = self->priv->streams[s];
+            if (stream) {
+                g_object_unref(stream);
+            }
+        }
+        g_free(self->priv->streams);
     }
-    g_free(self->priv->streams);
 
     g_free(self->priv->parts);
     g_free(self->priv->inflate_buffer);
@@ -1063,7 +1076,7 @@ static void mirage_filter_stream_dmg_finalize (GObject *gobject)
     inflateEnd(&self->priv->zlib_stream);
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
 
-    g_free(self->priv->koly_block);
+    g_free(self->priv->koly_blocks);
 
     rsrc_fork_free(self->priv->rsrc_fork);
 

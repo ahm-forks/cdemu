@@ -193,6 +193,14 @@ static inline void mirage_filter_stream_dmg_size_fix_endian (size_block_t *size_
 /**********************************************************************\
  *                         Debug functions                            *
 \**********************************************************************/
+static inline void _dump_checksum_fields (MirageFilterStreamDmg *self, const guint32 *data, const gchar *indent)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08X 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31]);
+}
+
 static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *self, koly_block_t *koly_block)
 {
     g_assert(self && koly_block);
@@ -217,33 +225,17 @@ static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_number: %u\n", __debug__, koly_block->segment_number);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u\n", __debug__, koly_block->segment_count);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id: 0x", __debug__);
-    for (guint i = 0; i < 4; i++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x", koly_block->segment_id[i]);
-    }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id: 0x%08x 0x%08x 0x%08x 0x0%08x\n", __debug__, koly_block->segment_id[0], koly_block->segment_id[1], koly_block->segment_id[2], koly_block->segment_id[3]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.type: %u\n", __debug__, koly_block->data_fork_checksum.type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.size: %u\n", __debug__, koly_block->data_fork_checksum.size);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.data:\n", __debug__);
-    for (guint c = 0; c < 32; c ++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", koly_block->data_fork_checksum.data[c]);
-        if ((c + 1) % 8 == 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-        }
-    }
+    _dump_checksum_fields(self, koly_block->data_fork_checksum.data, " ");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.type: %u\n", __debug__, koly_block->master_checksum.type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.size: %u\n", __debug__, koly_block->master_checksum.size);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.data:\n", __debug__);
-    for (guint c = 0; c < 32; c ++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", koly_block->master_checksum.data[c]);
-        if ((c + 1) % 8 == 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-        }
-    }
+    _dump_checksum_fields(self, koly_block->master_checksum.data, " ");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
@@ -263,15 +255,8 @@ static void mirage_filter_stream_dmg_print_blkx_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_descriptor: %i\n", __debug__, blkx_block->blocks_descriptor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.type: %u\n", __debug__, blkx_block->checksum.type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.size: %u\n", __debug__, blkx_block->checksum.size);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.data:\n", __debug__);
-    for (guint c = 0; c < 32; c ++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", blkx_block->checksum.data[c]);
-        if ((c + 1) % 8 == 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-        }
-    }
-
+    _dump_checksum_fields(self, blkx_block->checksum.data, " ");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_run_count: %u\n", __debug__, blkx_block->blocks_run_count);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }

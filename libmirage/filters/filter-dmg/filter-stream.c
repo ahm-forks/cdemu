@@ -697,14 +697,14 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
+    /* Display koly block for debugging purposes */
+    mirage_filter_stream_dmg_print_koly_block(self, koly_block);
+
     /* Only perform parsing on the first file in a set */
     if (koly_block->segment_number != 1) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
         return FALSE;
     }
-
-    /* Output koly block info */
-    mirage_filter_stream_dmg_print_koly_block(self, koly_block);
 
     /* Open streams */
     ret = mirage_filter_stream_dmg_open_streams(self, error);

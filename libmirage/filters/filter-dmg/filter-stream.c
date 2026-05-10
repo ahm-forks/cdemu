@@ -201,11 +201,10 @@ static inline void _dump_checksum_fields (MirageFilterStreamDmg *self, const gui
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31]);
 }
 
-static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *self, koly_block_t *koly_block)
+static void mirage_filter_stream_dmg_print_koly_block (MirageFilterStreamDmg *self, koly_block_t *koly_block)
 {
     g_assert(self && koly_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DMG trailer:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, koly_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, koly_block->version);
@@ -236,15 +235,12 @@ static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.size: %u\n", __debug__, koly_block->master_checksum.size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.data:\n", __debug__);
     _dump_checksum_fields(self, koly_block->master_checksum.data, " ");
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_filter_stream_dmg_print_blkx_block(MirageFilterStreamDmg *self, blkx_block_t *blkx_block)
+static void mirage_filter_stream_dmg_print_blkx_block (MirageFilterStreamDmg *self, blkx_block_t *blkx_block)
 {
     g_assert(self && blkx_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, blkx_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  info_version: %u\n", __debug__, blkx_block->info_version);
@@ -258,26 +254,22 @@ static void mirage_filter_stream_dmg_print_blkx_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.data:\n", __debug__);
     _dump_checksum_fields(self, blkx_block->checksum.data, " ");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_run_count: %u\n", __debug__, blkx_block->blocks_run_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_filter_stream_dmg_print_csum_block(MirageFilterStreamDmg *self, csum_block_t *csum_block)
+static void mirage_filter_stream_dmg_print_csum_block (MirageFilterStreamDmg *self, csum_block_t *csum_block)
 {
     g_assert(self && csum_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: cSum block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, csum_block->version);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %u\n", __debug__, csum_block->type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data: 0x%08x\n", __debug__, csum_block->data);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_filter_stream_dmg_print_size_block(MirageFilterStreamDmg *self, size_block_t *size_block)
+static void mirage_filter_stream_dmg_print_size_block (MirageFilterStreamDmg *self, size_block_t *size_block)
 {
     g_assert(self && size_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: size block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, size_block->version);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  is_hfs: %u\n", __debug__, size_block->is_hfs);
@@ -289,7 +281,6 @@ static void mirage_filter_stream_dmg_print_size_block(MirageFilterStreamDmg *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: 0x%08x\n", __debug__, size_block->unknown4);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s\n", __debug__, size_block->vol_sig.as_array);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_present: %u\n", __debug__, size_block->size_present);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
 

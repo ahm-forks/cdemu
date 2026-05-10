@@ -36,6 +36,8 @@ typedef struct
     gsize in_length;
 } DMG_Part;
 
+typedef gchar * (*DMG_create_filename_func) (const gchar *main_filename, gint index);
+
 
 /**********************************************************************\
  *                  Object and its private structure                  *
@@ -68,6 +70,9 @@ struct _MirageFilterStreamDmgPrivate
     /* Compression streams */
     z_stream  zlib_stream;
     bz_stream bzip2_stream;
+
+    /* Filename function for multi-segment images */
+    DMG_create_filename_func create_filename_func;
 };
 
 
@@ -286,25 +291,65 @@ static void mirage_filter_stream_dmg_print_size_block (MirageFilterStreamDmg *se
 /**********************************************************************\
  *                     Part filename generation                       *
 \**********************************************************************/
+static gboolean check_filename_suffix (const gchar *filename, const gchar *suffix)
+{
+    const gsize len = strlen(filename);
+    const gsize suffix_len = strlen(suffix);
+
+    /* We require non-empty prefix part */
+    if (len <= suffix_len) {
+        return FALSE;
+    }
+
+    /* Since we are interested in matching only the ASCII suffix,
+     * we can use strncasecmp() */
+    return strncasecmp(filename + (len - suffix_len), suffix, suffix_len) == 0;
+}
+
+/* Format: volname.001.dmg, volname.002.dmg, ... */
+static gchar *create_filename_func_legacy (const gchar *main_filename, gint index)
+{
+    if (!main_filename) {
+        return NULL;
+    }
+
+    gint main_fn_len = strlen(main_filename) - 7; /* volname. (without 001.dmg) */
+    gchar *ret_filename = g_try_malloc(main_fn_len + 7 + 1); /* len + NNN.dmg + \NULL */
+
+    if (!ret_filename) {
+        return NULL;
+    }
+
+    /* Copy base filename without '001.dmg' */
+    memcpy(ret_filename, main_filename, main_fn_len);
+
+    /* Replace three characters with index and append '.dmg' */
+    gchar *position = ret_filename + main_fn_len;
+    g_snprintf(position, 7 + 1, "%03i.dmg", index + 1);
+
+    return ret_filename;
+}
+
+/* Format: volname.dmg, volname.002.dmgpart, ... */
 static gchar *create_filename_func (const gchar *main_filename, gint index)
 {
     if (!main_filename) {
         return NULL;
     }
 
-    gint  main_fn_len = strlen(main_filename) - 7;
-    gchar *ret_filename = g_try_malloc(main_fn_len + 12);
+    gint main_fn_len = strlen(main_filename) - 3; /* volname. (without dmg)*/
+    gchar *ret_filename = g_try_malloc(main_fn_len + 11 + 1); /* len + NNN.dmgpart + \NUL */
 
     if (!ret_filename) {
         return NULL;
     }
 
-    /* Copy base filename without 'NNN.dmg' */
+    /* Copy base filename without '.dmg' */
     memcpy(ret_filename, main_filename, main_fn_len);
 
-    /* Replace three characters with index and append '.dmgpart' */
+    /* Append index and '.dmgpart' */
     gchar *position = ret_filename + main_fn_len;
-    g_snprintf(position, 12, "%03i.dmgpart", index + 1);
+    g_snprintf(position, 11 + 1, "%03i.dmgpart", index + 1);
 
     return ret_filename;
 }
@@ -631,7 +676,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     for (guint s = 1; s < self->priv->num_segments; s++) {
         MirageFileStream *stream;
         GError *local_error = NULL;
-        gchar *filename = create_filename_func(original_filename, s);
+        gchar *filename = self->priv->create_filename_func(original_filename, s);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
 
@@ -743,6 +788,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     /* Display koly block for debugging purposes */
     mirage_filter_stream_dmg_print_koly_block(self, koly_block);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
 
     /* Only perform parsing on the first file in a segment image.
      * Note that non-segmented images may have num_segments and
@@ -757,6 +803,42 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     self->priv->num_segments = koly_block->segment_count;
     if (self->priv->num_segments == 0) {
         self->priv->num_segments = 1;
+    }
+
+    /* In case of multi-segment image, attempt to infer the naming scheme.
+     *
+     * Contemporary versions of `hdiutil` on macOS use the following naming
+     * scheme: volname.dmg, volname.002.dmgpart, volname.003.dmgpart, ...
+     *
+     * Some sources on the internet refer to legacy multi-segment DMG
+     * images with the following naming scheme: volname.001.dmg,
+     * volname.002.dmg, volname.003.dmg, ...
+     *
+     * However, it seems that `hdiutil` does NOT rely on filenames, and
+     * is able to stitch together multi-segment DMG images with arbitrarily
+     * named parts, as long as they are all in the same location. Similarly,
+     * it does not matter which of the parts is passed to it. This likely
+     * means that it reads the `segment_id` in the koly block of the file
+     * it is passed, and then scans the directory for other DMG files with
+     * matching `segment_id` value in their koly block.
+     *
+     * While we could try implementing the same approach, we might run
+     * into problems with encrypted images, in particular when multiple
+     * multi-segment and encrypted images are located in the same directory
+     * (because we would need a password for each of them to be able to
+     * read their koly blocks).
+     *
+     * So for now, require that files adhere to one of the two mentioned
+     * naming schemes. */
+    if (self->priv->num_segments > 1) {
+        const gchar *original_filename = mirage_stream_get_filename(stream);
+        if (check_filename_suffix(original_filename, ".001.dmg")) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.001.dmg, volname.002.dmg, ...\n\n", __debug__);
+            self->priv->create_filename_func = create_filename_func_legacy;
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.dmg, volname.002.dmgpart, ...\n\n", __debug__);
+            self->priv->create_filename_func = create_filename_func;
+        }
     }
 
     /* Re-allocate space for additional koly blocks, if necessary */
@@ -1061,6 +1143,8 @@ static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
     self->priv->cached_part = -1;
     self->priv->inflate_buffer = NULL;
     self->priv->io_buffer = NULL;
+
+    self->priv->create_filename_func = NULL;
 }
 
 static void mirage_filter_stream_dmg_finalize (GObject *gobject)

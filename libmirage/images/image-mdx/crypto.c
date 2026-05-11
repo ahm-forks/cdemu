@@ -200,6 +200,7 @@ static gboolean _mdx_crypto_decipher_encryption_header (
     rc = gcry_cipher_setkey(crypt_handle, master_key + MDX_IV_SIZE, 32);
     if (rc != 0) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to set cipher key! Error code: %d (%X)!", rc, rc);
+        gcry_cipher_close(crypt_handle);
         return FALSE;
     }
 
@@ -221,6 +222,7 @@ static gboolean _mdx_crypto_decipher_encryption_header (
         gpointer gfmul_table = g_new0(gf128mul_64k_table, 1);
         if (!gfmul_table) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize table for GF(2^128) multiplication!");
+            gcry_cipher_close(crypt_handle);
             return FALSE;
         }
         gf128mul_init_64k_table_bbe((guint128_bbe *)master_key, gfmul_table);
@@ -236,13 +238,14 @@ static gboolean _mdx_crypto_decipher_encryption_header (
 
         g_free(gfmul_table);
     }
+
+    gcry_cipher_close(crypt_handle); /* Not needed anymore */
+
     if (!succeeded) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to decipher header data buffer: %s", local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
-
-    gcry_cipher_close(crypt_handle);
 
     /* Fix-up endianness - the data is stored as little-endian */
     header->key_data_checksum = GUINT32_FROM_LE(header->key_data_checksum);

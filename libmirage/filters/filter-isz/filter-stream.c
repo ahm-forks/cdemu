@@ -801,6 +801,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
             password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
             if (password_value) {
                 password = g_variant_dup_string(password_value, NULL);
+                g_variant_unref(password_value);
             } else {
                 /* Get password from user via password function */
                 password = mirage_contextual_obtain_password(MIRAGE_CONTEXTUAL(self), NULL);

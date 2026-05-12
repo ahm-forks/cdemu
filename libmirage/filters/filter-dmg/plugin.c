@@ -18,6 +18,7 @@
  */
 
 #include "filter-dmg.h"
+#include "filter-encrcdsa.h"
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin);
@@ -28,6 +29,7 @@ G_MODULE_EXPORT guint mirage_plugin_soversion_minor = MIRAGE_SOVERSION_MINOR;
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin)
 {
     mirage_filter_stream_dmg_type_register(G_TYPE_MODULE(plugin));
+    mirage_filter_stream_encrcdsa_type_register(G_TYPE_MODULE(plugin));
 }
 
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin G_GNUC_UNUSED)

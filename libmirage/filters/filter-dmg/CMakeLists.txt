@@ -6,6 +6,7 @@ project(${filter_name} LANGUAGES C)
 # Dependencies
 find_package(ZLIB 1.2.4 QUIET)
 find_package(BZip2 1.0.0 QUIET)
+pkg_check_modules(LIBGCRYPT libgcrypt IMPORTED_TARGET)
 
 # Build
 if(ZLIB_FOUND AND BZIP2_FOUND)
@@ -13,12 +14,18 @@ if(ZLIB_FOUND AND BZIP2_FOUND)
     add_library(${filter_name} MODULE
         adc.c
         filter-stream.c
+        filter-stream-encrcdsa.c
         plugin.c
         resource-fork.c
     )
     target_link_libraries(${filter_name} PRIVATE mirage)
     target_link_libraries(${filter_name} PRIVATE BZip2::BZip2)
     target_link_libraries(${filter_name} PRIVATE ZLIB::ZLIB)
+
+    if(LIBGCRYPT_FOUND)
+        target_link_libraries(${filter_name} PRIVATE PkgConfig::LIBGCRYPT)
+        target_compile_definitions(${filter_name} PRIVATE HAVE_LIBGCRYPT)
+    endif()
 
     # Disable library prefix
     set_target_properties(${filter_name} PROPERTIES PREFIX "")

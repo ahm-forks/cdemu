@@ -231,10 +231,9 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_algorithm (0x%X)!\n", __debug__, key_header->kdf_algorithm);
     } else if (key_header->kdf_prf != CSSM_PKCS5_PBKDF2_PRF_HMAC_SHA1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_prf (0x%X)!\n", __debug__, key_header->kdf_prf);
-    } else if (key_header->blob_enc_key_bits > 32 * 8) {
-        /* This one is tied to size of statically-allocated derived_key[] buffer that we use... */
+    } else if (key_header->blob_enc_key_bits != 192) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_key_bits (%u)!\n", __debug__, key_header->blob_enc_key_bits);
-    } else if (key_header->blob_enc_algorithm != CSSM_ALGID_3DES_3KEY_EDE) {
+    } else if (key_header->blob_enc_algorithm != CSSM_ALGID_3DES_3KEY_EDE && key_header->blob_enc_algorithm != CSSM_ALGID_AES) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_algorithm (0x%X)!\n", __debug__, key_header->blob_enc_algorithm);
     } else if (key_header->blob_enc_padding != CSSM_PADDING_PKCS7) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_padding (0x%X)!\n", __debug__, key_header->blob_enc_padding);
@@ -305,6 +304,7 @@ static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (Mir
     guint8 derived_key[32]; /* must accommodate (key_header->blob_enc_key_bits / 8) bytes */
     gcry_cipher_hd_t crypt_handle;
     gcry_error_t rc;
+    const gboolean use_3des = key_header->blob_enc_algorithm == CSSM_ALGID_3DES_3KEY_EDE; /* vs. CSSM_ALGID_AES */
 
     /* Derive the key using PKCS#5 PBKDF2 with HMAC-SHA1 as hashling algorithm */
     rc = gcry_kdf_derive(
@@ -337,14 +337,15 @@ static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (Mir
     }
 
     /* Decrypt key blob */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypting key blob using %s...\n", __debug__, use_3des ? "3DES" : "AES192");
     rc = gcry_cipher_open(
         &crypt_handle,
-        GCRY_CIPHER_3DES,
+        use_3des ? GCRY_CIPHER_3DES : GCRY_CIPHER_AES192, /* blob_enc_key_bits = 192 */
         GCRY_CIPHER_MODE_CBC,
         0
     );
     if (rc != 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize 3DES cipher! Error code: %d (%X)!", __debug__, rc, rc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize %s cipher! Error code: %d (%X)!", __debug__,  use_3des ? "3DES" : "AES192", rc, rc);
         return FALSE;
     }
 
@@ -355,7 +356,7 @@ static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (Mir
         return FALSE;
     }
 
-    rc = gcry_cipher_setiv(crypt_handle, key_header->blob_enc_iv, key_header->blob_enc_iv_len);
+    rc = gcry_cipher_setiv(crypt_handle, key_header->blob_enc_iv, use_3des ? key_header->blob_enc_iv_len : 16); /* blob_enc_iv_len = 8, but AES requires 16 */
     if (rc != 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set IV! Error code: %d (%X)!", __debug__, rc, rc);
         gcry_cipher_close(crypt_handle);

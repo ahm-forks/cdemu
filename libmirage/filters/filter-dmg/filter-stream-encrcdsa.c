@@ -554,8 +554,8 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     }
 
     /* At this point, we require password */
-    GVariant *password_value;
-    gchar *password;
+    GVariant *password_value = NULL;
+    gchar *password = NULL;
 
     password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
     if (password_value) {
@@ -580,8 +580,6 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
         return FALSE;
     }
 
-    g_free(password);
-
     /* Dump decrypted key blob */
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         GString *key_data_dump = dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
@@ -593,6 +591,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
      * failed due to incorrect password. */
     if (!_remove_pkcs7_padding(self->priv->key_data, &self->priv->key_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to remove PKCS#7 padding!\n", __debug__);
+        g_free(password);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Failed to decrypt image key! Incorrect password?"));
         return FALSE;
     }
@@ -601,6 +600,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
      * failed due to incorrect password. */
     if (!_check_for_ckie_suffix(self->priv->key_data, self->priv->key_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob does not end with CKIE suffix!\n", __debug__);
+        g_free(password);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Failed to decrypt image key! Incorrect password?"));
         return FALSE;
     }
@@ -611,6 +611,29 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image key (%" G_GSIZE_MODIFIER "u): %s\n", __debug__, self->priv->key_length, key_data_dump->str);
         g_string_free(key_data_dump, TRUE);
     }
+
+    /* If we successfully decrypted key blob with provided password, and
+     * password was retrieved interactively through password function
+     * (i.e., not from context options), store it in the context options.
+     * This is done on the off-chance that we are dealing with segmented
+     * encrypted image, and will require password for subsequent segments
+     * as well.
+     *
+     * Strictly speaking, each segment can be encrypted with its own
+     * password, so prompting the user to enter password for each
+     * segment would be the right thing to do. However, that does not
+     * work in scenarios where interactive password prompt via password
+     * function is unavailable, and we need to rely on the single password
+     * that is supplied in advance through context settings. */
+    if (!password_value) {
+        MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+        if (context) {
+            password_value = g_variant_new("s", password); /* floating reference */
+            mirage_context_set_option(context, "password", password_value); /* takes the reference on password_value */
+            g_object_unref(context);
+        }
+    }
+    g_free(password);
 
     /* Sanity check */
     const guint aes_key_size = header->key_bits / 8;

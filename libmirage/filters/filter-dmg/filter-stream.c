@@ -18,6 +18,7 @@
  */
 
 #include "filter-dmg.h"
+#include "filter-encrcdsa.h"
 
 #define __debug__ "DMG-FilterStream"
 
@@ -674,7 +675,8 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 
     /* Create the rest of the streams */
     for (guint s = 1; s < self->priv->num_segments; s++) {
-        MirageFileStream *stream;
+        MirageStream *stream;
+        MirageContext *context;
         GError *local_error = NULL;
         gchar *filename = self->priv->create_filename_func(original_filename, s);
 
@@ -688,7 +690,15 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
          * from MIRAGE_ERROR_STREAM_ERROR to MIRAGE_ERROR_CANNOT_HANDLE,
          * that would effectively result in creation of a MirageFileStream. */
         stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
-        if (!mirage_file_stream_open(stream, filename, FALSE, &local_error)) {
+
+        /* Propagate context; for debugging */
+        context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+        if (context) {
+            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(stream), context);
+            g_object_unref(context);
+        }
+
+        if (!mirage_file_stream_open(MIRAGE_FILE_STREAM(stream), filename, FALSE, &local_error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s\n", __debug__, s, filename, local_error->message);
             g_error_free(local_error);
             g_object_unref(stream);
@@ -696,9 +706,39 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
             return FALSE;
         }
-        self->priv->streams[s] = MIRAGE_STREAM(stream);
 
         g_free(filename);
+
+        /* If the first stream is an instance of EncrCDSA stream, the image
+         * is encrypted; in that case, we also need to create EncrCDSA stream
+         * for each segment. */
+        if (MIRAGE_IS_FILTER_STREAM_ENCRCDSA(self->priv->streams[0])) {
+            MirageStream *orig_stream = stream;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create EncrCDSA stream on top of stream #%d...\n", __debug__, s);
+
+            stream = g_object_new(MIRAGE_TYPE_FILTER_STREAM_ENCRCDSA, NULL);
+
+            /* Propagate context; for debugging and password settings */
+            context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+            if (context) {
+                mirage_contextual_set_context(MIRAGE_CONTEXTUAL(stream), context);
+                g_object_unref(context);
+            }
+
+            if (!mirage_filter_stream_open(MIRAGE_FILTER_STREAM(stream), orig_stream, FALSE, &local_error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create EncrCDSA stream on top of stream #%d: %s\n", __debug__, s, local_error->message);
+                g_error_free(local_error);
+                g_object_unref(stream);
+                g_object_unref(orig_stream);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to create stream!"));
+                return FALSE;
+            }
+
+            g_object_unref(orig_stream); /* Now owned by EncrCDSA stream */
+        }
+
+        self->priv->streams[s] = stream;
     }
 
     /* Read the rest of the koly blocks */

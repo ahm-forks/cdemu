@@ -102,7 +102,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
      * in the plugin, we want the loading to fail immediately */
     self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LOCAL);
     if (!self->priv->library) {
-        g_warning("%s: plugin %s\n", __func__, g_module_error());
+        g_warning("%s: plugin %s: %s\n", __func__, self->priv->filename, g_module_error());
         return FALSE;
     }
 

@@ -6,7 +6,6 @@ project(${filter_name} LANGUAGES C)
 # Dependencies
 find_package(ZLIB 1.2.4 QUIET)
 find_package(BZip2 1.0.0 QUIET)
-pkg_check_modules(LIBGCRYPT libgcrypt IMPORTED_TARGET)
 
 # Build
 if(ZLIB_FOUND AND BZIP2_FOUND)
@@ -22,9 +21,9 @@ if(ZLIB_FOUND AND BZIP2_FOUND)
     target_link_libraries(${filter_name} PRIVATE BZip2::BZip2)
     target_link_libraries(${filter_name} PRIVATE ZLIB::ZLIB)
 
-    if(LIBGCRYPT_FOUND)
+    # NOTE: availability of libgcrypt is checked by base libMirage project.
+    if(LIBGCRYPT_ENABLED AND LIBGCRYPT_FOUND)
         target_link_libraries(${filter_name} PRIVATE PkgConfig::LIBGCRYPT)
-        target_compile_definitions(${filter_name} PRIVATE HAVE_LIBGCRYPT)
     endif()
 
     # Disable library prefix

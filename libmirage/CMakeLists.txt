@@ -29,6 +29,7 @@ option(INTROSPECTION_ENABLED "Generate gobject introspection files" ON)
 option(VAPI_ENABLED "Generate the Vala API file" ON)
 option(POST_INSTALL_HOOKS "Run post-install hooks" ON)
 option(PEDANTIC_MODE "Enable -pedantic flag on gcc compiler" OFF)
+option(LIBGCRYPT_ENABLED "Enable libgcrypt to support AES-encrypted images" ON)
 
 # Plugin directory
 set(MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}" CACHE PATH "Path to libMirage plugin directory." FORCE)
@@ -86,6 +87,17 @@ if(POST_INSTALL_HOOKS)
     mark_as_advanced(UPDATE_MIME_DATABASE_EXECUTABLE)
 endif()
 
+if(LIBGCRYPT_ENABLED)
+    pkg_check_modules(LIBGCRYPT libgcrypt IMPORTED_TARGET)
+    if(LIBGCRYPT_FOUND)
+        set(LIBGCRYPT_STATUS "ON")
+        set(MIRAGE_HAVE_LIBGCRYPT 1)  # for config.h
+    else()
+        set(LIBGCRYPT_STATUS "OFF (not found)")
+    endif()
+else()
+    set(LIBGCRYPT_STATUS "OFF (disabled)")
+endif()
 
 # Auto-generated files
 configure_file(${PROJECT_SOURCE_DIR}/mirage/config.h.in ${PROJECT_BINARY_DIR}/mirage/config.h)
@@ -167,6 +179,10 @@ target_include_directories(mirage PUBLIC
     $<INSTALL_INTERFACE:include/libmirage-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}>)
 
 target_link_libraries(mirage PUBLIC PkgConfig::GLIB)
+
+if(LIBGCRYPT_ENABLED AND LIBGCRYPT_FOUND)
+    target_link_libraries(mirage PRIVATE PkgConfig::LIBGCRYPT)
+endif()
 
 set_target_properties(mirage PROPERTIES
     LIBRARY_OUTPUT_NAME mirage
@@ -292,6 +308,7 @@ message(STATUS " enabled: ${IMAGE_FORMATS_ENABLED}")
 message(STATUS " disabled: ${IMAGE_FORMATS_DISABLED}")
 message(STATUS "Options:")
 message(STATUS " pedantic mode: " ${PEDANTIC_MODE})
+message(STATUS " build with libgcrypt support: " ${LIBGCRYPT_STATUS})
 message(STATUS " build gtk-doc documentation: " ${GTKDOC_STATUS})
 message(STATUS " build gobject-introspection bindings: " ${INTROSPECTION_STATUS})
 message(STATUS " build Vala bindings: " ${VAPI_STATUS})

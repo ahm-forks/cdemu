@@ -41,6 +41,10 @@
 
 #include <glib/gi18n-lib.h>
 
+#if MIRAGE_HAVE_LIBGCRYPT
+#include <gcrypt.h>
+#endif
+
 
 static struct
 {
@@ -138,6 +142,21 @@ gboolean mirage_initialize (GError **error)
     if (libmirage.initialized) {
         return TRUE;
     }
+
+    /* If built with libgcrypt support, ensure that the library is
+     * initialized. This way, it should be ready for plugins to use. */
+#if MIRAGE_HAVE_LIBGCRYPT
+    if (!gcry_control(GCRYCTL_INITIALIZATION_FINISHED_P)) {
+        const gchar *required_libgcrypt_version = "1.2.0"; /* All versions after v1.2 should be API/ABI compatible */
+        if (!gcry_check_version(required_libgcrypt_version)) {
+            const gchar *libgcrypt_version = gcry_check_version(NULL);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Installed version of libgcrypt (%s) does not satisfy minimum requirement (%s)!"), libgcrypt_version, required_libgcrypt_version);
+            return FALSE;
+        }
+        gcry_control(GCRYCTL_DISABLE_SECMEM, 0);
+        gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
+    }
+#endif
 
     /* *** I18n support *** */
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR);

@@ -22,7 +22,11 @@
 
 #include "filter-encrcdsa.h"
 
-#if defined(HAVE_LIBGCRYPT)
+#if !defined(MIRAGE_HAVE_LIBGCRYPT)
+#error MIRAGE_HAVE_LIBGCRYPT is not defined!
+#endif
+
+#if MIRAGE_HAVE_LIBGCRYPT
 #include <gcrypt.h>
 #endif
 
@@ -47,7 +51,7 @@ struct _MirageFilterStreamEncrCdsaPrivate
     gsize key_length;
 
     /* Decryption */
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     gcry_cipher_hd_t crypt_handle;
     gcry_mac_hd_t hmac_handle;
 
@@ -268,33 +272,7 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
 }
 
 /* These functions are applicable only if we have libgcrypt */
-#if defined(HAVE_LIBGCRYPT)
-
-static gboolean mirage_filter_stream_encrcdsa_ensure_libgcrypt_initialized (MirageFilterStreamEncrCdsa *self G_GNUC_UNUSED, GError **error)
-{
-    const gchar *required_libgcrypt_version = "1.2.0"; /* All versions after v1.2 should be API/ABI compatible */
-
-    if (!gcry_control(GCRYCTL_INITIALIZATION_FINISHED_P)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: libgcrypt is not yet initialized. Initializing...\n", __debug__);
-
-        if (!gcry_check_version(required_libgcrypt_version)) {
-            const gchar *libgcrypt_version = gcry_check_version(NULL);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: installed version of libgcrypt (%s) does not satisfy minimum requirement (%s)!\n", __debug__, libgcrypt_version, required_libgcrypt_version);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Installed version of libgcrypt (%s) does not satisfy minimum requirement (%s)!"), libgcrypt_version, required_libgcrypt_version);
-            return FALSE;
-        }
-
-        gcry_control(GCRYCTL_SUSPEND_SECMEM_WARN);
-        gcry_control(GCRYCTL_INIT_SECMEM, 16384, 0);
-        gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
-
-        gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: libgcrypt is already initialized.\n", __debug__);
-    }
-
-    return TRUE;
-}
+#if MIRAGE_HAVE_LIBGCRYPT
 
 static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (MirageFilterStreamEncrCdsa *self, const gchar *password)
 {
@@ -459,7 +437,7 @@ static gboolean mirage_filter_stream_encrcdsa_initialize_crypto_handles (MirageF
     return TRUE;
 }
 
-#endif /* defined(HAVE_LIBGCRYPT) */
+#endif /* MIRAGE_HAVE_LIBGCRYPT */
 
 
 /**********************************************************************\
@@ -544,16 +522,11 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     }
 
     /* From this point on, we need libgcrypt... */
-#if !defined(HAVE_LIBGCRYPT)
+#if !MIRAGE_HAVE_LIBGCRYPT
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Support for image decryption is missing!"));
     return FALSE;
 #else
-    /* Ensure libgcrypt is initialized */
-    if (!mirage_filter_stream_encrcdsa_ensure_libgcrypt_initialized(self, error)) {
-        return FALSE;
-    }
-
-    /* At this point, we require password */
+    /* ... as well as user-supplied password. */
     GVariant *password_value = NULL;
     gchar *password = NULL;
 
@@ -660,7 +633,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
 #endif
 }
 
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
 
 static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
@@ -796,7 +769,7 @@ static void mirage_filter_stream_encrcdsa_init (MirageFilterStreamEncrCdsa *self
 
     self->priv->key_length = 0;
 
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     self->priv->hmac_handle = NULL;
     self->priv->crypt_handle = NULL;
 
@@ -821,7 +794,7 @@ static void mirage_filter_stream_encrcdsa_finalize (GObject *gobject)
 {
     MirageFilterStreamEncrCdsa *self = MIRAGE_FILTER_STREAM_ENCRCDSA(gobject);
 
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     if (self->priv->hmac_handle) {
         gcry_mac_close(self->priv->hmac_handle);
         self->priv->hmac_handle = NULL;

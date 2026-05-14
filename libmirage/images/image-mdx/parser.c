@@ -1278,27 +1278,6 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
     /* Fix endianness on multi-byte fields */
     mdx_header.encryption_header_offset = GUINT32_FROM_LE(mdx_header.encryption_header_offset);
 
-    /* Ensure that libgcrypt is initialized - from this point on, we will need it! */
-    const gchar *required_libgcrypt_version = "1.2.0"; /* All versions after v1.2 should be API/ABI compatible */
-    if (!gcry_control(GCRYCTL_INITIALIZATION_FINISHED_P)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: libgcrypt is not yet initialized. Initializing...\n", __debug__);
-
-        if (!gcry_check_version(required_libgcrypt_version)) {
-            const gchar *libgcrypt_version = gcry_check_version(NULL);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: installed version of libgcrypt (%s) does not satisfy minimum requirement (%s)!\n", __debug__, libgcrypt_version, required_libgcrypt_version);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Installed version of libgcrypt (%s) does not satisfy minimum requirement (%s)!"), libgcrypt_version, required_libgcrypt_version);
-            return FALSE;
-        }
-
-        gcry_control(GCRYCTL_SUSPEND_SECMEM_WARN);
-        gcry_control(GCRYCTL_INIT_SECMEM, 16384, 0);
-        gcry_control(GCRYCTL_RESUME_SECMEM_WARN);
-
-        gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: libgcrypt is already initialized.\n", __debug__);
-    }
-
     /* Get descriptor data */
     if (!mirage_parser_mdx_read_descriptor(self, &mdx_header, &self->priv->descriptor_data, &self->priv->descriptor_size, error)) {
         return FALSE;

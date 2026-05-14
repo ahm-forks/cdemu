@@ -19,7 +19,11 @@
 
 #include "filter-isz.h"
 
-#if defined(HAVE_LIBGCRYPT)
+#if !defined(MIRAGE_HAVE_LIBGCRYPT)
+#error MIRAGE_HAVE_LIBGCRYPT is not defined!
+#endif
+
+#if MIRAGE_HAVE_LIBGCRYPT
 #include <gcrypt.h>
 #endif
 
@@ -64,7 +68,7 @@ struct _MirageFilterStreamIszPrivate
     bz_stream bzip2_stream;
 
     /* Decryption */
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     gcry_cipher_hd_t crypt_handle;
 #endif
 };
@@ -131,7 +135,7 @@ static inline void mirage_filter_stream_isz_deobfuscate (guint8 *data, gint leng
 /**********************************************************************\
  *                          Data decryption                           *
 \**********************************************************************/
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
 
 static gboolean mirage_filter_stream_isz_initialize_decryption (MirageFilterStreamIsz *self, const gchar *password, int mode, GError **error)
 {
@@ -192,7 +196,7 @@ static gboolean mirage_filter_stream_isz_initialize_decryption (MirageFilterStre
 
 static gint mirage_filter_stream_isz_decrypt_data_block (MirageFilterStreamIsz *self, guint8 *data, gsize length)
 {
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     if (self->priv->crypt_handle) {
         /* NOTE: unaligned part of buffer is left un-encrypted */
         gpg_error_t rc = gcry_cipher_decrypt(self->priv->crypt_handle, data, length & ~15, NULL, 0);
@@ -792,7 +796,7 @@ static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, Mirage
         case AES128:
         case AES192:
         case AES256: {
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
             GVariant *password_value;
             gchar *password;
             GError *local_error = NULL;
@@ -1109,7 +1113,7 @@ static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
     self->priv->inflate_buffer = NULL;
     self->priv->io_buffer = NULL;
 
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     self->priv->crypt_handle = NULL;
 #endif
 }
@@ -1136,7 +1140,7 @@ static void mirage_filter_stream_isz_finalize (GObject *gobject)
     inflateEnd(&self->priv->zlib_stream);
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
 
-#if defined(HAVE_LIBGCRYPT)
+#if MIRAGE_HAVE_LIBGCRYPT
     if (self->priv->crypt_handle) {
         gcry_cipher_close(self->priv->crypt_handle);
         self->priv->crypt_handle = NULL;

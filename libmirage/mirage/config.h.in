@@ -22,3 +22,6 @@
 #define MIRAGE_PLUGIN_DIR "@MIRAGE_PLUGIN_DIR@"
 #define GETTEXT_PACKAGE "@PROJECT_NAME@"
 #define LOCALEDIR "@CMAKE_INSTALL_FULL_DATADIR@/locale"
+
+/* Whether libMirage was built with libgcrypt support or not */
+#cmakedefine01 MIRAGE_HAVE_LIBGCRYPT

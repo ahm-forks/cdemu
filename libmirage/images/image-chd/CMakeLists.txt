@@ -4,7 +4,7 @@ set(image_name "image-${image_short}")
 project(${image_name} LANGUAGES C)
 
 # Depdendencies
-pkg_check_modules(LIBCHDR libchdr IMPORTED_TARGET)
+pkg_check_modules(LIBCHDR libchdr>=0.3.0 IMPORTED_TARGET)
 
 # Build
 if(LIBCHDR_FOUND)

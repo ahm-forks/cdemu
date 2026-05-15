@@ -369,7 +369,7 @@ gboolean mirage_fragment_mdx_setup (
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: allocating zlib input buffer: %d bytes\n", __debug__, max_zlib_size);
             self->priv->zlib_buffer = g_malloc0(max_zlib_size);
             if (!self->priv->zlib_buffer) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate zlib input buffer (%d) bytes!", max_zlib_size);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate zlib input buffer (%d bytes)!", max_zlib_size);
                 return FALSE;
             }
         }

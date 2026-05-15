@@ -60,32 +60,32 @@ static const char *_chd_error_str (chd_error error_code)
     switch (error_code) {
         _CASE(CHDERR_NONE)
         _CASE(CHDERR_NO_INTERFACE)
-		_CASE(CHDERR_OUT_OF_MEMORY)
-		_CASE(CHDERR_INVALID_FILE)
-		_CASE(CHDERR_INVALID_PARAMETER)
-		_CASE(CHDERR_INVALID_DATA)
-		_CASE(CHDERR_FILE_NOT_FOUND)
-		_CASE(CHDERR_REQUIRES_PARENT)
-		_CASE(CHDERR_FILE_NOT_WRITEABLE)
-		_CASE(CHDERR_READ_ERROR)
-		_CASE(CHDERR_WRITE_ERROR)
-		_CASE(CHDERR_CODEC_ERROR)
-		_CASE(CHDERR_INVALID_PARENT)
-		_CASE(CHDERR_HUNK_OUT_OF_RANGE)
-		_CASE(CHDERR_DECOMPRESSION_ERROR)
-		_CASE(CHDERR_COMPRESSION_ERROR)
-		_CASE(CHDERR_CANT_CREATE_FILE)
-		_CASE(CHDERR_CANT_VERIFY)
-		_CASE(CHDERR_NOT_SUPPORTED)
-		_CASE(CHDERR_METADATA_NOT_FOUND)
-		_CASE(CHDERR_INVALID_METADATA_SIZE)
-		_CASE(CHDERR_UNSUPPORTED_VERSION)
-		_CASE(CHDERR_VERIFY_INCOMPLETE)
-		_CASE(CHDERR_INVALID_METADATA)
-		_CASE(CHDERR_INVALID_STATE)
-		_CASE(CHDERR_OPERATION_PENDING)
-		_CASE(CHDERR_NO_ASYNC_OPERATION)
-		_CASE(CHDERR_UNSUPPORTED_FORMAT)
+        _CASE(CHDERR_OUT_OF_MEMORY)
+        _CASE(CHDERR_INVALID_FILE)
+        _CASE(CHDERR_INVALID_PARAMETER)
+        _CASE(CHDERR_INVALID_DATA)
+        _CASE(CHDERR_FILE_NOT_FOUND)
+        _CASE(CHDERR_REQUIRES_PARENT)
+        _CASE(CHDERR_FILE_NOT_WRITEABLE)
+        _CASE(CHDERR_READ_ERROR)
+        _CASE(CHDERR_WRITE_ERROR)
+        _CASE(CHDERR_CODEC_ERROR)
+        _CASE(CHDERR_INVALID_PARENT)
+        _CASE(CHDERR_HUNK_OUT_OF_RANGE)
+        _CASE(CHDERR_DECOMPRESSION_ERROR)
+        _CASE(CHDERR_COMPRESSION_ERROR)
+        _CASE(CHDERR_CANT_CREATE_FILE)
+        _CASE(CHDERR_CANT_VERIFY)
+        _CASE(CHDERR_NOT_SUPPORTED)
+        _CASE(CHDERR_METADATA_NOT_FOUND)
+        _CASE(CHDERR_INVALID_METADATA_SIZE)
+        _CASE(CHDERR_UNSUPPORTED_VERSION)
+        _CASE(CHDERR_VERIFY_INCOMPLETE)
+        _CASE(CHDERR_INVALID_METADATA)
+        _CASE(CHDERR_INVALID_STATE)
+        _CASE(CHDERR_OPERATION_PENDING)
+        _CASE(CHDERR_NO_ASYNC_OPERATION)
+        _CASE(CHDERR_UNSUPPORTED_FORMAT)
         default: {
             return "<unknown>";
         }
@@ -94,24 +94,38 @@ static const char *_chd_error_str (chd_error error_code)
     #undef _CASE
 }
 
-static const char *chd_codec_str (uint32_t codec)
+static const char *_chd_tag_str (uint32_t tag)
 {
     #define _CASE(x) \
         case x: { \
             return #x; \
         }
 
-    switch (codec) {
+    switch (tag) {
+        /* Compression type tags */
         _CASE(CHD_CODEC_NONE)
         _CASE(CHD_CODEC_ZLIB)
-		_CASE(CHD_CODEC_LZMA)
-		_CASE(CHD_CODEC_HUFFMAN)
-		_CASE(CHD_CODEC_FLAC)
-		_CASE(CHD_CODEC_ZSTD)
-		_CASE(CHD_CODEC_CD_ZLIB)
-		_CASE(CHD_CODEC_CD_LZMA)
-		_CASE(CHD_CODEC_CD_FLAC)
-		_CASE(CHD_CODEC_CD_ZSTD)
+        _CASE(CHD_CODEC_LZMA)
+        _CASE(CHD_CODEC_HUFFMAN)
+        _CASE(CHD_CODEC_FLAC)
+        _CASE(CHD_CODEC_ZSTD)
+        _CASE(CHD_CODEC_CD_ZLIB)
+        _CASE(CHD_CODEC_CD_LZMA)
+        _CASE(CHD_CODEC_CD_FLAC)
+        _CASE(CHD_CODEC_CD_ZSTD)
+        /* Metadata tags */
+        _CASE(HARD_DISK_METADATA_TAG)
+        _CASE(HARD_DISK_IDENT_METADATA_TAG)
+        _CASE(HARD_DISK_KEY_METADATA_TAG)
+        _CASE(PCMCIA_CIS_METADATA_TAG)
+        _CASE(CDROM_OLD_METADATA_TAG)
+        _CASE(CDROM_TRACK_METADATA_TAG)
+        _CASE(CDROM_TRACK_METADATA2_TAG)
+        _CASE(GDROM_OLD_METADATA_TAG)
+        _CASE(GDROM_TRACK_METADATA_TAG)
+        _CASE(AV_METADATA_TAG)
+        _CASE(AV_LD_METADATA_TAG)
+        _CASE(DVD_METADATA_TAG)
         default: {
             return "<unknown>";
         }
@@ -229,6 +243,9 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     chd_file *chd = NULL;
     chd_error status;
 
+    gchar metadata_buffer[256];
+    guint32 metadata_tag = 0;
+
     /* Try to open */
     status = chd_open_core_file_callbacks(
         &_chd_file_adapter,
@@ -241,7 +258,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     if (status != CHDERR_NONE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: chd_open() failed with error code %d (%s)\n", __debug__, status, _chd_error_str(status));
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: chd_open() failed with error code %d (%s)!"), status, _chd_error_str(status));
-        return FALSE;
+        return NULL;
     }
 
     /* Grab header */
@@ -253,10 +270,10 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, header->version);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: %u (0x%X)\n", __debug__, header->flags, header->flags);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  compression:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, chd_codec_str(header->compression[0]), header->compression[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, chd_codec_str(header->compression[1]), header->compression[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, chd_codec_str(header->compression[2]), header->compression[2]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, chd_codec_str(header->compression[3]), header->compression[3]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[0]), header->compression[0]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[1]), header->compression[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[2]), header->compression[2]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[3]), header->compression[3]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  hunkbytes: %u\n", __debug__, header->hunkbytes);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  totalhunks: %u\n", __debug__, header->totalhunks);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  logicalbytes: %" G_GINT64_MODIFIER "u\n", __debug__, header->logicalbytes);
@@ -268,9 +285,61 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mapentrybytes: %u\n", __debug__, header->mapentrybytes);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rawmap: %p\n", __debug__, header->rawmap);
 
-    /* TODO */
+    /* Determine what kind of CD-ROM metadata is available, if any */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD metadata entries:\n", __debug__);
+    for (guint i = 0;; i++) {
+        uint32_t resultlen;
+        uint32_t resulttag;
+        uint8_t resultflags;
+
+        memset(metadata_buffer, 0, sizeof(metadata_buffer));
+        status = chd_get_metadata(chd, CHDMETATAG_WILDCARD, i, metadata_buffer, sizeof(metadata_buffer), &resultlen, &resulttag, &resultflags);
+        if (status == CHDERR_METADATA_NOT_FOUND) {
+            break;
+        } else if (status != CHDERR_NONE) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read metadata entry #%u: %s (%d)\n", __debug__, i, _chd_error_str(status), status);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
+            goto end;
+        }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%u: %s (0x%X), %d bytes, flags: 0x%X\n", __debug__, i, _chd_tag_str(resulttag), resulttag, resultlen, resultflags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, metadata_buffer);
+
+        /* It is probably safe to assume that different metadata tags
+         * are not mixed within the same image. */
+        switch (resulttag) {
+            case CDROM_OLD_METADATA_TAG:
+            case CDROM_TRACK_METADATA_TAG:
+            case CDROM_TRACK_METADATA2_TAG:
+            case DVD_METADATA_TAG: {
+                /* Ensure the metadata buffer is large enough */
+                if (resultlen >= sizeof(metadata_buffer)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: metadata buffer is too small - %u bytes required, %" G_GSIZE_MODIFIER "u bytes available!\n", __debug__, resultlen, sizeof(metadata_buffer));
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
+                    goto end;
+                }
+
+                metadata_tag = resulttag;
+                break;
+            }
+        }
+    }
+
+    if (metadata_tag == 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no CD-ROM / DVD-ROM metadata entries found!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
+        goto end;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: using metadata tag: %s (0x%X)\n", __debug__, _chd_tag_str(metadata_tag), metadata_tag);
+
+    /* Parse the metadata and reconstruct tracks: TODO */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Not yet implemented!"));
-    return NULL;
+
+end:
+    chd_close(chd);
+
+    return self->priv->disc;
 }
 
 

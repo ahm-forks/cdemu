@@ -57,7 +57,7 @@ void mirage_parser_chd_type_register (GTypeModule *type_module)
 /**********************************************************************\
  *                         Debug functions                            *
 \**********************************************************************/
-static const char *_chd_error_str (chd_error error_code)
+const char *_chd_error_str (chd_error error_code)
 {
     #define _CASE(x) \
         case x: { \
@@ -101,7 +101,7 @@ static const char *_chd_error_str (chd_error error_code)
     #undef _CASE
 }
 
-static const char *_chd_tag_str (uint32_t tag)
+const char *_chd_tag_str (uint32_t tag)
 {
     #define _CASE(x) \
         case x: { \

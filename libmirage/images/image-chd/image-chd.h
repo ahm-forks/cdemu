@@ -32,12 +32,15 @@
 G_BEGIN_DECLS
 
 
-typedef struct
+typedef struct _shared_chd_file_t
 {
     chd_file *chd_file;
 } shared_chd_file_t;
 
 void shared_chd_file_cleanup (shared_chd_file_t *p);
+
+const char *_chd_error_str (chd_error error_code);
+const char *_chd_tag_str (uint32_t tag);
 
 
 G_END_DECLS

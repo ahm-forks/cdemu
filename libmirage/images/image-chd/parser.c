@@ -18,6 +18,7 @@
  */
 
 #include "image-chd.h"
+#include "fragment.h"
 
 #define __debug__ "CHD-Parser"
 
@@ -249,12 +250,96 @@ void shared_chd_file_cleanup (shared_chd_file_t *p)
 }
 
 
+static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError **error)
+{
+    /* Set medium type */
+    mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
+
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Not yet implemented!"));
+    return FALSE;
+}
+
+static gboolean mirage_parser_chd_load_dvd_image (MirageParserChd *self, GError **error)
+{
+    const chd_header *header = chd_get_header(self->priv->chd_file_ptr->chd_file);
+
+    MirageSession *session;
+    MirageTrack *track;
+    MirageFragmentChd *fragment;
+
+    gboolean succeeded;
+    GError *local_error = NULL;
+
+    /* Sanity check */
+    if (header->unitbytes != 2048) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2048 is supported for DVD images)\n", __debug__, header->unitbytes);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
+        return FALSE;
+    }
+
+    /* Create fragment for track */
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_CHD, NULL);
+
+    if (1) {
+        /* Immediately propagate context for debug purposes; so we may
+         * see debug messages emitted during fragment setup. */
+        MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
+        if (context) {
+            g_object_unref(context);
+        }
+    }
+
+    succeeded = mirage_fragment_chd_setup(
+        fragment,
+        self->priv->chd_file_ptr,
+        0, /* start offset (in sectors / "units") */
+        header->unitcount, /* length (in sectors / "units") */
+        header->hunkbytes, /* hunk size */
+        header->unitbytes, /* sector size */
+        2048, /* main data size */
+        MIRAGE_MAIN_DATA_FORMAT_DATA, /* main data format */
+        0, /* subchannel size */
+        0, /* subchannel format */
+        &local_error
+    );
+    if (!succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        return FALSE;
+    }
+
+    /* Set medium type */
+    mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
+
+    /* Create and add session */
+    session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(self->priv->disc, 0, session);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
+
+    /* Create and add track */
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(session, -1, track);
+    mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE1);
+    mirage_track_add_fragment(track, -1, MIRAGE_FRAGMENT(fragment));
+
+    g_object_unref(fragment);
+    g_object_unref(track);
+    g_object_unref(session);
+
+    return succeeded;
+}
+
+
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
 static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserChd *self = MIRAGE_PARSER_CHD(_self);
+    gboolean succeeded;
 
     const chd_header *header;
     chd_error status;
@@ -263,6 +348,8 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
      * reference-counted box. If the open attempt fails, the close() function
      * (i.e., `_chd_fclose()`) is called - therefore, increment the reference
      * count on the stream! */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+
     status = chd_open_core_file_callbacks(
         &_chd_file_adapter,
         g_object_ref(streams[0]),
@@ -276,6 +363,8 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: chd_open() failed with error code %d (%s)!"), status, _chd_error_str(status));
         return NULL;
     }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     /* Grab header */
     header = chd_get_header(self->priv->chd_file_ptr->chd_file);
@@ -360,10 +449,30 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using metadata tag: %s (0x%X)\n", __debug__, _chd_tag_str(self->priv->metadata_tag), self->priv->metadata_tag);
 
-    /* Parse the metadata and reconstruct tracks: TODO */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Not yet implemented!"));
+    /* Create disc */
+    self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    return self->priv->disc;
+    mirage_disc_set_filename(self->priv->disc, mirage_stream_get_filename(streams[0]));
+
+    /* Parse the metadata and reconstruct tracks */
+    if (self->priv->metadata_tag == DVD_METADATA_TAG) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading DVD image...\n", __debug__);
+        succeeded = mirage_parser_chd_load_dvd_image(self, error);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image...\n", __debug__);
+        succeeded = mirage_parser_chd_load_cd_image(self, error);
+    }
+
+    /* Return disc */
+    if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+        return self->priv->disc;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        g_object_unref(self->priv->disc);
+        return NULL;
+    }
 }
 
 

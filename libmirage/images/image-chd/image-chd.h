@@ -24,4 +24,20 @@
 
 #include <glib/gi18n-lib.h>
 
+#include <chd.h>
+
 #include "parser.h"
+
+
+G_BEGIN_DECLS
+
+
+typedef struct
+{
+    chd_file *chd_file;
+} shared_chd_file_t;
+
+void shared_chd_file_cleanup (shared_chd_file_t *p);
+
+
+G_END_DECLS

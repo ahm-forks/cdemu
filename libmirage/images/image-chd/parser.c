@@ -19,8 +19,6 @@
 
 #include "image-chd.h"
 
-#include <chd.h>
-
 #define __debug__ "CHD-Parser"
 
 
@@ -30,6 +28,15 @@
 struct _MirageParserChdPrivate
 {
     MirageDisc *disc;
+
+    /* Pointer boxed using GLib's RcBox for reference counting */
+    shared_chd_file_t *chd_file_ptr;
+
+    /* Temporary buffer for reading metadata */
+    gchar metadata_buffer[256];
+
+    /* Metadata tag that is available for disc layout reconstruction */
+    guint32 metadata_tag;
 };
 
 
@@ -187,7 +194,7 @@ static size_t _chd_fread (void *ptr, size_t size, size_t n, void *fp)
 static int _chd_fclose (void *fp)
 {
     MirageStream *stream = MIRAGE_STREAM(fp);
-    (void)stream; /* Nothing to do here - stream is externally managed! */
+    g_object_unref(stream); /* Release the stream reference */
     return 0;
 }
 
@@ -232,6 +239,16 @@ static const struct chd_core_file_callbacks _chd_file_adapter = {
 };
 
 
+/* Cleanup helper for shared_chd_file_t, to be used with g_rc_box_release_full() */
+void shared_chd_file_cleanup (shared_chd_file_t *p)
+{
+    if (p->chd_file) {
+        chd_close(p->chd_file);
+        p->chd_file = NULL;
+    }
+}
+
+
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
@@ -240,19 +257,18 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     MirageParserChd *self = MIRAGE_PARSER_CHD(_self);
 
     const chd_header *header;
-    chd_file *chd = NULL;
     chd_error status;
 
-    gchar metadata_buffer[256];
-    guint32 metadata_tag = 0;
-
-    /* Try to open */
+    /* Try to open CHD reader, and store the object pointer in pre-allocated
+     * reference-counted box. If the open attempt fails, the close() function
+     * (i.e., `_chd_fclose()`) is called - therefore, increment the reference
+     * count on the stream! */
     status = chd_open_core_file_callbacks(
         &_chd_file_adapter,
-        streams[0],
+        g_object_ref(streams[0]),
         CHD_OPEN_READ,
         NULL,
-        &chd
+        &self->priv->chd_file_ptr->chd_file
     );
 
     if (status != CHDERR_NONE) {
@@ -262,7 +278,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     }
 
     /* Grab header */
-    header = chd_get_header(chd);
+    header = chd_get_header(self->priv->chd_file_ptr->chd_file);
 
     /* Dump header */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD header:\n", __debug__);
@@ -292,18 +308,29 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
         uint32_t resulttag;
         uint8_t resultflags;
 
-        memset(metadata_buffer, 0, sizeof(metadata_buffer));
-        status = chd_get_metadata(chd, CHDMETATAG_WILDCARD, i, metadata_buffer, sizeof(metadata_buffer), &resultlen, &resulttag, &resultflags);
+        memset(self->priv->metadata_buffer, 0, sizeof(self->priv->metadata_buffer));
+
+        status = chd_get_metadata(
+            self->priv->chd_file_ptr->chd_file,
+            CHDMETATAG_WILDCARD,
+            i,
+            self->priv->metadata_buffer,
+            sizeof(self->priv->metadata_buffer),
+            &resultlen,
+            &resulttag,
+            &resultflags
+        );
+
         if (status == CHDERR_METADATA_NOT_FOUND) {
             break;
         } else if (status != CHDERR_NONE) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read metadata entry #%u: %s (%d)\n", __debug__, i, _chd_error_str(status), status);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
-            goto end;
+            return NULL;
         }
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%u: %s (0x%X), %d bytes, flags: 0x%X\n", __debug__, i, _chd_tag_str(resulttag), resulttag, resultlen, resultflags);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, metadata_buffer);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, self->priv->metadata_buffer);
 
         /* It is probably safe to assume that different metadata tags
          * are not mixed within the same image. */
@@ -313,31 +340,28 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
             case CDROM_TRACK_METADATA2_TAG:
             case DVD_METADATA_TAG: {
                 /* Ensure the metadata buffer is large enough */
-                if (resultlen >= sizeof(metadata_buffer)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: metadata buffer is too small - %u bytes required, %" G_GSIZE_MODIFIER "u bytes available!\n", __debug__, resultlen, sizeof(metadata_buffer));
+                if (resultlen >= sizeof(self->priv->metadata_buffer)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: metadata buffer is too small - %u bytes required, %" G_GSIZE_MODIFIER "u bytes available!\n", __debug__, resultlen, sizeof(self->priv->metadata_buffer));
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
-                    goto end;
+                    return NULL;
                 }
 
-                metadata_tag = resulttag;
+                self->priv->metadata_tag = resulttag;
                 break;
             }
         }
     }
 
-    if (metadata_tag == 0) {
+    if (self->priv->metadata_tag == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no CD-ROM / DVD-ROM metadata entries found!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
-        goto end;
+        return NULL;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: using metadata tag: %s (0x%X)\n", __debug__, _chd_tag_str(metadata_tag), metadata_tag);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using metadata tag: %s (0x%X)\n", __debug__, _chd_tag_str(self->priv->metadata_tag), self->priv->metadata_tag);
 
     /* Parse the metadata and reconstruct tracks: TODO */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Not yet implemented!"));
-
-end:
-    chd_close(chd);
 
     return self->priv->disc;
 }
@@ -356,11 +380,32 @@ static void mirage_parser_chd_init (MirageParserChd *self)
         1,
         Q_("MAME CHD images (*.chd)"), "application/x-mame-chd"
     );
+
+    /* Allocate box structure for libchdr file reader object */
+    self->priv->chd_file_ptr = g_rc_box_new0(shared_chd_file_t);
+
+    self->priv->metadata_tag = 0;
+}
+
+static void mirage_parser_chd_dispose (GObject *gobject)
+{
+    MirageParserChd *self = MIRAGE_PARSER_CHD(gobject);
+
+    if (self->priv->chd_file_ptr) {
+        g_rc_box_release_full(self->priv->chd_file_ptr, (GDestroyNotify)shared_chd_file_cleanup);
+        self->priv->chd_file_ptr = NULL;
+    }
+
+    /* Chain up to the parent class */
+    G_OBJECT_CLASS(mirage_parser_chd_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_chd_class_init (MirageParserChdClass *klass)
 {
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+
+    gobject_class->dispose = mirage_parser_chd_dispose;
 
     parser_class->load_image = mirage_parser_chd_load_image;
 }

@@ -7,7 +7,7 @@ project(${image_name} LANGUAGES C)
 pkg_check_modules(LIBCHDR libchdr>=0.3.0 IMPORTED_TARGET)
 
 # Build
-if(LIBCHDR_FOUND)
+if(LIBCHDR_FOUND AND (GLIB_glib-2.0_VERSION VERSION_GREATER_EQUAL "2.58"))
     add_library(${image_name} MODULE
         parser.c
         plugin.c

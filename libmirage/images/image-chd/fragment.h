@@ -57,7 +57,7 @@ GType mirage_fragment_chd_get_type (void);
 gboolean mirage_fragment_chd_setup (
     MirageFragmentChd *self,
     shared_chd_file_t *chd_file_ptr,
-    guint32 start_sector,
+    guint64 start_sector,
     guint32 num_sectors,
     guint32 hunk_size,
     guint32 sector_size,

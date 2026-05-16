@@ -424,7 +424,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
     MirageSession *session;
 
-    guint32 start_sector = 0; /* Track offset within CHD data (in sectors) */
+    guint64 start_sector = 0; /* Track offset within CHD data (in sectors) */
 
     /* Sanity check */
     if (header->unitbytes != 2448) {
@@ -454,6 +454,8 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
         MirageTrack *track;
         MirageFragmentChd *fragment;
+
+        gint pad_length = 0;
 
         /* Read metadata */
         status = chd_get_metadata(
@@ -546,9 +548,29 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
         g_object_unref(fragment);
         g_object_unref(track);
+
+        /* Update offset for next track */
+        /* NOTE: in CHD image, the CD tracks are padded to multiples of
+         * 4 units (sectors); the constant is defined in libchdr's
+         * cdrom.h header as CD_TRACK_PADDING */
+        start_sector += track_info.length;
+
+        pad_length = track_info.length % 4;
+        if (pad_length != 0) {
+            pad_length = 4 - pad_length;
+        }
+
+        start_sector += pad_length;
     }
 
     g_object_unref(session);
+
+    /* Sanity check */
+    if (start_sector != header->unitcount) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: final sector offset (%" G_GINT64_MODIFIER "u) != header->unitcount (%" G_GINT64_MODIFIER "u)\n", __debug__, start_sector, header->unitcount);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
+        return FALSE;
+    }
 
     /* Add Red Book pregap */
      mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);

@@ -30,7 +30,7 @@ struct _MirageFragmentChdPrivate
 {
     shared_chd_file_t *chd_file_ptr;
 
-    guint32 start_sector;
+    guint64 start_sector;
     guint32 num_sectors;
 
     guint32 hunk_size;
@@ -59,7 +59,7 @@ G_DEFINE_TYPE_WITH_PRIVATE(MirageFragmentChd, mirage_fragment_chd, MIRAGE_TYPE_F
 gboolean mirage_fragment_chd_setup (
     MirageFragmentChd *self,
     shared_chd_file_t *chd_file_ptr,
-    guint32 start_sector,
+    guint64 start_sector,
     guint32 num_sectors,
     guint32 hunk_size,
     guint32 sector_size,
@@ -75,7 +75,7 @@ gboolean mirage_fragment_chd_setup (
      * that this is the case. */
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: setting up CHD fragment:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - start sector: %u (0x%X)\n", __debug__, start_sector, start_sector);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - start sector: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, start_sector, start_sector);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - num sectors: %u (0x%X)\n", __debug__, num_sectors, num_sectors);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - hunk size: %u\n", __debug__, hunk_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - sector size: %u\n", __debug__, sector_size);
@@ -108,6 +108,8 @@ gboolean mirage_fragment_chd_setup (
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sectors per hunk: %u\n", __debug__, self->priv->sectors_in_hunk);
+
     /* Set fragment length */
     mirage_fragment_set_length(MIRAGE_FRAGMENT(self), num_sectors);
 
@@ -137,14 +139,21 @@ gboolean mirage_fragment_chd_setup (
 
 static gboolean mirage_fragment_chd_read_sector_data (MirageFragmentChd *self, gint address, GError **error)
 {
-    guint hunk_idx = address / self->priv->sectors_in_hunk;
+    guint64 chd_address;
+    guint hunk_idx;
     chd_error status;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d (hunk %u)\n", __debug__, address, hunk_idx);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d\n", __debug__, address);
+
+    /* Map the fragment-relative address into CHD address space, and
+     * compute target hunk index. */
+    chd_address = self->priv->start_sector + address;
+    hunk_idx = chd_address / self->priv->sectors_in_hunk;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: fragment start offset inside CHD: %" G_GINT64_MODIFIER "u, target sector address inside CHD: %" G_GINT64_MODIFIER "u, hunk index: %u\n", __debug__, self->priv->start_sector, chd_address, hunk_idx);
 
     /* Check if data is already in the buffer */
     if (hunk_idx == self->priv->cached_hunk_idx) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for relative address %d (hunk %u) is already loaded in buffer!\n", __debug__, address, hunk_idx);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for hunk %u is already loaded in buffer!\n", __debug__, hunk_idx);
         return TRUE;
     }
 
@@ -192,8 +201,9 @@ static gboolean mirage_fragment_chd_read_main_data (MirageFragment *_self, gint 
     if (buffer) {
         guint offset = 0;
         if (self->priv->sectors_in_hunk > 1) {
-            guint sector_index = address % self->priv->sectors_in_hunk;
-            offset = sector_index * self->priv->sector_size;
+            guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
+            guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
+            offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
         }
 
         guint8 *data_buffer = g_malloc0(self->priv->main_size);
@@ -232,8 +242,9 @@ static gboolean mirage_fragment_chd_read_subchannel_data (MirageFragment *_self,
     if (buffer) {
         guint offset = 0;
         if (self->priv->sectors_in_hunk > 1) {
-            guint sector_index = address % self->priv->sectors_in_hunk;
-            offset = sector_index * self->priv->sector_size;
+            guint64 chd_address = self->priv->start_sector + address; /* Fragment-relative address to CHD-global address */
+            guint sector_index = chd_address % self->priv->sectors_in_hunk; /* Sector index inside hunk */
+            offset = sector_index * self->priv->sector_size; /* Sector address inside hunk */
         }
         offset += self->priv->main_size;
 

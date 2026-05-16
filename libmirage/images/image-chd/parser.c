@@ -250,12 +250,316 @@ void shared_chd_file_cleanup (shared_chd_file_t *p)
 }
 
 
+/**********************************************************************\
+ *                         Parsing functions                          *
+\**********************************************************************/
+struct track_info_t
+{
+    gint track_number;
+    gint length;
+    gint sector_type;
+
+    gint main_data_size;
+    gint main_data_format;
+
+    gint subchannel_data_size;
+    gint subchannel_data_format;
+
+    /* Pre-gap */
+    gint pregap_length;
+
+    gint pregap_main_data_size;
+    gint pregap_main_data_format;
+
+    gint pregap_subchannel_data_size;
+    gint pregap_subchannel_data_format;
+
+    /* Post-grap */
+    gint postgap_length;
+};
+
+static gboolean mirage_parser_chd_parse_mode_string (const gchar *mode_str, gint *sector_type, gint *data_size, gint *data_format)
+{
+    static const struct {
+        char *name;
+        gint sector_type;
+        gint data_size;
+    } entries[] = {
+        {"MODE1", MIRAGE_SECTOR_MODE1, 2048},
+        {"MODE1_RAW", MIRAGE_SECTOR_MODE1, 2352},
+        {"MODE2", MIRAGE_SECTOR_MODE2, 2336},
+        {"MODE2_FORM1", MIRAGE_SECTOR_MODE2_FORM1, 2048},
+        {"MODE2_FORM2", MIRAGE_SECTOR_MODE2_FORM2, 2324},
+        {"MODE2_FORM_MIX", MIRAGE_SECTOR_MODE2_MIXED, 2336},
+        {"MODE2_RAW", MIRAGE_SECTOR_MODE2_MIXED, 2352},
+        {"AUDIO", MIRAGE_SECTOR_AUDIO, 2352}
+    };
+
+    for (guint i = 0; i < G_N_ELEMENTS(entries); i++) {
+        if (strcmp(mode_str, entries[i].name) == 0) {
+            if (sector_type) {
+                *sector_type = entries[i].sector_type;
+            }
+            if (data_size) {
+                *data_size = entries[i].data_size;
+            }
+            if (data_format) {
+                *data_format = (
+                    (entries[i].sector_type == MIRAGE_SECTOR_AUDIO) ?
+                    MIRAGE_MAIN_DATA_FORMAT_AUDIO :
+                    MIRAGE_MAIN_DATA_FORMAT_DATA
+                );
+            }
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+static gboolean mirage_parser_chd_parse_subchannel_string (const gchar *subchannel_str, gint *data_size, gint *data_format)
+{
+    static const struct {
+        char *name;
+        gint data_size;
+        gint data_format;
+    } entries[] = {
+        {"NONE", 0, 0},
+        {"RW", 96, MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL},
+        {"RW_RAW", 96, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL}
+    };
+
+    for (guint i = 0; i < G_N_ELEMENTS(entries); i++) {
+        if (strcmp(subchannel_str, entries[i].name) == 0) {
+            if (data_size) {
+                *data_size = entries[i].data_size;
+            }
+            if (data_format) {
+                *data_format = entries[i].data_format;
+            }
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadata_tag, const gchar *metadata_buffer, struct track_info_t *track_info, GError **error)
+{
+    gint track_number;
+    gchar track_mode_str[256] = "";
+    gchar subchannel_str[256] = "";
+    gint num_sectors;
+
+    gint pregap_length = 0;
+    gchar pregap_mode_str[256] = "";
+    gchar pregap_subchannel_str[256] = "";
+    gint postgap_length = 0;
+
+    gint ret;
+    gint expected_ret;
+
+    /* Parse using supplied pattern */
+    if (metadata_tag == CDROM_TRACK_METADATA_TAG) {
+        ret = sscanf(
+            metadata_buffer,
+            CDROM_TRACK_METADATA_FORMAT,
+            &track_number,
+            track_mode_str,
+            subchannel_str,
+            &num_sectors
+        );
+        expected_ret = 4;
+    } else /*if (CDROM_TRACK_METADATA2_TAG)*/ {
+        ret = sscanf(
+            metadata_buffer,
+            CDROM_TRACK_METADATA2_FORMAT,
+            &track_number,
+            track_mode_str,
+            subchannel_str,
+            &num_sectors,
+            &pregap_length,
+            pregap_mode_str,
+            pregap_subchannel_str,
+            &postgap_length
+        );
+        expected_ret = 8;
+    }
+    if (ret != expected_ret) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to extract %d values from metadata string!", expected_ret);
+        return FALSE;
+    }
+
+    track_info->track_number = track_number;
+    track_info->length = num_sectors;
+
+    if (!mirage_parser_chd_parse_mode_string(track_mode_str, &track_info->sector_type, &track_info->main_data_size, &track_info->main_data_format)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported track mode string: %s", track_mode_str);
+        return FALSE;
+    }
+    if (!mirage_parser_chd_parse_subchannel_string(subchannel_str, &track_info->subchannel_data_size, &track_info->subchannel_data_format)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported subchannel string: %s", subchannel_str);
+        return FALSE;
+    }
+
+    track_info->pregap_length = pregap_length;
+    if (pregap_length > 0) {
+        if (!mirage_parser_chd_parse_mode_string(pregap_mode_str, NULL, &track_info->pregap_main_data_size, &track_info->pregap_main_data_format)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap mode string: %s", pregap_mode_str);
+            return FALSE;
+        }
+        if (!mirage_parser_chd_parse_subchannel_string(subchannel_str, &track_info->pregap_subchannel_data_size, &track_info->pregap_subchannel_data_format)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap subchannel string: %s", pregap_subchannel_str);
+            return FALSE;
+        }
+    }
+
+    track_info->postgap_length = postgap_length;
+
+    return TRUE;
+}
+
 static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError **error)
 {
+    const chd_header *header = chd_get_header(self->priv->chd_file_ptr->chd_file);
+
+    MirageSession *session;
+
+    guint32 start_sector = 0; /* Track offset within CHD data (in sectors) */
+
+    /* Sanity check */
+    if (header->unitbytes != 2448) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2448 is supported for CD images)\n", __debug__, header->unitbytes);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
+        return FALSE;
+    }
+
     /* Set medium type */
     mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Not yet implemented!"));
+    /* Create and add session */
+    session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(self->priv->disc, 0, session);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
+
+    /* Process CD-ROM metadata and create tracks */
+    for (guint i = 0;; i++) {
+        uint32_t resultlen;
+        uint32_t resulttag;
+        uint8_t resultflags;
+        chd_error status;
+
+        struct track_info_t track_info;
+        gboolean succeeded;
+        GError *local_error = NULL;
+
+        MirageTrack *track;
+        MirageFragmentChd *fragment;
+
+        /* Read metadata */
+        status = chd_get_metadata(
+            self->priv->chd_file_ptr->chd_file,
+            self->priv->metadata_tag,
+            i,
+            self->priv->metadata_buffer,
+            sizeof(self->priv->metadata_buffer),
+            &resultlen,
+            &resulttag,
+            &resultflags
+        );
+
+        if (status == CHDERR_METADATA_NOT_FOUND) {
+            break;
+        } else if (status != CHDERR_NONE) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read CD-ROM metadata entry #%u: %s (%d)\n", __debug__, i, _chd_error_str(status), status);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
+            g_object_unref(session);
+            return FALSE;
+        }
+
+        /* Parse metadata */
+        succeeded = mirage_parser_chd_parse_cd_track_metadata(
+            resulttag,
+            self->priv->metadata_buffer,
+            &track_info,
+            &local_error
+        );
+        if (!succeeded) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-ROM metadata entry #%u: %s\n", __debug__, i, local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to parse metadata!"));
+            g_error_free(local_error);
+            g_object_unref(session);
+            return FALSE;
+        }
+
+        /* Create fragment(s) */
+
+        /* Create pregap fragment for track */
+        if (track_info.pregap_length > 0) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: pregap is not supported yet - ignoring!", __debug__);
+        }
+
+        /* Create fragment for track */
+        fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_CHD, NULL);
+
+        if (1) {
+            /* Immediately propagate context for debug purposes; so we may
+             * see debug messages emitted during fragment setup. */
+            MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
+            if (context) {
+                g_object_unref(context);
+            }
+        }
+
+        succeeded = mirage_fragment_chd_setup(
+            fragment,
+            self->priv->chd_file_ptr,
+            start_sector, /* start offset (in sectors / "units") */
+            track_info.length, /* length (in sectors / "units") */
+            header->hunkbytes, /* hunk size */
+            header->unitbytes, /* sector size */
+            track_info.main_data_size, /* main data size */
+            track_info.main_data_format, /* main data format */
+            track_info.subchannel_data_size, /* subchannel size */
+            track_info.subchannel_data_format, /* subchannel format */
+            &local_error
+        );
+        if (!succeeded) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
+            g_error_free(local_error);
+            g_object_unref(session);
+            g_object_unref(fragment);
+            return FALSE;
+        }
+
+        /* Create postgap fragment for track */
+        if (track_info.postgap_length > 0) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: postgap is not supported yet - ignoring!", __debug__);
+        }
+
+        /* Create and add track */
+        track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+        mirage_session_add_track_by_index(session, -1, track);
+        mirage_track_set_sector_type(track, track_info.sector_type);
+        mirage_track_add_fragment(track, -1, MIRAGE_FRAGMENT(fragment));
+
+        g_object_unref(fragment);
+        g_object_unref(track);
+    }
+
+    g_object_unref(session);
+
+    /* Add Red Book pregap */
+     mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_chd_load_cd_image_old (MirageParserChd *self, GError **error)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: CD-ROM image with old-style metadata is not supported yet!\n", __debug__);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
     return FALSE;
 }
 
@@ -419,7 +723,21 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
         }
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%u: %s (0x%X), %d bytes, flags: 0x%X\n", __debug__, i, _chd_tag_str(resulttag), resulttag, resultlen, resultflags);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, self->priv->metadata_buffer);
+        switch (resulttag) {
+            /* These tags are known to be text-based, so we can print them */
+            case HARD_DISK_METADATA_TAG:
+            case CDROM_TRACK_METADATA_TAG:
+            case CDROM_TRACK_METADATA2_TAG:
+            case GDROM_TRACK_METADATA_TAG:
+            case AV_METADATA_TAG: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, self->priv->metadata_buffer);
+                break;
+            }
+            /* Some sort of binary format; ignore for now */
+            default: {
+                break;
+            }
+        }
 
         /* It is probably safe to assume that different metadata tags
          * are not mixed within the same image. */
@@ -442,7 +760,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     }
 
     if (self->priv->metadata_tag == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no CD-ROM / DVD-ROM metadata entries found!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no supported CD-ROM / DVD-ROM metadata entries found!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
         return NULL;
     }
@@ -459,6 +777,9 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     if (self->priv->metadata_tag == DVD_METADATA_TAG) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading DVD image...\n", __debug__);
         succeeded = mirage_parser_chd_load_dvd_image(self, error);
+    } else if (self->priv->metadata_tag == CDROM_OLD_METADATA_TAG) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image (old-style metadata)...\n", __debug__);
+        succeeded = mirage_parser_chd_load_cd_image_old(self, error);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image...\n", __debug__);
         succeeded = mirage_parser_chd_load_cd_image(self, error);

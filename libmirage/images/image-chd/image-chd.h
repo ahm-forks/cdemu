@@ -35,6 +35,7 @@ G_BEGIN_DECLS
 typedef struct _shared_chd_file_t
 {
     chd_file *chd_file;
+    MirageStream *stream;
 } shared_chd_file_t;
 
 void shared_chd_file_cleanup (shared_chd_file_t *p);

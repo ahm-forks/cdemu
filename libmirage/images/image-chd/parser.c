@@ -692,6 +692,12 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
+    /* Store pointer to the stream, so we can pass it on to fragment for
+     * filename information; we do not need to increment the reference here,
+     * as this has already been done when the chd_file reader was created, and
+     * will be released once it is closed. */
+    self->priv->chd_file_ptr->stream = streams[0];
+
     /* Grab header */
     header = chd_get_header(self->priv->chd_file_ptr->chd_file);
 

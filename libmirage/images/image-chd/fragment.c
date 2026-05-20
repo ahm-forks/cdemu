@@ -123,9 +123,18 @@ gboolean mirage_fragment_chd_setup (
     mirage_fragment_subchannel_data_set_size(MIRAGE_FRAGMENT(self), subchannel_size);
     mirage_fragment_subchannel_data_set_format(MIRAGE_FRAGMENT(self), subchannel_format);
 
-    /* NOTE: we do not expose information about underlying stream nor the
-     * start data offset in the underlying stream - this information is
-     * made meaningless because of I/O adapter and libchdr data reader. */
+    /* Set the underlying stream, so that fragment can properly report
+     * its filename. Other than that, the stream will not be directly
+     * used by this fragment implementation. */
+    mirage_fragment_main_data_set_stream(MIRAGE_FRAGMENT(self), chd_file_ptr->stream);
+
+    /* NOTE: the offset is not really applicable here as it bears no true
+     * relation to the stream, so leave it unset (0) for now.
+     *
+     * If we wanted to report a monotonically-increasing value in case when
+     * multiple fragments are instantiated using the same stream (for example,
+     * image with multiple-tracks), we could report a product of start sector
+     * address and sector (unit) size... */
 
     /* Store information about sector size and format */
     self->priv->main_size = main_size;

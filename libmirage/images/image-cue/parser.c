@@ -103,7 +103,6 @@ static gboolean mirage_parser_cue_restore_cdtext_for_current_session (MiragePars
 static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GError **error)
 {
     MirageFragment *fragment;
-    gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track\n", __debug__);
 
@@ -117,21 +116,35 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GErr
     /* Get last fragment and set its length... (actually, since there can be
      * postgap fragment stuck at the end, we look for first data fragment that's
      * not NULL... and of course, we go from behind) */
-    /* FIXME: implement the latter part */
     fragment = mirage_track_get_fragment_by_index(self->priv->cur_track, -1, NULL);
+    if (fragment && mirage_fragment_main_data_get_size(fragment) == 0) {
+        /* This fragment is a post-grap fragment; take preceding one instead! */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: last fragment is post-gap fragment - taking preceding one...\n", __debug__);
+        g_object_unref(fragment);
+        fragment = mirage_track_get_fragment_by_index(self->priv->cur_track, -2, NULL);
+    }
     if (fragment) {
-        mirage_fragment_use_the_rest_of_file(fragment, NULL);
+        GError *local_error = NULL;
+
+        if (!mirage_fragment_use_the_rest_of_file(fragment, &local_error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finalize fragment in last track: %s\n", __debug__, local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to finalize fragment in last track: %s"), local_error->message);
+            g_error_free(local_error);
+            g_object_unref(fragment);
+            return FALSE;
+        }
 
         if (mirage_fragment_get_length(fragment) < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: finishing last track resulted in negative fragment length!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Finishing last track resulted in negative fragment length!"));
-            succeeded = FALSE;
+            g_object_unref(fragment);
+            return FALSE;
         }
 
         g_object_unref(fragment);
     }
 
-    return succeeded;
+    return TRUE;
 }
 
 static gboolean mirage_parser_cue_finish_last_session (MirageParserCue *self, GError **error)
@@ -318,6 +331,12 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
             } else {
                 /* Get previous track's fragment to set its length */
                 MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->prev_track, -1, NULL);
+
+                if (fragment && mirage_fragment_main_data_get_size(fragment) == 0) {
+                    /* This fragment is a post-grap fragment; take preceding one instead! */
+                    g_object_unref(fragment);
+                    fragment = mirage_track_get_fragment_by_index(self->priv->prev_track, -2, NULL);
+                }
 
                 if (fragment) {
                     gint fragment_length = mirage_fragment_get_length(fragment);

@@ -736,14 +736,14 @@ static gboolean mirage_parser_toc_callback_track_start (MirageParserToc *self, G
     gchar *address_str = g_match_info_fetch_named(match_info, "address");
     gint address;
 
-    if (address_str) {
+    if (address_str && strlen(address_str)) {
         address = mirage_helper_msf2lba_str(address_str, FALSE);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed START: %s (0x%X)\n", __debug__, address_str, address);
-        g_free(address_str);
     } else {
         address = -1;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed START: w/o address\n", __debug__);
     }
+    g_free(address_str);
 
     mirage_parser_toc_track_set_start(self, address);
 
@@ -803,7 +803,7 @@ static gboolean mirage_parser_toc_callback_track_audiofile (MirageParserToc *sel
 
     /* Base offset */
     base_offset_str = g_match_info_fetch_named(match_info, "base_offset");
-    if (base_offset_str) {
+    if (base_offset_str && strlen(base_offset_str)) {
         base_offset = atoi(base_offset_str);
     }
 
@@ -819,7 +819,7 @@ static gboolean mirage_parser_toc_callback_track_audiofile (MirageParserToc *sel
 
     /* Length */
     length_str = g_match_info_fetch_named(match_info, "length");
-    if (length_str) {
+    if (length_str && strlen(length_str)) {
         length = mirage_helper_msf2lba_str(length_str, FALSE);
     }
 
@@ -847,13 +847,13 @@ static gboolean mirage_parser_toc_callback_track_datafile (MirageParserToc *self
 
     /* Base offset */
     base_offset_str = g_match_info_fetch_named(match_info, "base_offset");
-    if (base_offset_str) {
+    if (base_offset_str && strlen(base_offset_str)) {
         base_offset = atoi(base_offset_str);
     }
 
     /* Length */
     length_str = g_match_info_fetch_named(match_info, "length");
-    if (length_str) {
+    if (length_str && strlen(length_str)) {
         length = mirage_helper_msf2lba_str(length_str, FALSE);
     }
 

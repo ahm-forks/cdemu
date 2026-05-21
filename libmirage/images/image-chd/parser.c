@@ -402,14 +402,35 @@ static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadat
     }
 
     track_info->pregap_length = pregap_length;
+
+    track_info->pregap_main_data_size = 0;
+    track_info->pregap_main_data_format = 0;
+
+    track_info->pregap_subchannel_data_size = 0;
+    track_info->pregap_subchannel_data_format = 0;
+
     if (pregap_length > 0) {
-        if (!mirage_parser_chd_parse_mode_string(pregap_mode_str, NULL, &track_info->pregap_main_data_size, &track_info->pregap_main_data_format)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap mode string: %s", pregap_mode_str);
-            return FALSE;
-        }
-        if (!mirage_parser_chd_parse_subchannel_string(subchannel_str, &track_info->pregap_subchannel_data_size, &track_info->pregap_subchannel_data_format)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap subchannel string: %s", pregap_subchannel_str);
-            return FALSE;
+        /* Pregap data can be included in the image data or can be "external",
+         * in which case it is assumed to be all zeroes. The former is
+         * equivalent to "INDEX 00 M:S:F" + "INDEX 01 M:S:F" in a CUE/BIN
+         * image and to "START M:S:F" in a TOC/BIN image. The latter is
+         * equivalent to "PREGAP M:S:F" + "INDEX 01 M:S:F" in a CUE/BIN image
+         * and to "ZERO M:S:F" + "START M:S:F" in TOC/BIN images.
+         *
+         * When pregap data is included in the image, the pregap mode string
+         * seems to have an added 'V' character prefix; when it is external/zeroes,
+         * the mode seems to be set to MODE1 (which seems also to be the case when
+         * no pregap is present). */
+        if (pregap_mode_str[0] == 'V') {
+            if (!mirage_parser_chd_parse_mode_string(pregap_mode_str + 1, NULL, &track_info->pregap_main_data_size, &track_info->pregap_main_data_format)) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap mode string: %s", pregap_mode_str);
+                return FALSE;
+            }
+
+            if (!mirage_parser_chd_parse_subchannel_string(subchannel_str, &track_info->pregap_subchannel_data_size, &track_info->pregap_subchannel_data_format)) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap subchannel string: %s", pregap_subchannel_str);
+                return FALSE;
+            }
         }
     }
 

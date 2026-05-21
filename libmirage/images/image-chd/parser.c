@@ -418,6 +418,47 @@ static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadat
     return TRUE;
 }
 
+static void mirage_parser_chd_update_session_type (MirageSession *session)
+{
+    gboolean has_audio = FALSE;
+    gboolean has_mode1 = FALSE;
+    gboolean has_mode2 = FALSE;
+
+    gint num_tracks = mirage_session_get_number_of_tracks(session);
+
+    for (gint i = 0; i < num_tracks; i++) {
+        MirageTrack *track = mirage_session_get_track_by_index(session, i, NULL);
+        gint sector_type = mirage_track_get_sector_type(track);
+
+        switch (sector_type) {
+            case MIRAGE_SECTOR_AUDIO: {
+                has_audio = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE1: {
+                has_mode1 = TRUE;
+                break;
+            }
+            case MIRAGE_SECTOR_MODE2:
+            case MIRAGE_SECTOR_MODE2_FORM1:
+            case MIRAGE_SECTOR_MODE2_FORM2:
+            case MIRAGE_SECTOR_MODE2_MIXED: {
+                has_mode2 = TRUE;
+                break;
+            }
+        }
+    }
+
+    /* This is how cdrdao's cue2toc determine's session type. */
+    if (has_audio && !has_mode1 && !has_mode2) {
+        mirage_session_set_session_type(session, MIRAGE_SESSION_CDDA);
+    } else if ((has_audio && has_mode1 && !has_mode2) || (!has_audio && has_mode1 && !has_mode2)) {
+        mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
+    } else if ((has_audio && !has_mode1 && has_mode2) || (!has_audio && !has_mode1 && has_mode2)) {
+        mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM_XA);
+    }
+}
+
 static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError **error)
 {
     const chd_header *header = chd_get_header(self->priv->chd_file_ptr->chd_file);
@@ -439,7 +480,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
     /* Create and add session */
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(self->priv->disc, 0, session);
-    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM); /* Will be determined later on */
 
     /* Process CD-ROM metadata and create tracks */
     for (guint i = 0;; i++) {
@@ -562,6 +603,9 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
         start_sector += pad_length;
     }
+
+    /* Infer and update session type from its tracks */
+    mirage_parser_chd_update_session_type(session);
 
     g_object_unref(session);
 

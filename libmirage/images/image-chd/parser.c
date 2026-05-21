@@ -267,12 +267,7 @@ struct track_info_t
 
     /* Pre-gap */
     gint pregap_length;
-
-    gint pregap_main_data_size;
-    gint pregap_main_data_format;
-
-    gint pregap_subchannel_data_size;
-    gint pregap_subchannel_data_format;
+    gboolean pregap_has_data;
 
     /* Post-grap */
     gint postgap_length;
@@ -402,12 +397,7 @@ static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadat
     }
 
     track_info->pregap_length = pregap_length;
-
-    track_info->pregap_main_data_size = 0;
-    track_info->pregap_main_data_format = 0;
-
-    track_info->pregap_subchannel_data_size = 0;
-    track_info->pregap_subchannel_data_format = 0;
+    track_info->pregap_has_data = FALSE;
 
     if (pregap_length > 0) {
         /* Pregap data can be included in the image data or can be "external",
@@ -422,13 +412,19 @@ static gboolean mirage_parser_chd_parse_cd_track_metadata (const guint32 metadat
          * the mode seems to be set to MODE1 (which seems also to be the case when
          * no pregap is present). */
         if (pregap_mode_str[0] == 'V') {
-            if (!mirage_parser_chd_parse_mode_string(pregap_mode_str + 1, NULL, &track_info->pregap_main_data_size, &track_info->pregap_main_data_format)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap mode string: %s", pregap_mode_str);
+            track_info->pregap_has_data = TRUE;
+
+            /* Until we come across an image that proves otherwise, assume
+             * that mode and subchannel type are consistent between the pregap
+             * and track. In theory, this does not have to be the case in a CHD
+             * image, but in practice, it is for all other image types (from
+             * which the CHD is most likely created). */
+            if (strcmp(track_mode_str, pregap_mode_str + 1) != 0) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Pregap mode does not match track mode: %s vs %s", pregap_mode_str, track_mode_str);
                 return FALSE;
             }
-
-            if (!mirage_parser_chd_parse_subchannel_string(subchannel_str, &track_info->pregap_subchannel_data_size, &track_info->pregap_subchannel_data_format)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported pregap subchannel string: %s", pregap_subchannel_str);
+            if (strcmp(subchannel_str, pregap_subchannel_str) != 0) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Pregap subchannel does not match track subchannel: %s vs %s", pregap_subchannel_str, subchannel_str);
                 return FALSE;
             }
         }
@@ -480,6 +476,92 @@ static void mirage_parser_chd_update_session_type (MirageSession *session)
     }
 }
 
+static MirageTrack *mirage_parser_chd_create_track (
+    MirageParserChd *self,
+    const chd_header *header,
+    const struct track_info_t *track_info,
+    const guint64 start_sector,
+    GError **error
+)
+{
+    MirageTrack *track;
+    MirageFragment *fragment = NULL;
+    MirageFragment *fragment_pregap = NULL;
+    MirageFragment *fragment_postgap = NULL;
+
+    gboolean succeeded;
+    GError *local_error = NULL;
+
+    /* Create main fragment */
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_CHD, NULL);
+
+    if (1) {
+        /* Immediately propagate context for debug purposes; so we may
+         * see debug messages emitted during fragment setup. */
+        MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
+        if (context) {
+            g_object_unref(context);
+        }
+    }
+
+    succeeded = mirage_fragment_chd_setup(
+        MIRAGE_FRAGMENT_CHD(fragment),
+        self->priv->chd_file_ptr,
+        start_sector, /* start offset (in sectors / "units") */
+        track_info->length, /* length (in sectors / "units") */
+        header->hunkbytes, /* hunk size */
+        header->unitbytes, /* sector size */
+        track_info->main_data_size, /* main data size */
+        track_info->main_data_format, /* main data format */
+        track_info->subchannel_data_size, /* subchannel size */
+        track_info->subchannel_data_format, /* subchannel format */
+        &local_error
+    );
+    if (!succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        return FALSE;
+    }
+
+    /* Create a NULL fragment for pregap, if applicable. */
+    if (track_info->pregap_length > 0 && !track_info->pregap_has_data) {
+        fragment_pregap = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+        mirage_fragment_set_length(fragment_pregap, track_info->pregap_length);
+    }
+
+    /* Create a NULL pregap for postgap, if applicable. */
+    if (track_info->postgap_length > 0) {
+        fragment_postgap = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+        mirage_fragment_set_length(fragment_postgap, track_info->postgap_length);
+    }
+
+    /* Create track */
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+
+    mirage_track_set_sector_type(track, track_info->sector_type);
+
+    if (fragment_pregap) {
+        mirage_track_add_fragment(track, -1, fragment_pregap);
+        g_object_unref(fragment_pregap);
+    }
+
+    mirage_track_add_fragment(track, -1, fragment);
+    g_object_unref(fragment);
+
+    if (fragment_postgap) {
+        mirage_track_add_fragment(track, -1, fragment_postgap);
+        g_object_unref(fragment_postgap);
+    }
+
+    mirage_track_set_track_start(track, track_info->pregap_length);
+
+    return track;
+}
+
+
 static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError **error)
 {
     const chd_header *header = chd_get_header(self->priv->chd_file_ptr->chd_file);
@@ -515,7 +597,6 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
         GError *local_error = NULL;
 
         MirageTrack *track;
-        MirageFragmentChd *fragment;
 
         gint pad_length = 0;
 
@@ -555,61 +636,23 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
             return FALSE;
         }
 
-        /* Create fragment(s) */
-
-        /* Create pregap fragment for track */
-        if (track_info.pregap_length > 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: pregap is not supported yet - ignoring!", __debug__);
-        }
-
-        /* Create fragment for track */
-        fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_CHD, NULL);
-
-        if (1) {
-            /* Immediately propagate context for debug purposes; so we may
-             * see debug messages emitted during fragment setup. */
-            MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
-            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
-            if (context) {
-                g_object_unref(context);
-            }
-        }
-
-        succeeded = mirage_fragment_chd_setup(
-            fragment,
-            self->priv->chd_file_ptr,
-            start_sector, /* start offset (in sectors / "units") */
-            track_info.length, /* length (in sectors / "units") */
-            header->hunkbytes, /* hunk size */
-            header->unitbytes, /* sector size */
-            track_info.main_data_size, /* main data size */
-            track_info.main_data_format, /* main data format */
-            track_info.subchannel_data_size, /* subchannel size */
-            track_info.subchannel_data_format, /* subchannel format */
+        /* Create track */
+        track = mirage_parser_chd_create_track(
+            self,
+            header,
+            &track_info,
+            start_sector,
             &local_error
         );
-        if (!succeeded) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
+        if (!track) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create track for CD-ROM metadata entry #%u: %s\n", __debug__, i, local_error->message);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to create track for CD-ROM metadata entry #%u: %s"), i, local_error->message);
             g_error_free(local_error);
             g_object_unref(session);
-            g_object_unref(fragment);
             return FALSE;
         }
 
-        /* Create postgap fragment for track */
-        if (track_info.postgap_length > 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: postgap is not supported yet - ignoring!", __debug__);
-        }
-
-        /* Create and add track */
-        track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
         mirage_session_add_track_by_index(session, -1, track);
-        mirage_track_set_sector_type(track, track_info.sector_type);
-        mirage_track_add_fragment(track, -1, MIRAGE_FRAGMENT(fragment));
-
-        g_object_unref(fragment);
-        g_object_unref(track);
 
         /* Update offset for next track */
         /* NOTE: in CHD image, the CD tracks are padded to multiples of

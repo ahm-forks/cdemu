@@ -299,9 +299,10 @@ static gboolean mirage_parser_chd_parse_mode_string (const gchar *mode_str, gint
                 *data_size = entries[i].data_size;
             }
             if (data_format) {
+                /* CHD uses swapped audio format! */
                 *data_format = (
                     (entries[i].sector_type == MIRAGE_SECTOR_AUDIO) ?
-                    MIRAGE_MAIN_DATA_FORMAT_AUDIO :
+                    MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP :
                     MIRAGE_MAIN_DATA_FORMAT_DATA
                 );
             }

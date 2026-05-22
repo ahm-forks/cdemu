@@ -217,6 +217,15 @@ static gboolean mirage_fragment_chd_read_main_data (MirageFragment *_self, gint 
 
         guint8 *data_buffer = g_malloc0(self->priv->main_size);
         memcpy(data_buffer, self->priv->buffer + offset, self->priv->main_size);
+
+        /* Audio data may need to be swapped from BE to LE */
+        if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
+            for (gint i = 0; i < self->priv->main_size; i += 2) {
+                guint16 *ptr = (guint16 *)(void *)(data_buffer + i);
+                *ptr = GUINT16_SWAP_LE_BE(*ptr);
+            }
+        }
+
         *buffer = data_buffer;
     }
 

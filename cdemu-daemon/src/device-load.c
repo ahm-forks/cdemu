@@ -310,6 +310,16 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error)
             self->priv->image_writer = NULL;
         }
 
+        if (self->priv->cue_entry) {
+            g_object_unref(self->priv->cue_entry);
+            self->priv->cue_entry = NULL;
+        }
+
+        if (self->priv->cue_sheet) {
+            g_object_unref(self->priv->cue_sheet);
+            self->priv->cue_sheet = NULL;
+        }
+
         self->priv->disc_closed = FALSE;
         self->priv->recordable_disc = FALSE;
         self->priv->rewritable_disc = FALSE;

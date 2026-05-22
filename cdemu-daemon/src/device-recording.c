@@ -1065,6 +1065,10 @@ finish:
 static void cdemu_device_sao_recording_create_cue_sheet (CdemuDevice *self)
 {
     /* Clear old CUE sheet model and create new session for it */
+    if (self->priv->cue_entry) {
+        g_object_unref(self->priv->cue_entry);
+        self->priv->cue_entry = NULL;
+    }
     if (self->priv->cue_sheet) {
         g_object_unref(self->priv->cue_sheet);
     }

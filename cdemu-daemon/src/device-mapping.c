@@ -63,12 +63,20 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                     if (!g_ascii_strcasecmp(entry_name, "block")) {
                         gchar *dirpath = g_build_filename(sysfs_dev_path, entry_name, NULL);
                         GDir *tmp_dir = g_dir_open(dirpath, 0, NULL);
-                        const gchar *tmp_sr = g_dir_read_name(tmp_dir);
-
-                        g_strlcpy(path_sr, tmp_sr, sizeof(path_sr));
-
-                        g_dir_close(tmp_dir);
+                        if (tmp_dir) {
+                            const gchar *tmp_sr = g_dir_read_name(tmp_dir);
+                            if (tmp_sr) {
+                                g_strlcpy(path_sr, tmp_sr, sizeof(path_sr));
+                            } else {
+                                /* block dir exists but is empty: kernel still registering -- retry */
+                                try_again = TRUE;
+                            }
+                            g_dir_close(tmp_dir);
+                        } else {
+                            try_again = TRUE;
+                        }
                         g_free(dirpath);
+                        if (try_again) break;
                         continue;
                     }
                 }
@@ -82,14 +90,16 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                     if (!g_ascii_strcasecmp(entry_name, "generic")) {
                         gchar *symlink = g_build_filename(sysfs_dev_path, entry_name, NULL);
                         gchar *tmp_path = g_file_read_link(symlink, NULL);
-                        gchar *tmp_sg = g_path_get_basename(tmp_path);
-
-                        g_strlcpy(path_sg, tmp_sg, sizeof(path_sg));
-
-                        g_free(tmp_sg);
-                        g_free(tmp_path);
+                        if (tmp_path) {
+                            gchar *tmp_sg = g_path_get_basename(tmp_path);
+                            g_strlcpy(path_sg, tmp_sg, sizeof(path_sg));
+                            g_free(tmp_sg);
+                            g_free(tmp_path);
+                        } else {
+                            try_again = TRUE;
+                        }
                         g_free(symlink);
-
+                        if (try_again) break;
                         continue;
                     }
                 }

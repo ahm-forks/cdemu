@@ -65,12 +65,8 @@ G_DEFINE_TYPE_WITH_CODE(
 \**********************************************************************/
 static void mirage_object_parent_context_changed_handler (MirageObject *self, MirageObject *parent)
 {
-    /* Get the new context and set it */
-    MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(parent));
-    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
-    if (context) {
-        g_object_unref(context);
-    }
+    /* Inherit the context from parent */
+    mirage_contextual_inherit_context(MIRAGE_CONTEXTUAL(self), MIRAGE_CONTEXTUAL(parent));
 }
 
 

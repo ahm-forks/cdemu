@@ -578,15 +578,9 @@ static gboolean mirage_parser_mdx_parse_track_entries (MirageParserMdx *self, MD
 
             MirageFragmentMdx *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_MDX, NULL);
 
-            if (1) {
-                /* Immediately propagate context for debug purposes; so we may
-                 * see debug messages emitted during fragment setup. */
-                MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(self));
-                mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
-                if (context) {
-                    g_object_unref(context);
-                }
-            }
+            /* Immediately propagate context for debug purposes; so we may
+             * see debug messages emitted during fragment setup. */
+            mirage_contextual_inherit_context(MIRAGE_CONTEXTUAL(fragment), MIRAGE_CONTEXTUAL(self));
 
             succeeded = mirage_fragment_mdx_setup(
                 fragment,

@@ -87,6 +87,7 @@ mirage_contextual_debug_is_active
 mirage_contextual_debug_print_buffer
 mirage_contextual_get_context
 mirage_contextual_get_option
+mirage_contextual_inherit_context
 mirage_contextual_obtain_password
 mirage_contextual_set_context
 <SUBSECTION Standard>

@@ -77,6 +77,23 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self)
     return MIRAGE_CONTEXTUAL_GET_INTERFACE(self)->get_context(self);
 }
 
+/**
+ * mirage_contextual_inehrit_context
+ * @self: a #MirageContextual
+ * @other: a #MirageContextual from which context should be inherited
+ *
+ * A convenience function that retrieves the context from @other and
+ * sets it to @self.
+ */
+void mirage_contextual_inherit_context (MirageContextual *self, MirageContextual *other)
+{
+    MirageContext *context = mirage_contextual_get_context(other);
+    mirage_contextual_set_context(self, context);
+    if (context) {
+        g_object_unref(context);
+    }
+}
+
 
 /**********************************************************************\
  *                          Debug messages                            *

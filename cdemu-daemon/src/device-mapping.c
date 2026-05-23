@@ -76,7 +76,9 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                             try_again = TRUE;
                         }
                         g_free(dirpath);
-                        if (try_again) break;
+                        if (try_again) {
+                            break;
+                        }
                         continue;
                     }
                 }
@@ -99,7 +101,9 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                             try_again = TRUE;
                         }
                         g_free(symlink);
-                        if (try_again) break;
+                        if (try_again) {
+                            break;
+                        }
                         continue;
                     }
                 }

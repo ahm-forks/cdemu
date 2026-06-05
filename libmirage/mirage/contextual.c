@@ -115,6 +115,7 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
     const gchar *name = NULL;
     const gchar *domain = NULL;
     gint debug_mask = 0;
+    gint g_log_level = 0;
 
     MirageContext *context;
 
@@ -127,23 +128,36 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
         g_object_unref(context);
     }
 
-    /* Error, warning or debug; in any case, if name is set, print it
-     * before the actual message */
-    if (level == MIRAGE_DEBUG_ERROR) {
-        if (name) {
-            g_log(domain, G_LOG_LEVEL_ERROR, "%s: ", name);
+    /* Map the level */
+    switch (level) {
+        case MIRAGE_DEBUG_ERROR: {
+            g_log_level = G_LOG_LEVEL_ERROR;
+            break;
         }
-        g_logv(domain, G_LOG_LEVEL_ERROR, format, args);
-    } else if (level == MIRAGE_DEBUG_WARNING) {
-        if (name) {
-            g_log(domain, G_LOG_LEVEL_WARNING, "%s: ", name);
+        case MIRAGE_DEBUG_WARNING: {
+            g_log_level = G_LOG_LEVEL_WARNING;
+            break;
         }
-        g_logv(domain, G_LOG_LEVEL_WARNING, format, args);
-    } else if (debug_mask & level) {
-        if (name) {
-            g_log(domain, G_LOG_LEVEL_DEBUG, "%s: ", name);
+        default: {
+            if (debug_mask & level) {
+                g_log_level = G_LOG_LEVEL_DEBUG;
+                break;
+            } else {
+                return; /* Debug level not enabled - do nothing */
+            }
         }
-        g_logv(domain, G_LOG_LEVEL_DEBUG, format, args);
+    }
+
+    /* If name is set, we need to print it before the actual message.
+     * Because we need to generate exactly one message (i.e., emit it
+     * via a single g_log() call, that requires us to format the unprefixed
+     * message into temporary buffer. */
+    if (name) {
+        gchar *message = g_strdup_vprintf(format, args);
+        g_log(domain, g_log_level, "%s: %s", name, message);
+        g_free(message);
+    } else {
+        g_logv(domain, g_log_level, format, args);
     }
 }
 

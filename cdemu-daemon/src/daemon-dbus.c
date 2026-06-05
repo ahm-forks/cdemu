@@ -535,7 +535,7 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 
 static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name, CdemuDaemon *self)
 {
-    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to register name %s on %s bus!\n", __debug__, name, self->priv->bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
+    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to register name %s on %s bus!", __debug__, name, self->priv->bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
     cdemu_daemon_stop_daemon(self);
 }
 
@@ -562,7 +562,7 @@ gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusTy
     );
 
     if (!dbus_proxy) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get proxy for 'org.freedesktop.DBus' on %s bus: %s!\n", __debug__, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session", dbus_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get proxy for 'org.freedesktop.DBus' on %s bus: %s!", __debug__, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session", dbus_error->message);
         g_error_free(dbus_error);
         return FALSE;
     }
@@ -578,7 +578,7 @@ gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusTy
     );
 
     if (!dbus_reply) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!\n", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
         g_error_free(dbus_error);
         g_object_unref(dbus_proxy);
         return FALSE;
@@ -590,7 +590,7 @@ gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusTy
     g_object_unref(dbus_proxy);
 
     if (name_taken) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?\n", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
         return FALSE;
     }
 

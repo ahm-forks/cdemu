@@ -68,9 +68,9 @@ static gboolean device_restart_callback (struct DaemonDevicePtr *data)
 
     /* Start the device */
     if (!cdemu_device_start(device, self->priv->ctl_device)) {
-        CDEMU_DEBUG(device, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
+        CDEMU_DEBUG(device, DAEMON_DEBUG_WARNING, "%s: failed to restart device!", __debug__);
     } else {
-        CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: device started successfully\n", __debug__);
+        CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: device started successfully", __debug__);
     }
 
     /* Free the pointer structure */
@@ -88,7 +88,7 @@ static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *se
     data->daemon = self;
     data->device = device;
 
-    CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: restarting device...\n", __debug__);
+    CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: restarting device...", __debug__);
     g_idle_add(G_SOURCE_FUNC(device_restart_callback), data);
 }
 
@@ -136,7 +136,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemon
 #if ENABLE_LOGIND_SLEEP_HANDLER
         GError *error = NULL;
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: connecting to org.freedesktop.login1.Manager interface on /org/freedesktop/login1...", __debug__);
         self->priv->login_manager_proxy = freedesktop_login_manager_proxy_new_for_bus_sync(
             G_BUS_TYPE_SYSTEM, /* always on system bus! */
             G_DBUS_PROXY_FLAGS_NONE,
@@ -146,7 +146,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemon
             &error
         );
         if (self->priv->login_manager_proxy) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully connected to org.freedesktop.login1.Manager!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully connected to org.freedesktop.login1.Manager!", __debug__);
 
             /* Try obtaining the system sleep inhibitor lock */
             cdemu_daemon_obtain_system_sleep_inhibitor_lock(self);
@@ -155,20 +155,20 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, const CdemuDaemon
             g_signal_connect_swapped(self->priv->login_manager_proxy, "prepare-for-sleep", G_CALLBACK(cdemu_daemon_prepare_for_system_sleep), self);
         } else {
             /* Non-fatal error - just emit a warning */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to connect to org.freedesktop.login1.Manager: %s!\n", __debug__, error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to connect to org.freedesktop.login1.Manager: %s!", __debug__, error->message);
             g_error_free(error);
         }
 #else
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler was disabled at build time.\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler was disabled at build time.", __debug__);
 #endif
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler is disabled via settings.\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: system sleep handler is disabled via settings.", __debug__);
     }
 
     /* Create desired number of devices */
     for (gint i = 0; i < settings->num_devices; i++) {
         if (!cdemu_daemon_add_device(self)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create device!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create device!", __debug__);
             return FALSE;
         }
     }
@@ -202,37 +202,37 @@ void cdemu_daemon_prepare_for_system_sleep (CdemuDaemon *self, gboolean start)
 {
     GList *iter;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: received prepare-for-sleep signal, start=%d\n", __debug__, start);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: received prepare-for-sleep signal, start=%d", __debug__, start);
 
     if (start) {
         /* System is entering sleep/hibernation. */
 
         /* Stop devices. */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: stopping devices...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: stopping devices...", __debug__);
         for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
             cdemu_device_stop(iter->data);
         }
 
         /* Release the sleep inhibitor lock, if held. */
         if (self->priv->system_sleep_inhibitor_fds) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: releasing sleep inhibitor lock...\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: releasing sleep inhibitor lock...", __debug__);
             g_object_unref(self->priv->system_sleep_inhibitor_fds);
             self->priv->system_sleep_inhibitor_fds = NULL;
         } else {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: no sleep inhibitor lock to release\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: no sleep inhibitor lock to release", __debug__);
         }
     } else {
         /* System has awoken from sleep/hibernation. */
 
         /* Try re-taking the sleep inhibitor lock. */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-taking sleep inhibitor lock...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-taking sleep inhibitor lock...", __debug__);
         cdemu_daemon_obtain_system_sleep_inhibitor_lock(self);
 
         /* Start devices. */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-starting devices...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: re-starting devices...", __debug__);
         for (iter = self->priv->devices; iter != NULL; iter = g_list_next(iter)) {
             if (!cdemu_device_start(iter->data, self->priv->ctl_device)) {
-                CDEMU_DEBUG(iter->data, DAEMON_DEBUG_WARNING, "%s: failed to start device after wake up!\n", __debug__);
+                CDEMU_DEBUG(iter->data, DAEMON_DEBUG_WARNING, "%s: failed to start device after wake up!", __debug__);
             }
         }
     }
@@ -244,11 +244,11 @@ void cdemu_daemon_obtain_system_sleep_inhibitor_lock (CdemuDaemon *self)
     GError *error = NULL;
 
     if (self->priv->system_sleep_inhibitor_fds) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: trying to obtain system sleep inhibitor lock when one is already held!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: trying to obtain system sleep inhibitor lock when one is already held!", __debug__);
         return;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: trying to obtain system sleep inhibitor lock...\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: trying to obtain system sleep inhibitor lock...", __debug__);
     succeeded = freedesktop_login_manager_call_inhibit_sync(
         self->priv->login_manager_proxy,
         "sleep",
@@ -265,9 +265,9 @@ void cdemu_daemon_obtain_system_sleep_inhibitor_lock (CdemuDaemon *self)
     );
 
     if (succeeded) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully obtained system sleep inhibitor lock.\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_SLEEP_HANDLER, "%s: successfully obtained system sleep inhibitor lock.", __debug__);
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to obtain system sleep inhibitor lock: %s!\n", __debug__, error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to obtain system sleep inhibitor lock: %s!", __debug__, error->message);
         g_error_free(error);
     }
 }
@@ -288,7 +288,7 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
     /* Create and initialize device object */
     device = g_object_new(CDEMU_TYPE_DEVICE, NULL);
     if (!cdemu_device_initialize(device, device_number, self->priv->audio_driver, self->priv->cdemu_debug_mask, self->priv->mirage_debug_mask)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device #%i\n", __debug__, device_number);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device #%i", __debug__, device_number);
         g_object_unref(device);
         return FALSE;
     }
@@ -304,7 +304,7 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
 
     /* Start device */
     if (!cdemu_device_start(device, self->priv->ctl_device)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start device #%i!\n", __debug__, device_number);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start device #%i!", __debug__, device_number);
         g_object_unref(device);
         return FALSE;
     }

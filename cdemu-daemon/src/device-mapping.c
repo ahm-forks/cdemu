@@ -37,7 +37,7 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
         try_again = TRUE; /* ... try again later */
     } else if (ioctl_ret < 0) {
         /* Other errors */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available", __debug__, ioctl_ret);
     } else {
         /* FIXME: until we figure how to get SCSI CD-ROM and SCSI Generic Device
          * device paths directly from kernel, we'll have to live with parsing of the
@@ -49,7 +49,7 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
         gchar path_sg[16] = "";
 
         if (!dir_dev) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i (%s) could not be opened; device mapping info for this device will not be available\n", __debug__, self->priv->number, sysfs_dev_path);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i (%s) could not be opened; device mapping info for this device will not be available", __debug__, self->priv->number, sysfs_dev_path);
         } else {
             /* Iterate through sysfs dir */
             const gchar *entry_name;
@@ -114,14 +114,14 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
             if (strlen(path_sr)) {
                 self->priv->device_sr = g_strconcat("/dev/", path_sr, NULL);
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available", __debug__, self->priv->number);
                 self->priv->device_sr = NULL;
             }
 
             if (strlen(path_sg)) {
                 self->priv->device_sg = g_strconcat("/dev/", path_sg, NULL);
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available", __debug__, self->priv->number);
                 self->priv->device_sg = NULL;
             }
         }

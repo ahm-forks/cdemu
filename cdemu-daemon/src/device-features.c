@@ -647,7 +647,7 @@ static void cdemu_device_set_current_features (CdemuDevice *self, const guint32 
         if (feature) {
             feature->cur = 1;
         } else {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: feature 0x%X not found; shouldn't happen!\n", __debug__, feats[i]);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: feature 0x%X not found; shouldn't happen!", __debug__, feats[i]);
         }
     }
 }
@@ -726,7 +726,7 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             break;
         }
         default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled profile index %d; shouldn't happen!\n", __debug__, profile_index);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled profile index %d; shouldn't happen!", __debug__, profile_index);
             return;
         }
     }

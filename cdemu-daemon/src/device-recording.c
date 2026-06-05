@@ -34,7 +34,7 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
 
     /* Dump sector data */
     if (CDEMU_DEBUG_ON(self, DAEMON_DEBUG_RECORDING)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector data to be written:\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector data to be written:", __debug__);
 
         /* Sync, header, subheader, first 32 bytes of user data and 16-byte Q subchannel */
         if (mirage_sector_get_sync(sector, &data, &data_length, NULL)) {
@@ -48,14 +48,14 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
         }
         mirage_sector_get_data(sector, &data, NULL, NULL);
         CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 32);
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ...", __debug__);
         mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data, NULL, NULL);
         CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 16);
     }
 
     /* Put sector to track */
     if (!mirage_track_put_sector(self->priv->open_track, sector, &local_error)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write sector to track: %s!\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write sector to track: %s!", __debug__, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -66,7 +66,7 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
 static gboolean cdemu_device_recording_close_track (CdemuDevice *self)
 {
     if (self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track", __debug__);
 
         /* Release the reference we hold */
         g_object_unref(self->priv->open_track);
@@ -81,7 +81,7 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
     if (self->priv->open_session) {
         const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session", __debug__);
 
         /* If we have an open track, close it */
         if (self->priv->open_track) {
@@ -92,7 +92,7 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
         if (self->priv->leadin_cdtext_packs) {
             GError *local_error = NULL;
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)\n", __debug__, self->priv->num_leadin_cdtext_packs);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)", __debug__, self->priv->num_leadin_cdtext_packs);
 
             /* Copy all packs' data into single buffer, and decode it
              * into session */
@@ -108,7 +108,7 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             }
 
             if (!mirage_session_set_cdtext_data(self->priv->open_session, cdtext_data, cdtext_data_len, &local_error)) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set CD-TEXT data: %s\n", __debug__, local_error->message);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set CD-TEXT data: %s", __debug__, local_error->message);
                 g_error_free(local_error);
             }
 
@@ -147,7 +147,7 @@ static gboolean cdemu_device_recording_open_session (CdemuDevice *self)
 
     mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened session #%d; start sector: %d, first track: %d!", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
 
     return TRUE;
 }
@@ -166,7 +166,7 @@ static gboolean cdemu_device_recording_open_track (CdemuDevice *self, MirageSect
 
     mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened track #%d; sector type: %d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), sector_type, mirage_track_layout_get_start_sector(self->priv->open_track));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened track #%d; sector type: %d; start sector: %d!", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), sector_type, mirage_track_layout_get_start_sector(self->priv->open_track));
 
     return TRUE;
 }
@@ -210,7 +210,7 @@ static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self,
         ptr += 18;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in CD-TEXT:\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in CD-TEXT:", __debug__);
     CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, 72);
 
     return TRUE;
@@ -282,7 +282,7 @@ static gboolean cdemu_device_tao_recording_open_session (CdemuDevice *self)
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (p_0x05->mcn[0]) {
         /* We can get away with this because MCN data fields are followed by a ZERO field */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting MCN from write parameters mode page: %s\n", __debug__, &p_0x05->mcn[1]);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting MCN from write parameters mode page: %s", __debug__, &p_0x05->mcn[1]);
         mirage_session_set_mcn(self->priv->open_session, (gchar *)&p_0x05->mcn[1]);
     }
 
@@ -300,7 +300,7 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (p_0x05->isrc[0]) {
         /* We can get away with this because ISRC data fields are followed by a ZERO field*/
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting ISRC from write parameters mode page: %s\n", __debug__, &p_0x05->isrc[1]);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting ISRC from write parameters mode page: %s", __debug__, &p_0x05->isrc[1]);
         mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
     }
 
@@ -313,7 +313,7 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD) {
         fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_PREGAP, &local_error);
         if (!fragment) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create pregap fragment for track: %s\n", __debug__, local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create pregap fragment for track: %s", __debug__, local_error->message);
             g_error_free(local_error);
             return FALSE;
         }
@@ -330,7 +330,7 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     /* Data fragment */
     fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_DATA, &local_error);
     if (!fragment) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s", __debug__, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -345,20 +345,20 @@ static gboolean cdemu_device_tao_recording_write_sector (CdemuDevice *self, Mira
 {
     /* If there is no opened session, open one */
     if (!self->priv->open_session) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no session opened; opening one!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no session opened; opening one!", __debug__);
 
         if (!cdemu_device_tao_recording_open_session(self)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new session!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new session!", __debug__);
             return FALSE;
         }
     }
 
     /* If there is no opened track, open one */
     if (!self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no track opened; opening one (sector type: %d)!\n", __debug__, mirage_sector_get_sector_type(sector));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no track opened; opening one (sector type: %d)!", __debug__, mirage_sector_get_sector_type(sector));
 
         if (!cdemu_device_tao_recording_open_track(self, mirage_sector_get_sector_type(sector))) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new track!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new track!", __debug__);
             return FALSE;
         }
     }
@@ -380,13 +380,13 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
     const struct RECORDING_DataFormat *format;
     if (is_cd_rom) {
         format = &recording_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (data block type %d as per mode page 0x05)\n", __debug__, num_sectors, start_address, format->sector_type, p_0x05->data_block_type);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (data block type %d as per mode page 0x05)", __debug__, num_sectors, start_address, format->sector_type, p_0x05->data_block_type);
     } else {
         format = &recording_data_formats[8]; /* Force format 8: 2048 bytes - Mode 1 user data */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (forcing data block type 8 due to medium type)\n", __debug__, num_sectors, start_address, format->sector_type);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: write %d sectors at address 0x%X; sector type %d (forcing data block type 8 due to medium type)", __debug__, num_sectors, start_address, format->sector_type);
     }
     if (!format->valid) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type!", __debug__);
         cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
         return FALSE;
     }
@@ -400,7 +400,7 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
 
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d", __debug__, address);
 
         /* Read data from host */
         cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
@@ -413,7 +413,7 @@ static gboolean cdemu_device_tao_recording_write_sectors (CdemuDevice *self, gin
 
         /* Feed sector data */
         if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
             break;
@@ -503,7 +503,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
      * therefore we will infer session layout from sectors' data. */
     if (tno == 0x00) {
         if (!self->priv->open_session) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-in sector; opening session\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-in sector; opening session", __debug__);
             cdemu_device_recording_open_session(self);
 
             self->priv->last_recorded_tno = 0;
@@ -518,7 +518,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
      * close the session, though */
     if (tno == 0xAA) {
         if (self->priv->open_session) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-out sector; closing session\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first lead-out sector; closing session", __debug__);
             cdemu_device_recording_close_session(self);
         }
 
@@ -537,11 +537,11 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     if (adr == 1) {
         /* Validate address */
         if (absolute_address != address) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: command LBA %d does not match LBA encoded in sector %d\n", __debug__, address, absolute_address);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: command LBA %d does not match LBA encoded in sector %d", __debug__, address, absolute_address);
         }
 
         if (tno != self->priv->last_recorded_tno) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: TNO changed; open new track (mode: %d)\n", __debug__, mirage_sector_get_sector_type(sector));
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: TNO changed; open new track (mode: %d)", __debug__, mirage_sector_get_sector_type(sector));
 
             if (self->priv->open_track) {
                 cdemu_device_recording_close_track(self);
@@ -555,7 +555,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             MirageFragment *fragment;
 
             if (idx == 0) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: track has a pregap with length: %d\n", __debug__, track_relative_address + 1);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: track has a pregap with length: %d", __debug__, track_relative_address + 1);
                 mirage_track_set_track_start(self->priv->open_track, track_relative_address + 1);
 
                 /* Create pregap fragment */
@@ -566,7 +566,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             }
 
             if (!fragment) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create %s fragment for track: %s\n", __debug__, (idx == 0) ? "pregap" : "data", local_error->message);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create %s fragment for track: %s", __debug__, (idx == 0) ? "pregap" : "data", local_error->message);
                 g_error_free(local_error);
                 return FALSE;
             }
@@ -577,23 +577,23 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             self->priv->last_recorded_tno = tno;
             self->priv->last_recorded_idx = idx;
         } else if (idx != self->priv->last_recorded_idx) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: index changed: %d -> %d\n", __debug__, self->priv->last_recorded_idx, idx);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: index changed: %d -> %d", __debug__, self->priv->last_recorded_idx, idx);
             if (idx == 1) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: end of pregap\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: end of pregap", __debug__);
 
                 /* Create data fragment */
                 GError *local_error = NULL;
 
                 MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_DATA, &local_error);
                 if (!fragment) {
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s\n", __debug__, local_error->message);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s", __debug__, local_error->message);
                     g_error_free(local_error);
                     return FALSE;
                 }
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: adding index at track-relative address: %d\n", __debug__, track_relative_address);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: adding index at track-relative address: %d", __debug__, track_relative_address);
                 mirage_track_add_index(self->priv->open_track, track_relative_address, NULL);
             }
 
@@ -604,7 +604,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
         if (self->priv->open_session && !mirage_session_get_mcn(self->priv->open_session)) {
             gchar mcn[13] = "";
             mirage_helper_subchannel_q_decode_mcn(&subchannel[1], mcn);
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting MCN: %s\n", __debug__, mcn);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting MCN: %s", __debug__, mcn);
             mirage_session_set_mcn(self->priv->open_session, mcn);
         }
     } else if (adr == 3) {
@@ -612,13 +612,13 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
         if (self->priv->open_track && !mirage_track_get_isrc(self->priv->open_track)) {
             gchar isrc[12] = "";
             mirage_helper_subchannel_q_decode_isrc(&subchannel[1], isrc);
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting ISRC: %s\n", __debug__, isrc);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting ISRC: %s", __debug__, isrc);
             mirage_track_set_isrc(self->priv->open_track, isrc);
         }
     }
 
     if (!self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no track opened to write sector!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no track opened to write sector!", __debug__);
         return FALSE;
     }
 
@@ -642,21 +642,21 @@ static gboolean cdemu_device_raw_recording_write_sectors (CdemuDevice *self, gin
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     const struct RECORDING_DataFormat *format = &recording_data_formats[p_0x05->data_block_type];
     if (!format->valid) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type (%d)!\n", __debug__, p_0x05->data_block_type);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid/unsupported data block type (%d)!", __debug__, p_0x05->data_block_type);
         cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
         return FALSE;
     }
 
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d", __debug__, address);
 
         /* Read data from host */
         cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
 
         /* Feed the sector; in raw recording, sectors are scrambled and raw */
         if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_RAW_SCRAMBLED, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
             break;
@@ -820,22 +820,22 @@ static gboolean cdemu_device_sao_recording_open_track (CdemuDevice *self)
 
         gint fragment_length = mirage_fragment_get_length(entry_fragment);
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: constructing fragment #%d from CUE sheet - length %d\n", __debug__, i, fragment_length);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: constructing fragment #%d from CUE sheet - length %d", __debug__, i, fragment_length);
 
         /* Determine if we need fragment for pregap or for data */
         if (mirage_fragment_get_address(entry_fragment) < mirage_track_get_track_start(self->priv->cue_entry)) {
             role = MIRAGE_FRAGMENT_PREGAP;
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: pregap fragment\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: pregap fragment", __debug__);
         } else {
             role = MIRAGE_FRAGMENT_DATA;
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data fragment\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data fragment", __debug__);
         }
         g_object_unref(entry_fragment);
 
         /* Create fragment */
         track_fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, role, &local_error);
         if (!track_fragment) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create %s fragment for track: %s\n", __debug__, (role == MIRAGE_FRAGMENT_PREGAP) ? "pregap" : "data", local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create %s fragment for track: %s", __debug__, (role == MIRAGE_FRAGMENT_PREGAP) ? "pregap" : "data", local_error->message);
             g_error_free(local_error);
             return FALSE;
         }
@@ -869,7 +869,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 {
     /* We need a valid CUE sheet */
     if (!self->priv->cue_sheet) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: CUE sheet not set!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: CUE sheet not set!", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
         return FALSE;
     }
@@ -886,15 +886,15 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d", __debug__, address);
 
         /* In RAW SAO mode, the host sends us lead-in */
         if (address < -150 && self->priv->sao_leadin_format & 0xC0) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO", __debug__);
 
             main_format_ptr = sao_main_formats_find(self->priv->sao_leadin_format);
             if (!main_format_ptr) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!\n", __debug__, self->priv->sao_leadin_format);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!", __debug__, self->priv->sao_leadin_format);
                 cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -902,7 +902,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
             subchannel_format_ptr = sao_subchannel_formats_find(self->priv->sao_leadin_format);
             if (!subchannel_format_ptr) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!\n", __debug__, self->priv->sao_leadin_format);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!", __debug__, self->priv->sao_leadin_format);
                 cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -912,7 +912,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
             /* Feed the sector */
             if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_AUDIO, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!", __debug__, local_error->message);
                 g_error_free(local_error);
                 local_error = NULL;
             }
@@ -925,7 +925,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
         /* Grab track entry from CUE sheet, if necessary */
         if (!self->priv->cue_entry || !mirage_track_layout_contains_address(self->priv->cue_entry, address)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: getting track entry from CUE sheet for sector %d...\n", __debug__, address);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: getting track entry from CUE sheet for sector %d...", __debug__, address);
 
             if (self->priv->cue_entry) {
                 g_object_unref(self->priv->cue_entry);
@@ -933,7 +933,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
             self->priv->cue_entry = mirage_session_get_track_by_address(self->priv->cue_sheet, address, NULL);
             if (!self->priv->cue_entry) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find track entry in CUE sheet for address %d!\n", __debug__, address);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find track entry in CUE sheet for address %d!", __debug__, address);
                 cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -957,7 +957,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         /* Grab fragment entry from CUE sheet, if necessary */
         gint track_start = mirage_track_layout_get_start_sector(self->priv->cue_entry);
         if (!cue_fragment || !mirage_fragment_contains_address(cue_fragment, address - track_start)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: getting fragment entry from CUE track entry for sector %d...\n", __debug__, address);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: getting fragment entry from CUE track entry for sector %d...", __debug__, address);
 
             if (cue_fragment) {
                 g_object_unref(cue_fragment);
@@ -965,7 +965,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
             cue_fragment = mirage_track_get_fragment_by_address(self->priv->cue_entry, address - track_start, NULL);
             if (!cue_fragment) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find fragment entry in CUE track entry for address %d!\n", __debug__, address);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find fragment entry in CUE track entry for address %d!", __debug__, address);
                 cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -977,12 +977,12 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
              * data form supplied by CUE sheet! */
             gint format = mirage_fragment_main_data_get_format(cue_fragment);
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data type for subsequent sectors: 0x%X)!\n", __debug__, format);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data type for subsequent sectors: 0x%X)!", __debug__, format);
 
             /* Find corresponding format descriptors */
             main_format_ptr = sao_main_formats_find(format);
             if (!main_format_ptr) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!\n", __debug__, format);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve main data format for format code 0x%X!", __debug__, format);
                 cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -990,7 +990,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
             subchannel_format_ptr = sao_subchannel_formats_find(format);
             if (!subchannel_format_ptr) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!\n", __debug__, format);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to resolve subchannel data format for format code 0x%X!", __debug__, format);
                 cdemu_device_write_sense(self, MEDIUM_ERROR, WRITE_ERROR);
                 succeeded = FALSE;
                 goto finish;
@@ -999,7 +999,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
         /* Make sure we have data format descriptors set */
         if (!main_format_ptr|| !subchannel_format_ptr) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data format not set!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data format not set!", __debug__);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
             succeeded = FALSE;
             goto finish;
@@ -1014,7 +1014,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
 
         /* Feed the sector */
         if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
         }
@@ -1049,7 +1049,7 @@ finish:
 
     /* Check if we have reached end of session */
     if (start_address + num_sectors >= mirage_session_layout_get_start_sector(self->priv->cue_sheet) + mirage_session_layout_get_length(self->priv->cue_sheet)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: end of session reached; closing\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: end of session reached; closing", __debug__);
         cdemu_device_recording_close_session(self);
     }
 
@@ -1105,7 +1105,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 {
     gint num_entries = cue_sheet_size / 8;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: number of CUE sheet entries: %d\n", __debug__, num_entries);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: number of CUE sheet entries: %d", __debug__, num_entries);
 
     /* We build our internal representation of a CUE sheet inside a
      * MirageSession object. In order to minimize necessary book-keeping,
@@ -1117,7 +1117,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
     cdemu_device_sao_recording_create_cue_sheet(self);
 
     /* First pass */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first pass: creating tracks...\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: first pass: creating tracks...", __debug__);
     for (gint i = 0; i < num_entries; i++) {
         const guint8 *cue_entry = cue_sheet + i*8;
 
@@ -1133,7 +1133,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
         /* Use lead-in to detect RAW SAO mode */
         if (tno == 0) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX\n", __debug__, cue_entry[3]);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX", __debug__, cue_entry[3]);
             self->priv->sao_leadin_format = cue_entry[3];
             continue;
         }
@@ -1150,7 +1150,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
         MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
         if (!track) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: creating track #%d\n", __debug__, tno);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: creating track #%d", __debug__, tno);
 
             /* Create track entry */
             track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
@@ -1174,7 +1174,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
                 if (main_format_ptr) {
                     mirage_track_set_sector_type(track, main_format_ptr->sector_type);
                 } else {
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid format 0x%X for TNO %d in CUE sheet!\n", __debug__, cue_entry[3], tno);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid format 0x%X for TNO %d in CUE sheet!", __debug__, cue_entry[3], tno);
                 }
             }
         }
@@ -1183,7 +1183,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
     /* Second pass; this one goes backwards, because it's easier to
      * compute lengths that way */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: second pass: setting lengths and data formats...\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: second pass: setting lengths and data formats...", __debug__);
     gint last_address = 0;
     for (gint i = num_entries - 1; i >= 0; i--) {
         const guint8 *cue_entry = cue_sheet + i*8;
@@ -1211,7 +1211,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
         gint address = mirage_helper_msf2lba(cue_entry[5], cue_entry[6], cue_entry[7], TRUE);
 
         if (tno != 0xAA) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: track #%d index #%d has length of %d sectors; data format: %02hX\n", __debug__, tno, idx, (last_address - address), cue_entry[3]);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: track #%d index #%d has length of %d sectors; data format: %02hX", __debug__, tno, idx, (last_address - address), cue_entry[3]);
 
             MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
 
@@ -1232,7 +1232,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
     }
 
     /* Final pass: ISRC, MCN and indices */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: final pass: ISRC, MCN and indices...\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: final pass: ISRC, MCN and indices...", __debug__);
     for (gint i = 0; i < num_entries; i++) {
         const guint8 *cue_entry = cue_sheet + i*8;
 
@@ -1246,7 +1246,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
             if (idx == 1) {
                 last_address = address;
             } else if (idx > 1) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: adding track #%d, index #%d\n", __debug__, tno, idx);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: adding track #%d, index #%d", __debug__, tno, idx);
 
                 MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
                 mirage_track_add_index(track, address - last_address, NULL);
@@ -1255,7 +1255,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
         } else if (adr == 2 || adr == 3) {
             /* MCN or ISRC; this means next entry must be valid, and must have same adr! */
             if (i + 1 >= num_entries) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: missing next CUE entry for MCN/ISRC; skipping!\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: missing next CUE entry for MCN/ISRC; skipping!", __debug__);
                 continue;
             }
 
@@ -1269,7 +1269,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
                 gchar *mcn = g_malloc0(13 + 1);
                 memcpy(mcn, cue_entry+1, 7);
                 memcpy(mcn+7, next_cue_entry+1, 6);
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: MCN: %s\n", __debug__, mcn);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: MCN: %s", __debug__, mcn);
                 mirage_session_set_mcn(self->priv->cue_sheet, mcn);
                 g_free(mcn);
             } else {
@@ -1277,7 +1277,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
                 gchar *isrc = g_malloc0(12 + 1);
                 memcpy(isrc, cue_entry+2, 6);
                 memcpy(isrc+6, next_cue_entry+2, 6);
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ISRC for track #%d: %s\n", __debug__, cue_entry[1], isrc);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ISRC for track #%d: %s", __debug__, cue_entry[1], isrc);
 
                 MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
                 mirage_track_set_isrc(track, isrc);
@@ -1334,10 +1334,10 @@ static gboolean cdemu_device_dao_recording_reserve_track (CdemuDevice *self, gui
 {
     /* Open session if necessary */
     if (!self->priv->open_session) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no session opened; opening one!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no session opened; opening one!", __debug__);
 
         if (!cdemu_device_recording_open_session(self)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new session!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new session!", __debug__);
             return FALSE;
         }
     }
@@ -1351,7 +1351,7 @@ static gboolean cdemu_device_dao_recording_reserve_track (CdemuDevice *self, gui
     GError *local_error = NULL;
     MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_DATA, &local_error);
     if (!fragment) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s", __debug__, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -1370,7 +1370,7 @@ static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gin
      * RESERVE TRACK... if not, open one by reserving a track of length 0 */
     if (!self->priv->open_track) {
         if (!cdemu_device_dao_recording_reserve_track(self, 0)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open track!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open track!", __debug__);
             return FALSE;
         }
     }
@@ -1379,7 +1379,7 @@ static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gin
      * page 0x05 must be 8! */
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (p_0x05->data_block_type != 8) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: data block type in mode page 0x05 is not 8!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: data block type in mode page 0x05 is not 8!", __debug__);
         return FALSE;
     }
 
@@ -1390,14 +1390,14 @@ static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gin
 
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d", __debug__, address);
 
         /* Read data from host */
         cdemu_device_read_buffer(self, 2048);
 
         /* Feed sector data */
         if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_MODE1, self->priv->buffer, 2048, MIRAGE_SUBCHANNEL_NONE, NULL, 0, 0, &local_error)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
             break;
@@ -1446,28 +1446,28 @@ void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode)
     /* Activate mode */
     switch (mode) {
         case 1: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating track-at-once recording\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating track-at-once recording", __debug__);
             self->priv->recording = &recording_commands_tao;
             break;
         }
         case 2: {
             if (self->priv->disc && (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD)) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating session-at-once recording (CD)\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating session-at-once recording (CD)", __debug__);
                 self->priv->recording = &recording_commands_sao;
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating disc-at-once recording (DVD/BD)\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating disc-at-once recording (DVD/BD)", __debug__);
                 self->priv->recording = &recording_commands_dao;
             }
             break;
         }
         case 3: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating raw recording\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating raw recording", __debug__);
             self->priv->recording = &recording_commands_raw;
             break;
         }
         default: {
             /* Unhandled mode; reset to TAO */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled recording mode: %d; resetting to TAO!\n", __debug__, mode);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled recording mode: %d; resetting to TAO!", __debug__, mode);
             mode = 1;
             self->priv->recording = &recording_commands_tao;
         }

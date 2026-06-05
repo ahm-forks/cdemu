@@ -33,7 +33,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
     gdouble dpm_density = 0;
 
     if (!mirage_disc_get_dpm_data_for_sector(self->priv->disc, address, &dpm_angle, &dpm_density, NULL)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: failed to get DPM data for sector 0x%X\n", __debug__, address);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: failed to get DPM data for sector 0x%X", __debug__, address);
         return;
     }
 
@@ -80,7 +80,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
         rotations = fabs(dpm_angle - self->priv->current_angle);
         self->priv->current_angle = dpm_angle;
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: 0x%X->0x%X (%d): %f rotations\n", __debug__, self->priv->current_address, address, abs(self->priv->current_address - address), rotations);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: 0x%X->0x%X (%d): %f rotations", __debug__, self->priv->current_address, address, abs(self->priv->current_address - address), rotations);
 
         /* We emulate moving the head if amount of rotations exceeds 10 */
         if (rotations >= 10.0) {
@@ -105,7 +105,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
         gdouble spr = 360.0 / dpm_density; /* Sectors per rotation */
         gdouble sps = spr * rps; /* Sectors per second */
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: %d sectors at %f sectors/second\n", __debug__, num_sectors, sps);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: %d sectors at %f sectors/second", __debug__, num_sectors, sps);
         self->priv->delay_amount += num_sectors/sps*1000000; /* Delay, in microseconds */
     }
 }
@@ -131,7 +131,7 @@ void cdemu_device_delay_finalize (CdemuDevice *self)
 {
     /* If there's no delay to perform, don't bother doing anything... */
     if (!self->priv->delay_amount) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: no delay to perform\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: no delay to perform", __debug__);
         return;
     }
 
@@ -141,15 +141,15 @@ void cdemu_device_delay_finalize (CdemuDevice *self)
     /* Calculate time difference */
     gint64 delay_diff = delay_now - self->priv->delay_begin;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %" G_GINT64_FORMAT " microseconds\n", __debug__, self->priv->delay_amount);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %" G_GINT64_FORMAT " microseconds\n", __debug__, delay_diff);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %" G_GINT64_FORMAT " microseconds", __debug__, self->priv->delay_amount);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %" G_GINT64_FORMAT " microseconds", __debug__, delay_diff);
 
     /* Compensate for the processing time */
     gint64 delay = self->priv->delay_amount - delay_diff;
-    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: actual delay: %" G_GINT64_FORMAT " microseconds\n", __debug__, delay);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: actual delay: %" G_GINT64_FORMAT " microseconds", __debug__, delay);
 
     if (delay < 0) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: spent too much time processing, bailing out!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: spent too much time processing, bailing out!", __debug__);
         return;
     }
 

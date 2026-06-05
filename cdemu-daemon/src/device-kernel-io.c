@@ -63,18 +63,18 @@ void cdemu_device_write_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write data from cache (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write data from cache (%d bytes)", __debug__, length);
 
     /* Minimum of requested write length and actual data in our cache */
     len = MIN(self->priv->buffer_size, length);
 
     /* Make sure there is enough space in (remaining) command output buffer */
     if (self->priv->cmd_out_buffer_pos + len > self->priv->cmd->out_len) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!", __debug__);
         len = self->priv->cmd->out_len - self->priv->cmd_out_buffer_pos;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, self->priv->cmd_out_buffer_pos);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d", __debug__, len, self->priv->cmd_out_buffer_pos);
     memcpy(self->priv->cmd->out + self->priv->cmd_out_buffer_pos, self->priv->buffer, len);
     self->priv->cmd_out_buffer_pos += len;
 }
@@ -83,18 +83,18 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read data to cache (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read data to cache (%d bytes)", __debug__, length);
 
     /* Minimum of requested read length and (remaining) data in command input buffer */
     len = MIN(self->priv->cmd->in_len - self->priv->cmd_in_buffer_pos, length);
 
     /* Make sure there is enough space in our cache */
     if (len > self->priv->buffer_capacity) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: copy request size (%d) exceeds our cache size (%d); truncating!buffer\n", __debug__, len, self->priv->buffer_capacity);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: copy request size (%d) exceeds our cache size (%d); truncating!buffer", __debug__, len, self->priv->buffer_capacity);
         len = self->priv->buffer_capacity;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer at offset %d\n", __debug__, len, self->priv->cmd_in_buffer_pos);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer at offset %d", __debug__, len, self->priv->cmd_in_buffer_pos);
     memcpy(self->priv->buffer, self->priv->cmd->in + self->priv->cmd_in_buffer_pos, len);
     self->priv->buffer_size = len;
     self->priv->cmd_in_buffer_pos += len;
@@ -103,7 +103,7 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 
 void cdemu_device_flush_buffer (CdemuDevice *self)
 {
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing cache\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing cache", __debug__);
 
     memset(self->priv->buffer, 0, self->priv->buffer_size);
     self->priv->buffer_size = 0;
@@ -135,7 +135,7 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
     sense.cmd_info[2] = (command_info & 0x0000FF00) >>  8;
     sense.cmd_info[3] = (command_info & 0x000000FF) >>  0;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%" G_GSIZE_MODIFIER "d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%" G_GSIZE_MODIFIER "d bytes) to OUT buffer", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
 
     /* Write sense directly into command's output buffer */
     memcpy(self->priv->cmd->out, &sense, sizeof(struct REQUEST_SENSE_SenseFixed));
@@ -160,20 +160,20 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     struct vhba_request *vreq = (gpointer)self->priv->kernel_io_buffer;
     struct vhba_response *vres = (gpointer)self->priv->kernel_io_buffer;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler invoked\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler invoked", __debug__);
 
     /* Read request */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request", __debug__);
 
     ret = read(fd, vreq, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_request)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!\n", __debug__, ret, sizeof(struct vhba_request));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!", __debug__, ret, sizeof(struct vhba_request));
         /* Signal the kernel I/O error, so daemon can restart the device */
         g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: successfully read request; cmd %02Xh, in/out len %d, tag %d\n", __debug__, vreq->cdb[0], vreq->data_len, vreq->tag);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: successfully read request; cmd %02Xh, in/out len %d, tag %d", __debug__, vreq->cdb[0], vreq->data_len, vreq->tag);
 
     /* Initialize CDEMU_Command */
     memcpy(cmd.cdb, vreq->cdb, vreq->cdb_len);
@@ -201,17 +201,17 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     vres->data_len = self->priv->cmd_out_buffer_pos;
 
     /* Write response */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing response\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing response", __debug__);
 
     ret = write(fd, vres, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_response)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!\n", __debug__, ret, sizeof(struct vhba_response));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%" G_GSIZE_MODIFIER "d bytes; at least %" G_GSIZE_MODIFIER "d required)!", __debug__, ret, sizeof(struct vhba_response));
         /* Signal the kernel I/O error, so daemon can restart the device */
         g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler done\n\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler done", __debug__);
 
     return TRUE;
 }
@@ -219,9 +219,9 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
 static gpointer cdemu_device_io_thread (CdemuDevice *self)
 {
-	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread started\n", __debug__);
+	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread started", __debug__);
     g_main_loop_run(self->priv->main_loop);
-	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread finished\n\n", __debug__);
+	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread finished", __debug__);
 
     return NULL;
 }
@@ -237,14 +237,14 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
     /* Open control device and set up I/O channel */
     self->priv->io_channel = g_io_channel_new_file(ctl_device, "r+", &local_error);
     if (!self->priv->io_channel) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s: %s!\n", __debug__, ctl_device, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s: %s!", __debug__, ctl_device, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
 
     /* Try setting non-blocking operation */
     if (g_io_channel_set_flags(self->priv->io_channel, G_IO_FLAG_NONBLOCK, &local_error) != G_IO_STATUS_NORMAL) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set NONBLOCK flag to control device: %s!\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set NONBLOCK flag to control device: %s!", __debug__, local_error->message);
         g_error_free(local_error);
     }
 
@@ -259,7 +259,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
 
         if (ioctl_ret < 0) {
             /* Other errors */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl 0x%X (%d); device serial number will be generated using local device number!\n", __debug__, 0xBEEF002, ioctl_ret);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl 0x%X (%d); device serial number will be generated using local device number!", __debug__, 0xBEEF002, ioctl_ret);
         }
 
         /* Generate serial number */
@@ -275,7 +275,7 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
     self->priv->io_thread = g_thread_try_new("I/O thread", (GThreadFunc)cdemu_device_io_thread, self, &local_error);
 
     if (!self->priv->io_thread) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread: %s\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread: %s", __debug__, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }

@@ -32,7 +32,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
 
     /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_ALREADY_LOADED, Q_("Device is already loaded!"));
         return FALSE;
     }
@@ -79,7 +79,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
             break;
         }
         default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unknown media type: 0x%X!\n", __debug__, medium_type);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unknown media type: 0x%X!", __debug__, medium_type);
             break;
         }
     }
@@ -117,7 +117,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
 
     /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_ALREADY_LOADED, Q_("Device is already loaded!"));
         return FALSE;
     }
@@ -184,7 +184,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
 
     /* Image writer ID must be provided in parameters */
     if (!writer_id) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer ID provided in parameters!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer ID provided in parameters!", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, Q_("no image writer ID provided in parameters!"));
         g_hash_table_unref(writer_parameters);
         return FALSE;
@@ -279,7 +279,7 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error)
 {
     /* Check if the door is locked */
     if (self->priv->locked) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DEVICE_LOCKED, Q_("Device is locked!"));
         return FALSE;
     }

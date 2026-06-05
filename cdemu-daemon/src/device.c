@@ -91,7 +91,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     buffer_size = cdemu_device_get_kernel_io_buffer_size(self);
     self->priv->kernel_io_buffer = g_try_malloc0(buffer_size);
     if (!self->priv->kernel_io_buffer) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate kernel I/O buffer (%d bytes)!\n", __debug__, buffer_size);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate kernel I/O buffer (%d bytes)!", __debug__, buffer_size);
         return FALSE;
     }
 
@@ -100,7 +100,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->buffer_capacity = buffer_size;
     self->priv->buffer = g_try_malloc0(buffer_size);
     if (!self->priv->buffer) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate cache buffer (%d bytes)!\n", __debug__, buffer_size);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate cache buffer (%d bytes)!", __debug__, buffer_size);
         return FALSE;
     }
 
@@ -213,7 +213,7 @@ GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError
         option_value = g_variant_new("i", mask);
     } else {
         /* Option not found */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?", __debug__, option_name);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid option name '%s'!"), option_name);
     }
 
@@ -305,7 +305,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
         }
     } else {
         /* Option not found */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?", __debug__, option_name);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, Q_("Invalid option name '%s'!"), option_name);
         succeeded = FALSE;
     }

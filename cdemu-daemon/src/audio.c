@@ -35,16 +35,16 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
     gint audio_driver_id = self->priv->driver_id;
 
     /* Open audio device */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: opening audio device\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: opening audio device", __debug__);
     self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
     if (self->priv->device == NULL) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device; falling back to null driver!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device; falling back to null driver!", __debug__);
 
         /* Retry with null */
         audio_driver_id = ao_driver_id("null");
         self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
         if (self->priv->device == NULL) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open 'null' audio device!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open 'null' audio device!", __debug__);
             return NULL;
         }
     }
@@ -56,7 +56,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         self->priv->null_hack = FALSE;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread start\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread start", __debug__);
 
     while (1) {
         /* Process sectors; we go over playing range, check sectors' type, keep
@@ -71,13 +71,13 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         /* Make playback thread interruptible (i.e. if status is changed, it's
          * going to end */
         if (self->priv->status != AUDIO_STATUS_PLAYING) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread interrupted\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread interrupted", __debug__);
             break;
         }
 
         /* Check if we have already reached the end */
         if (self->priv->cur_sector > self->priv->end_sector) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread reached the end\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread reached the end", __debug__);
             self->priv->status = AUDIO_STATUS_COMPLETED; /* Audio operation successfully completed */
             break;
         }
@@ -87,10 +87,10 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         g_mutex_lock(self->priv->device_mutex);
 
         /* Get sector */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playing sector %d (0x%X)\n", __debug__, self->priv->cur_sector, self->priv->cur_sector);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playing sector %d (0x%X)", __debug__, self->priv->cur_sector, self->priv->cur_sector);
         sector = mirage_disc_get_sector(self->priv->disc, self->priv->cur_sector, &error);
         if (!sector) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to get sector 0x%X: %s\n", __debug__, self->priv->cur_sector, error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to get sector 0x%X: %s", __debug__, self->priv->cur_sector, error->message);
             g_error_free(error);
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             g_mutex_unlock(self->priv->device_mutex);
@@ -101,7 +101,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
          * from audio to data one */
         type = mirage_sector_get_sector_type(sector);
         if (type != MIRAGE_SECTOR_AUDIO) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!", __debug__);
             g_object_unref(sector); /* Unref here; we won't need it anymore... */
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             g_mutex_unlock(self->priv->device_mutex);
@@ -121,7 +121,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         /* Play sector */
         mirage_sector_get_data(sector, &tmp_buffer, &tmp_len, NULL);
         if (ao_play(self->priv->device, (gchar *)tmp_buffer, tmp_len) == 0) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: playback error!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: playback error!", __debug__);
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             break;
         }
@@ -138,10 +138,10 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         g_object_unref(sector);
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread end\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread end", __debug__);
 
     /* Close audio device */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: closing audio device\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: closing audio device", __debug__);
     ao_close(self->priv->device);
     self->priv->device = 0;
 
@@ -153,10 +153,10 @@ static void cdemu_audio_join_thread(CdemuAudio *self) {
         return;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish", __debug__);
     g_thread_join(self->priv->playback_thread);
     self->priv->playback_thread = NULL;
-    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished", __debug__);
 }
 
 static void cdemu_audio_start_playing (CdemuAudio *self)
@@ -175,7 +175,7 @@ static void cdemu_audio_start_playing (CdemuAudio *self)
     self->priv->playback_thread = g_thread_try_new("CDEmu Device Audio Play thread", (GThreadFunc)cdemu_audio_playback_thread, self, &local_error);
 
     if (!self->priv->playback_thread) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create audio playback thread: %s\n", __debug__, local_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create audio playback thread: %s", __debug__, local_error->message);
         g_error_free(local_error);
     }
 }
@@ -209,7 +209,7 @@ void cdemu_audio_initialize (CdemuAudio *self, const gchar *driver, gint *cur_se
     }
 
     if (self->priv->driver_id == -1) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: cannot find driver '%s', using 'null' instead!\n", __debug__, driver);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: cannot find driver '%s', using 'null' instead!", __debug__, driver);
         self->priv->driver_id = ao_driver_id("null");
     }
 
@@ -234,10 +234,10 @@ gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *
         self->priv->end_sector = end;
         self->priv->disc = g_object_ref(disc); /* Reference disc for the time of playing */
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: starting playback (0x%X->0x%X)...\n", __debug__, self->priv->cur_sector, self->priv->end_sector);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: starting playback (0x%X->0x%X)...", __debug__, self->priv->cur_sector, self->priv->end_sector);
         cdemu_audio_start_playing(self);
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: play called when paused or already playing!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: play called when paused or already playing!", __debug__);
         succeeded = FALSE;
     }
 
@@ -250,10 +250,10 @@ gboolean cdemu_audio_resume (CdemuAudio *self)
 
     /* Resume is valid only if we're paused */
     if (self->priv->status == AUDIO_STATUS_PAUSED) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resuming playback (0x%X->0x%X)...\n", __debug__, self->priv->cur_sector, self->priv->end_sector);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resuming playback (0x%X->0x%X)...", __debug__, self->priv->cur_sector, self->priv->end_sector);
         cdemu_audio_start_playing(self);
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resume called when not paused!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resume called when not paused!", __debug__);
         succeeded = FALSE;
     }
 
@@ -266,10 +266,10 @@ gboolean cdemu_audio_pause (CdemuAudio *self)
 
     /* Pause is valid only if we are playing */
     if (self->priv->status == AUDIO_STATUS_PLAYING) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pausing playback...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pausing playback...", __debug__);
         cdemu_audio_stop_playing(self, AUDIO_STATUS_PAUSED);
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pause called when not playing!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pause called when not playing!", __debug__);
         succeeded = FALSE;
     }
 
@@ -282,13 +282,13 @@ gboolean cdemu_audio_stop (CdemuAudio *self)
 
     /* Stop is valid only if we are playing or paused */
     if (self->priv->status == AUDIO_STATUS_PLAYING || self->priv->status == AUDIO_STATUS_PAUSED) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stopping playback...\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stopping playback...", __debug__);
         cdemu_audio_stop_playing(self, AUDIO_STATUS_NOSTATUS);
         /* Release disc reference */
         g_object_unref(self->priv->disc);
         self->priv->disc = NULL;
     } else {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stop called when not playing nor paused!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stop called when not playing nor paused!", __debug__);
         succeeded = FALSE;
     }
 

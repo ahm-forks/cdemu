@@ -99,19 +99,18 @@ static gboolean mode_page_0x01_validator (CdemuDevice *self, const guint8 *new_d
 {
     const struct ModePage_0x01 *new_page = (const struct ModePage_0x01 *)new_data;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: new mode page 0x01 settings:\n", __debug__);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  AWRE: %d\n", __debug__, new_page->awre);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  ARRE: %d\n", __debug__, new_page->arre);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  TB: %d\n", __debug__, new_page->tb);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  RC: %d\n", __debug__, new_page->rc);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  PER: %d\n", __debug__, new_page->per);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DTE: %d\n", __debug__, new_page->dte);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DCR: %d\n", __debug__, new_page->dcr);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DCR: %d\n", __debug__, new_page->dcr);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  read retry: %d\n", __debug__, new_page->dcr);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  write retry: %d\n", __debug__, new_page->write_retry);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  recovery: %d\n", __debug__, GUINT16_FROM_BE(new_page->recovery));
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: new mode page 0x01 settings:", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  AWRE: %d", __debug__, new_page->awre);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  ARRE: %d", __debug__, new_page->arre);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  TB: %d", __debug__, new_page->tb);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  RC: %d", __debug__, new_page->rc);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  PER: %d", __debug__, new_page->per);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DTE: %d", __debug__, new_page->dte);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DCR: %d", __debug__, new_page->dcr);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  DCR: %d", __debug__, new_page->dcr);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  read retry: %d", __debug__, new_page->dcr);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  write retry: %d", __debug__, new_page->write_retry);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  recovery: %d", __debug__, GUINT16_FROM_BE(new_page->recovery));
 
     return TRUE;
 }
@@ -121,24 +120,23 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
     const struct ModePage_0x05 *new_page = (const struct ModePage_0x05 *)new_data;
     const struct ModePage_0x05 *old_page = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: new mode page 0x05 settings:\n", __debug__);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  BUFE: %d\n", __debug__, new_page->bufe);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  LS_V: %d\n", __debug__, new_page->ls_v);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  test write: %d\n", __debug__, new_page->test_write);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  write type: %d\n", __debug__, new_page->write_type);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  multisession: %d\n", __debug__, new_page->multisession);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  FP: %d\n", __debug__, new_page->fp);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  copy: %d\n", __debug__, new_page->copy);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  track mode: %d\n", __debug__, new_page->track_mode);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  data block type: %d\n", __debug__, new_page->data_block_type);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  link size: %d\n", __debug__, new_page->link_size);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  session format: %d\n", __debug__, new_page->session_format);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  packet size: %d\n", __debug__, GUINT32_FROM_BE(new_page->packet_size));
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  audio pause length: %d\n", __debug__, GUINT16_FROM_BE(new_page->audio_pause_length));
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  MCN: %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX \n", __debug__, new_page->mcn[0], new_page->mcn[1], new_page->mcn[2], new_page->mcn[3], new_page->mcn[4], new_page->mcn[5], new_page->mcn[6], new_page->mcn[7], new_page->mcn[8], new_page->mcn[9], new_page->mcn[10], new_page->mcn[11], new_page->mcn[12], new_page->mcn[13], new_page->mcn[14], new_page->mcn[15]);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  ISRC: %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX \n", __debug__, new_page->isrc[0], new_page->isrc[1], new_page->isrc[2], new_page->isrc[3], new_page->isrc[4], new_page->isrc[5], new_page->isrc[6], new_page->isrc[7], new_page->isrc[8], new_page->isrc[9], new_page->isrc[10], new_page->isrc[11], new_page->isrc[12], new_page->isrc[13], new_page->isrc[14], new_page->isrc[15]);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  subheader: %02hX %02hX %02hX %02hX\n", __debug__, new_page->subheader[0], new_page->subheader[1], new_page->subheader[2], new_page->subheader[3]);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: new mode page 0x05 settings:", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  BUFE: %d", __debug__, new_page->bufe);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  LS_V: %d", __debug__, new_page->ls_v);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  test write: %d", __debug__, new_page->test_write);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  write type: %d", __debug__, new_page->write_type);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  multisession: %d", __debug__, new_page->multisession);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  FP: %d", __debug__, new_page->fp);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  copy: %d", __debug__, new_page->copy);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  track mode: %d", __debug__, new_page->track_mode);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  data block type: %d", __debug__, new_page->data_block_type);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  link size: %d", __debug__, new_page->link_size);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  session format: %d", __debug__, new_page->session_format);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  packet size: %d", __debug__, GUINT32_FROM_BE(new_page->packet_size));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  audio pause length: %d", __debug__, GUINT16_FROM_BE(new_page->audio_pause_length));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  MCN: %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX", __debug__, new_page->mcn[0], new_page->mcn[1], new_page->mcn[2], new_page->mcn[3], new_page->mcn[4], new_page->mcn[5], new_page->mcn[6], new_page->mcn[7], new_page->mcn[8], new_page->mcn[9], new_page->mcn[10], new_page->mcn[11], new_page->mcn[12], new_page->mcn[13], new_page->mcn[14], new_page->mcn[15]);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  ISRC: %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX %02hX", __debug__, new_page->isrc[0], new_page->isrc[1], new_page->isrc[2], new_page->isrc[3], new_page->isrc[4], new_page->isrc[5], new_page->isrc[6], new_page->isrc[7], new_page->isrc[8], new_page->isrc[9], new_page->isrc[10], new_page->isrc[11], new_page->isrc[12], new_page->isrc[13], new_page->isrc[14], new_page->isrc[15]);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  subheader: %02hX %02hX %02hX %02hX", __debug__, new_page->subheader[0], new_page->subheader[1], new_page->subheader[2], new_page->subheader[3]);
 
     /* At the moment, we do not support incremental/packet recording, nor
      * layer-jump recording */
@@ -148,13 +146,13 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
 
     /* We do not support cooked R-W subchannel data */
     if (new_page->data_block_type == 2) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw data with pack-form R-W subchannel not supported!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw data with pack-form R-W subchannel not supported!", __debug__);
         return FALSE;
     }
 
     /* Change of write type */
     if (new_page->write_type != old_page->write_type) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: changing recording type from %d to %d!\n", __debug__, old_page->write_type, new_page->write_type);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: changing recording type from %d to %d!", __debug__, old_page->write_type, new_page->write_type);
         cdemu_device_recording_set_mode(self, new_page->write_type);
     }
 
@@ -422,7 +420,7 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
     /* Get page's entry */
     GList *raw_entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER((gint)page_new->code), (GCompareFunc)find_mode_page);
     if (!raw_entry) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, page_new->code);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X", __debug__, page_new->code);
         return FALSE;
     }
 
@@ -431,12 +429,12 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
     struct ModePageGeneral *page_current = page_entry->page_current;
 
     if (page_size - 2 != page_current->length) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!", __debug__);
         return FALSE;
     }
 
     if (page_new->length != page_current->length) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!", __debug__);
         return FALSE;
     }
 
@@ -452,7 +450,7 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
     for (gint i = 0; i < page_new->length; i++) {
         /* Compare every byte against the mask */
         if ((raw_ptr_current[i] ^ raw_ptr_new[i]) & ~raw_ptr_mask[i]) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: attempting to change unchangeable value in byte %i!\n", __debug__, i);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: attempting to change unchangeable value in byte %i!", __debug__, i);
             return FALSE;
         }
     }

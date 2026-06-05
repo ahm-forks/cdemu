@@ -212,7 +212,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Audio sector!"), main_data_length);
                     return FALSE;
                 }
@@ -258,7 +258,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 0 sector!"), main_data_length);
                     return FALSE;
                 }
@@ -338,7 +338,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 1 sector!"), main_data_length);
                     return FALSE;
                 }
@@ -385,7 +385,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 2 Formless sector!"), main_data_length);
                     return FALSE;
                 }
@@ -490,7 +490,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 2 Form 1 sector!"), main_data_length);
                     return FALSE;
                 }
@@ -601,7 +601,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 2 Form 2 sector!"), main_data_length);
                     return FALSE;
                 }
@@ -672,7 +672,7 @@ static gboolean mirage_sector_get_info_for_feed_or_extract (MirageSector *self, 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, main_data_length);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!", __debug__, main_data_length);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Unhandled sector size %d for Mode 2 Mixed sector!"), main_data_length);
                     return FALSE;
                 }
@@ -694,7 +694,7 @@ static void mirage_sector_generate_subchannel (MirageSector *self);
 
 static void mirage_sector_generate_sync (MirageSector *self)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync", __debug__);
 
     switch (self->priv->type) {
         case MIRAGE_SECTOR_MODE0:
@@ -717,7 +717,7 @@ static void mirage_sector_generate_header (MirageSector *self)
 {
     guint8 *header = self->priv->sector_data+12;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header", __debug__);
 
     /* Set mode */
     switch (self->priv->type) {
@@ -751,7 +751,7 @@ static void mirage_sector_generate_header (MirageSector *self)
 
 static void mirage_sector_generate_subheader (MirageSector *self)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader", __debug__);
 
     switch (self->priv->type) {
         case MIRAGE_SECTOR_MODE2_FORM1: {
@@ -779,7 +779,7 @@ static void mirage_sector_generate_data (MirageSector *self)
     gint offset = 0;
     gint length = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: \"generating\" (clearing) user data\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: \"generating\" (clearing) user data", __debug__);
 
     mirage_sector_get_data_offset_and_length(self, &offset, &length, NULL);
     memset(self->priv->sector_data + offset, 0, length);
@@ -789,7 +789,7 @@ static void mirage_sector_generate_data (MirageSector *self)
 
 static void mirage_sector_generate_edc_ecc (MirageSector *self)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC", __debug__);
 
     /* If user data is not set, make sure we have cleared it! */
     if (!(self->priv->valid_data & MIRAGE_VALID_DATA)) {
@@ -875,7 +875,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
 {
     gint data_offset;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding: address: %Xh (%d), type: %d, main channel data size: %d, subchannel data size: %d\n", __debug__, address, address, type, main_data_length, subchannel_data_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding: address: %Xh (%d), type: %d, main channel data size: %d, subchannel data size: %d", __debug__, address, address, type, main_data_length, subchannel_data_length);
 
     /* Reset data validity flags */
     self->priv->real_data = self->priv->valid_data = 0;
@@ -889,7 +889,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
      * valid data flags for us, and avoid copying the data again. */
     if (type == MIRAGE_SECTOR_RAW || type == MIRAGE_SECTOR_RAW_SCRAMBLED) {
         if (main_data_length != 2352) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw sectors require 2352 bytes of data!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw sectors require 2352 bytes of data!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Raw sectors require 2352 bytes of data!"));
             return FALSE;
         }
@@ -1010,7 +1010,7 @@ gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_dat
     }
 
     if ((guint)actual_subchannel_length != subchannel_data_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: requested subchannel size (%d) and actual subchannel size (%d) mismatch!\n", __debug__, subchannel_data_length, actual_subchannel_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: requested subchannel size (%d) and actual subchannel size (%d) mismatch!", __debug__, subchannel_data_length, actual_subchannel_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Requested subchannel size (%d) and actual subchannel size (%d) mismatch!"), subchannel_data_length, actual_subchannel_length);
         return FALSE;
     }
@@ -1489,7 +1489,7 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!\n", __debug__, format);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!", __debug__, format);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Subchannel format %d not supported yet!"), format);
             return FALSE;
         }
@@ -1545,7 +1545,7 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!\n", __debug__, format);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!", __debug__, format);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, Q_("Subchannel format %d not supported yet!"), format);
             return FALSE;
         }
@@ -1677,7 +1677,7 @@ void mirage_sector_scramble (MirageSector *self)
 {
     /* Make sure scrambler LUT is initialized */
     if (!ecma_130_scrambler_lut) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot scramble sector - scrambler LUT not initialized!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot scramble sector - scrambler LUT not initialized!", __debug__);
         return;
     }
 
@@ -1715,7 +1715,7 @@ static gint subchannel_generate_p (MirageSector *self, guint8 *buf)
     /* Get sector's parent track */
     track = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!", __debug__);
         return 12;
     }
 
@@ -1746,7 +1746,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
     /* Get sector's parent track */
     track = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!", __debug__);
         return 12;
     }
 
@@ -1805,7 +1805,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             gint track_start;
             MirageIndex *index;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-1 Q: Position\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-1 Q: Position", __debug__);
 
             ctl = mirage_track_get_ctl(track);
             track_number = mirage_track_layout_get_track_number(track);
@@ -1820,16 +1820,16 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             index = mirage_track_get_index_by_address(track, relative_address, NULL);
             if (index) {
                 gint index_number = mirage_index_get_number(index);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index with number: %d\n", __debug__, relative_address, index_number);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index with number: %d", __debug__, relative_address, index_number);
                 buf[2] = index_number;
                 g_object_unref(index);
             } else {
                 /* No index... check if address is in a pregap (strictly less than track start) */
                 if (relative_address < track_start) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X is part of a pregap\n", __debug__, relative_address);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X is part of a pregap", __debug__, relative_address);
                     buf[2] = 0;
                 } else {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index 1\n", __debug__, relative_address);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index 1", __debug__, relative_address);
                     buf[2] = 1;
                 }
             }
@@ -1852,7 +1852,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             /* Mode-2: MCN */
             gint ctl;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-2 Q: MCN\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-2 Q: MCN", __debug__);
 
             ctl = mirage_track_get_ctl(track);
             buf[0] = (ctl << 0x04) | 0x02; /* Mode-2 Q */
@@ -1879,7 +1879,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             /* Mode-3: ISRC */
             gint ctl;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-3 Q: ISRC\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-3 Q: ISRC", __debug__);
 
             ctl = mirage_track_get_ctl(track);
             buf[0] = (ctl << 0x04) | 0x03; /* Mode-3 Q */
@@ -1887,7 +1887,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             /* ISRC*/
             const gchar *isrc = mirage_track_get_isrc(track);
             mirage_helper_subchannel_q_encode_isrc(&buf[1], isrc);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
             /* AFRAME */
             mirage_helper_lba2msf(absolute_address, TRUE, NULL, NULL, &buf[9]);
             buf[9] = mirage_helper_hex2bcd(buf[9]);

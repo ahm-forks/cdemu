@@ -157,7 +157,7 @@ static uint64_t _chd_fsize (void *fp)
     cur_position = mirage_stream_tell(stream);
 
     if (!mirage_stream_seek(stream, 0, G_SEEK_END, &local_error)) {
-        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek to end of stream: %s\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek to end of stream: %s", __debug__, local_error->message);
         g_error_free(local_error);
         return 0;
     }
@@ -165,7 +165,7 @@ static uint64_t _chd_fsize (void *fp)
     end_position = mirage_stream_tell(stream);
 
     if (!mirage_stream_seek(stream, cur_position, G_SEEK_SET, &local_error)) {
-        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek to original position: %s\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek to original position: %s", __debug__, local_error->message);
         g_error_free(local_error);
         local_error = NULL;
     }
@@ -183,7 +183,7 @@ static size_t _chd_fread (void *ptr, size_t size, size_t n, void *fp)
 
     ret = mirage_stream_read(stream, ptr, n * size, &local_error);
     if (ret < 0) {
-        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to read data: %s\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to read data: %s", __debug__, local_error->message);
         g_error_free(local_error);
         local_error = NULL;
         ret = 0; /* Reset to 0, since return type is unsigned */
@@ -223,7 +223,7 @@ static int _chd_fseek (void *fp, int64_t where, int whence)
     }
 
     if (!mirage_stream_seek(stream, where, seek_type, &local_error)) {
-        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek: %s\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(stream, MIRAGE_DEBUG_WARNING, "%s: failed to seek: %s", __debug__, local_error->message);
         g_error_free(local_error);
         return -1;
     }
@@ -516,7 +516,7 @@ static MirageTrack *mirage_parser_chd_create_track (
         &local_error
     );
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
@@ -569,7 +569,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
     /* Sanity check */
     if (header->unitbytes != 2448) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2448 is supported for CD images)\n", __debug__, header->unitbytes);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2448 is supported for CD images)", __debug__, header->unitbytes);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
         return FALSE;
     }
@@ -612,7 +612,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
         if (status == CHDERR_METADATA_NOT_FOUND) {
             break;
         } else if (status != CHDERR_NONE) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read CD-ROM metadata entry #%u: %s (%d)\n", __debug__, i, _chd_error_str(status), status);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read CD-ROM metadata entry #%u: %s (%d)", __debug__, i, _chd_error_str(status), status);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
             g_object_unref(session);
             return FALSE;
@@ -626,7 +626,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
             &local_error
         );
         if (!succeeded) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-ROM metadata entry #%u: %s\n", __debug__, i, local_error->message);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-ROM metadata entry #%u: %s", __debug__, i, local_error->message);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to parse metadata!"));
             g_error_free(local_error);
             g_object_unref(session);
@@ -642,7 +642,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
             &local_error
         );
         if (!track) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create track for CD-ROM metadata entry #%u: %s\n", __debug__, i, local_error->message);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create track for CD-ROM metadata entry #%u: %s", __debug__, i, local_error->message);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to create track for CD-ROM metadata entry #%u: %s"), i, local_error->message);
             g_error_free(local_error);
             g_object_unref(session);
@@ -673,7 +673,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
     /* Sanity check */
     if (start_sector != header->unitcount) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: final sector offset (%" G_GINT64_MODIFIER "u) != header->unitcount (%" G_GINT64_MODIFIER "u)\n", __debug__, start_sector, header->unitcount);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: final sector offset (%" G_GINT64_MODIFIER "u) != header->unitcount (%" G_GINT64_MODIFIER "u)", __debug__, start_sector, header->unitcount);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
@@ -686,7 +686,7 @@ static gboolean mirage_parser_chd_load_cd_image (MirageParserChd *self, GError *
 
 static gboolean mirage_parser_chd_load_cd_image_old (MirageParserChd *self, GError **error)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: CD-ROM image with old-style metadata is not supported yet!\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: CD-ROM image with old-style metadata is not supported yet!", __debug__);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
     return FALSE;
 }
@@ -704,7 +704,7 @@ static gboolean mirage_parser_chd_load_dvd_image (MirageParserChd *self, GError 
 
     /* Sanity check */
     if (header->unitbytes != 2048) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2048 is supported for DVD images)\n", __debug__, header->unitbytes);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected unitbytes value in header: %u (only 2048 is supported for DVD images)", __debug__, header->unitbytes);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
         return FALSE;
     }
@@ -730,7 +730,7 @@ static gboolean mirage_parser_chd_load_dvd_image (MirageParserChd *self, GError 
         &local_error
     );
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!\n", __debug__, local_error->message);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up CHD data fragment: %s!", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to set up CHD data fragment: %s!"), local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
@@ -774,7 +774,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
      * reference-counted box. If the open attempt fails, the close() function
      * (i.e., `_chd_fclose()`) is called - therefore, increment the reference
      * count on the stream! */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...", __debug__);
 
     status = chd_open_core_file_callbacks(
         &_chd_file_adapter,
@@ -785,12 +785,12 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     );
 
     if (status != CHDERR_NONE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: chd_open() failed with error code %d (%s)\n", __debug__, status, _chd_error_str(status));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: chd_open() failed with error code %d (%s)", __debug__, status, _chd_error_str(status));
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: chd_open() failed with error code %d (%s)!"), status, _chd_error_str(status));
         return NULL;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!", __debug__);
 
     /* Store pointer to the stream, so we can pass it on to fragment for
      * filename information; we do not need to increment the reference here,
@@ -802,28 +802,28 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     header = chd_get_header(self->priv->chd_file_ptr->chd_file);
 
     /* Dump header */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: %u\n", __debug__, header->length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, header->version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: %u (0x%X)\n", __debug__, header->flags, header->flags);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  compression:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[0]), header->compression[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[1]), header->compression[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[2]), header->compression[2]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)\n", __debug__, _chd_tag_str(header->compression[3]), header->compression[3]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  hunkbytes: %u\n", __debug__, header->hunkbytes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  totalhunks: %u\n", __debug__, header->totalhunks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  logicalbytes: %" G_GINT64_MODIFIER "u\n", __debug__, header->logicalbytes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  metaoffset: %" G_GINT64_MODIFIER "u\n", __debug__, header->metaoffset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mapoffset: %" G_GINT64_MODIFIER "u\n", __debug__, header->mapoffset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unitbytes: %u\n", __debug__, header->unitbytes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unitcount: %" G_GINT64_MODIFIER "u\n", __debug__, header->unitcount);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  hunkcount: %u\n", __debug__, header->hunkcount);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mapentrybytes: %u\n", __debug__, header->mapentrybytes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rawmap: %p\n", __debug__, header->rawmap);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD header:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: %u", __debug__, header->length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u", __debug__, header->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: %u (0x%X)", __debug__, header->flags, header->flags);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  compression:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)", __debug__, _chd_tag_str(header->compression[0]), header->compression[0]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)", __debug__, _chd_tag_str(header->compression[1]), header->compression[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)", __debug__, _chd_tag_str(header->compression[2]), header->compression[2]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s (0x%X)", __debug__, _chd_tag_str(header->compression[3]), header->compression[3]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  hunkbytes: %u", __debug__, header->hunkbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  totalhunks: %u", __debug__, header->totalhunks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  logicalbytes: %" G_GINT64_MODIFIER "u", __debug__, header->logicalbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  metaoffset: %" G_GINT64_MODIFIER "u", __debug__, header->metaoffset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mapoffset: %" G_GINT64_MODIFIER "u", __debug__, header->mapoffset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unitbytes: %u", __debug__, header->unitbytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unitcount: %" G_GINT64_MODIFIER "u", __debug__, header->unitcount);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  hunkcount: %u", __debug__, header->hunkcount);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mapentrybytes: %u", __debug__, header->mapentrybytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rawmap: %p", __debug__, header->rawmap);
 
     /* Determine what kind of CD-ROM metadata is available, if any */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD metadata entries:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CHD metadata entries:", __debug__);
     for (guint i = 0;; i++) {
         uint32_t resultlen;
         uint32_t resulttag;
@@ -845,12 +845,12 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
         if (status == CHDERR_METADATA_NOT_FOUND) {
             break;
         } else if (status != CHDERR_NONE) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read metadata entry #%u: %s (%d)\n", __debug__, i, _chd_error_str(status), status);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read metadata entry #%u: %s (%d)", __debug__, i, _chd_error_str(status), status);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
             return NULL;
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%u: %s (0x%X), %d bytes, flags: 0x%X\n", __debug__, i, _chd_tag_str(resulttag), resulttag, resultlen, resultflags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%u: %s (0x%X), %d bytes, flags: 0x%X", __debug__, i, _chd_tag_str(resulttag), resulttag, resultlen, resultflags);
         switch (resulttag) {
             /* These tags are known to be text-based, so we can print them */
             case HARD_DISK_METADATA_TAG:
@@ -858,7 +858,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
             case CDROM_TRACK_METADATA2_TAG:
             case GDROM_TRACK_METADATA_TAG:
             case AV_METADATA_TAG: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s\n", __debug__, self->priv->metadata_buffer);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   %s", __debug__, self->priv->metadata_buffer);
                 break;
             }
             /* Some sort of binary format; ignore for now */
@@ -876,7 +876,7 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
             case DVD_METADATA_TAG: {
                 /* Ensure the metadata buffer is large enough */
                 if (resultlen >= sizeof(self->priv->metadata_buffer)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: metadata buffer is too small - %u bytes required, %" G_GSIZE_MODIFIER "u bytes available!\n", __debug__, resultlen, sizeof(self->priv->metadata_buffer));
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: metadata buffer is too small - %u bytes required, %" G_GSIZE_MODIFIER "u bytes available!", __debug__, resultlen, sizeof(self->priv->metadata_buffer));
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to read metadata!"));
                     return NULL;
                 }
@@ -888,12 +888,12 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
     }
 
     if (self->priv->metadata_tag == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no supported CD-ROM / DVD-ROM metadata entries found!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no supported CD-ROM / DVD-ROM metadata entries found!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unsupported CHD image type!"));
         return NULL;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using metadata tag: %s (0x%X)\n", __debug__, _chd_tag_str(self->priv->metadata_tag), self->priv->metadata_tag);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using metadata tag: %s (0x%X)", __debug__, _chd_tag_str(self->priv->metadata_tag), self->priv->metadata_tag);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -903,22 +903,22 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
 
     /* Parse the metadata and reconstruct tracks */
     if (self->priv->metadata_tag == DVD_METADATA_TAG) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading DVD image...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading DVD image...", __debug__);
         succeeded = mirage_parser_chd_load_dvd_image(self, error);
     } else if (self->priv->metadata_tag == CDROM_OLD_METADATA_TAG) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image (old-style metadata)...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image (old-style metadata)...", __debug__);
         succeeded = mirage_parser_chd_load_cd_image_old(self, error);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD image...", __debug__);
         succeeded = mirage_parser_chd_load_cd_image(self, error);
     }
 
     /* Return disc */
     if (succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
         return self->priv->disc;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

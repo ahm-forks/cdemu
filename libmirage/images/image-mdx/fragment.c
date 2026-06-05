@@ -111,7 +111,7 @@ static gboolean mirage_fragment_mdx_read_compression_table (
      * compression groups): number of sectors in the fragment, divided by
      * number of sectors per compression group, rounded up. */
     num_entries = (self->priv->length + footer->blocks_in_compression_group - 1) / footer->blocks_in_compression_group;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: estimated entries in compression table: %d\n", __debug__, num_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: estimated entries in compression table: %d", __debug__, num_entries);
 
     /* Read the (compressed) data for compression table. Apparently, the
      * size of compressed compression table is not stored anywhere, so
@@ -137,7 +137,7 @@ static gboolean mirage_fragment_mdx_read_compression_table (
     }
 
     gsize read_bytes = mirage_stream_read(self->priv->data_stream, compressed_data, to_read, NULL);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GSIZE_MODIFIER "d bytes of compression table data\n", __debug__, read_bytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GSIZE_MODIFIER "d bytes of compression table data", __debug__, read_bytes);
 
     /* Allocate the buffer for decompressed data */
     table_values = g_new0(guint16, num_entries);
@@ -170,11 +170,11 @@ static gboolean mirage_fragment_mdx_read_compression_table (
         goto end;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of compression table data\n", __debug__, total_in, total_out);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of compression table data", __debug__, total_in, total_out);
 
     /* Sanity check */
     if (total_out != num_entries * sizeof(guint16)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: compression table size mismatch - expected %" G_GSIZE_MODIFIER "d, inflate returned %" G_GSIZE_MODIFIER "d!\n", __debug__, num_entries * sizeof(guint16), total_out);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: compression table size mismatch - expected %" G_GSIZE_MODIFIER "d, inflate returned %" G_GSIZE_MODIFIER "d!", __debug__, num_entries * sizeof(guint16), total_out);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Compression table size mismatch!");
         goto end;
     }
@@ -225,7 +225,7 @@ static gboolean mirage_fragment_mdx_read_compression_table (
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read compression table with %d entries; none=%d, rle=%d, zlib=%d\n", __debug__, num_entries, num_none, num_rle, num_zlib);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read compression table with %d entries; none=%d, rle=%d, zlib=%d", __debug__, num_entries, num_none, num_rle, num_zlib);
 
     succeeded = TRUE;
 
@@ -256,12 +256,12 @@ gboolean mirage_fragment_mdx_setup (
      * since this fragment is used only within MDX parser, we can ensure
      * that this is the case. */
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: setting up MDX fragment:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - data offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, data_offset, data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel size: %d\n", __debug__, main_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel format: %d\n", __debug__, main_format);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel size: %d\n", __debug__, subchannel_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel format: %d\n", __debug__, subchannel_format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: setting up MDX fragment:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - data offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)", __debug__, data_offset, data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel size: %d", __debug__, main_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel format: %d", __debug__, main_format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel size: %d", __debug__, subchannel_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel format: %d", __debug__, subchannel_format);
 
     /* Propagate the information to parent - this is to ensure that
      * common codepaths in parent class work as expected, as well as
@@ -299,7 +299,7 @@ gboolean mirage_fragment_mdx_setup (
     if (encryption_header) {
         gpg_error_t rc;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data encryption is enabled! Setting up cipher...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data encryption is enabled! Setting up cipher...", __debug__);
 
         rc = gcry_cipher_open(&self->priv->crypt_handle, GCRY_CIPHER_AES256, GCRY_CIPHER_MODE_ECB, 0);
         if (rc != 0) {
@@ -322,9 +322,9 @@ gboolean mirage_fragment_mdx_setup (
     if (footer->flags & 0x01) {
         int zlib_ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data compression is enabled! Settings in footer:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - compression table offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, footer->compression_table_offset, footer->compression_table_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - number of sectors in group: %d (0x%X)\n", __debug__, footer->blocks_in_compression_group, footer->blocks_in_compression_group);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data compression is enabled! Settings in footer:", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - compression table offset: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)", __debug__, footer->compression_table_offset, footer->compression_table_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - number of sectors in group: %d (0x%X)", __debug__, footer->blocks_in_compression_group, footer->blocks_in_compression_group);
 
         if (!footer->blocks_in_compression_group) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Invalid number of sectors in compression group (%d)!", footer->blocks_in_compression_group);
@@ -366,7 +366,7 @@ gboolean mirage_fragment_mdx_setup (
             }
         }
         if (max_zlib_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: allocating zlib input buffer: %d bytes\n", __debug__, max_zlib_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: allocating zlib input buffer: %d bytes", __debug__, max_zlib_size);
             self->priv->zlib_buffer = g_malloc0(max_zlib_size);
             if (!self->priv->zlib_buffer) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate zlib input buffer (%d bytes)!", max_zlib_size);
@@ -381,7 +381,7 @@ gboolean mirage_fragment_mdx_setup (
     /* Allocate buffer/cache */
     self->priv->sectors_in_group = num_sectors;
     self->priv->buffer_size = num_sectors * full_size;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: allocating data buffer: %d sector(s) with size of %d, total %d bytes\n", __debug__, num_sectors, full_size, self->priv->buffer_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: allocating data buffer: %d sector(s) with size of %d, total %d bytes", __debug__, num_sectors, full_size, self->priv->buffer_size);
     self->priv->buffer = g_malloc0(self->priv->buffer_size);
     if (!self->priv->buffer) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate read buffer (%d bytes)!", self->priv->buffer_size);
@@ -395,11 +395,11 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
 {
     guint sector_group = address / self->priv->sectors_in_group;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d (sector group %d)\n", __debug__, address, sector_group);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d (sector group %d)", __debug__, address, sector_group);
 
     /* Check if data is already in the buffer */
     if (sector_group == self->priv->cached_sector_group) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for relative address %d (sector group %d) is already loaded in buffer!\n", __debug__, address, sector_group);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for relative address %d (sector group %d) is already loaded in buffer!", __debug__, address, sector_group);
         return TRUE;
     }
 
@@ -415,7 +415,7 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
     const MDX_CompressionTableEntry *compression_entry = NULL;
     if (self->priv->compression_table) {
         if (sector_group >= self->priv->compression_table_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sector group index %d exceeds number of entries in compression table (%d)!\n", __debug__, sector_group, self->priv->compression_table_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sector group index %d exceeds number of entries in compression table (%d)!", __debug__, sector_group, self->priv->compression_table_size);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Sector group index (%d) out of range!", sector_group);
             return FALSE;
         }
@@ -440,12 +440,12 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
 
         if (compression_entry) {
             if (compression_entry->compression_type == MDX_COMPRESSION_ZLIB) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: zlib compression\n", __debug__, sector_group);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: zlib compression", __debug__, sector_group);
                 data_offset = self->priv->data_offset + compression_entry->data_offset;
                 to_read = compression_entry->compressed_size;
                 is_zlib = TRUE;
             } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: no compression\n", __debug__, sector_group);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d: no compression", __debug__, sector_group);
                 data_offset = self->priv->data_offset + compression_entry->data_offset;
                 to_read = num_sectors * sector_size;
             }
@@ -454,12 +454,12 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
             to_read = num_sectors * sector_size; /* num_sectors = 1 */
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading %" G_GINT64_MODIFIER "d bytes from offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, to_read, data_offset, data_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading %" G_GINT64_MODIFIER "d bytes from offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)", __debug__, to_read, data_offset, data_offset);
 
         mirage_stream_seek(self->priv->data_stream, data_offset, G_SEEK_SET, NULL);
         const gsize read_len = mirage_stream_read(self->priv->data_stream, is_zlib ? self->priv->zlib_buffer : self->priv->buffer, to_read, NULL);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GSIZE_MODIFIER "d bytes\n", __debug__, read_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read %" G_GSIZE_MODIFIER "d bytes", __debug__, read_len);
 
         /* Decrypt */
         if (self->priv->crypt_handle) {
@@ -506,7 +506,7 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
             const guint64 start_sector_address = sector_group * self->priv->sectors_in_group;
             const guint64 tweak_counter = 1 + start_sector_address * aligned_sector_size / 16;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %" G_GINT64_MODIFIER "d, aligned data length is %" G_GSIZE_MODIFIER "d, aligned sector size is %d, start value of tweak counter is %" G_GINT64_MODIFIER "d\n", __debug__, start_sector_address, aligned_data_len, aligned_sector_size, tweak_counter);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting data with starting sector number %" G_GINT64_MODIFIER "d, aligned data length is %" G_GSIZE_MODIFIER "d, aligned sector size is %d, start value of tweak counter is %" G_GINT64_MODIFIER "d", __debug__, start_sector_address, aligned_data_len, aligned_sector_size, tweak_counter);
 
             gboolean succeeded = mdx_crypto_decipher_buffer_lrw(
                 self->priv->crypt_handle,
@@ -549,17 +549,17 @@ static gboolean mirage_fragment_mdx_read_sector_data (MirageFragmentMdx *self, g
                 return FALSE;
             }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of sector data\n", __debug__, total_in, total_out);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated %" G_GSIZE_MODIFIER "d bytes from input compressed data into %" G_GSIZE_MODIFIER "d bytes of sector data", __debug__, total_in, total_out);
         }
     } else if (compression_entry->compression_type == MDX_COMPRESSION_RLE) {
         /* Run-length encoding */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d; run-length encoding\n", __debug__, sector_group);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sector group %d; run-length encoding", __debug__, sector_group);
 
         /* Fill buffer with specified value */
         const gsize to_fill = num_sectors * sector_size;
         const guint8 fill_value = compression_entry->rle_value;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: filling %" G_GSIZE_MODIFIER "d bytes with value %hhd (0x%02hhX)\n", __debug__, to_fill, fill_value, fill_value);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: filling %" G_GSIZE_MODIFIER "d bytes with value %hhd (0x%02hhX)", __debug__, to_fill, fill_value, fill_value);
 
         memset(self->priv->buffer, compression_entry->rle_value, num_sectors * sector_size);
     } else {
@@ -583,7 +583,7 @@ static gint mirage_fragment_mdx_read_main_data_impl (MirageFragment *_self, gint
 
 #if 0
     if (!self->priv->crypt_handle && !self->priv->compression_table)  {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_main_data()...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_main_data()...", __debug__);
         return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_main_data_impl(_self, address, buffer, error);
     }
 #endif
@@ -616,14 +616,14 @@ static gint mirage_fragment_mdx_read_subchannel_data_impl (MirageFragment *_self
 
 #if 0
     if (!self->priv->crypt_handle && !self->priv->compression_table)  {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_subchannel_data()...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: neither compression nor encryption is not used; using parent implementation of read_subchannel_data()...", __debug__);
         return MIRAGE_FRAGMENT_CLASS(mirage_fragment_mdx_parent_class)->read_subchannel_data_impl(_self, address, buffer, error);
     }
 #endif
 
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->subchannel_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!", __debug__);
         return 0;
     }
 

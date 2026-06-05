@@ -255,9 +255,9 @@ void mirage_contextual_debug_print_buffer (MirageContextual *self, gint level, c
         }
 
         if (prefix) {
-            MIRAGE_DEBUG(self, level, "%s: %s\n", prefix, line_str);
+            MIRAGE_DEBUG(self, level, "%s: %s", prefix, line_str);
         } else {
-            MIRAGE_DEBUG(self, level, "%s\n", line_str);
+            MIRAGE_DEBUG(self, level, "%s", line_str);
         }
     }
 

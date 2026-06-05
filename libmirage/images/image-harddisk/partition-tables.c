@@ -102,68 +102,62 @@ void mirage_print_ddm_block(MirageContextual *self, driver_descriptor_map_t *ddm
 {
     g_assert(self && ddm_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DDM block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s\n", __debug__, ddm_block->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_size: %u\n", __debug__, ddm_block->block_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_count: %u\n", __debug__, ddm_block->block_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  device_type: %u\n", __debug__, ddm_block->device_type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  device_id: %u\n", __debug__, ddm_block->device_id);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  driver_data: %u\n", __debug__, ddm_block->driver_data);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  driver_count: %u\n", __debug__, ddm_block->driver_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DDM block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s", __debug__, ddm_block->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_size: %u", __debug__, ddm_block->block_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_count: %u", __debug__, ddm_block->block_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  device_type: %u", __debug__, ddm_block->device_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  device_id: %u", __debug__, ddm_block->device_id);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  driver_data: %u", __debug__, ddm_block->driver_data);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  driver_count: %u", __debug__, ddm_block->driver_count);
 }
 
 void mirage_print_apm_entry_block(MirageContextual *self, apm_entry_t *pme_block)
 {
     g_assert(self && pme_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: APM entry block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s\n", __debug__, pme_block->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  map_entries: %u\n", __debug__, pme_block->map_entries);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pblock_start: %u\n", __debug__, pme_block->pblock_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pblock_count: %u\n", __debug__, pme_block->pblock_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part_name: %s\n", __debug__, pme_block->part_name);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part_type: %s\n", __debug__, pme_block->part_type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lblock_start: %u\n", __debug__, pme_block->lblock_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lblock_count: %u\n", __debug__, pme_block->lblock_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: %u\n", __debug__, pme_block->flags);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_block: %u\n", __debug__, pme_block->boot_block);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_bytes: %u\n", __debug__, pme_block->boot_bytes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  load_address: %u\n", __debug__, pme_block->load_address);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  load_address2: %u\n", __debug__, pme_block->load_address2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  goto_address: %u\n", __debug__, pme_block->goto_address);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  goto_address2: %u\n", __debug__, pme_block->goto_address2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_checksum: %u\n", __debug__, pme_block->boot_checksum);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  processor_id: %s\n", __debug__, pme_block->processor_id);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: APM entry block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s", __debug__, pme_block->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  map_entries: %u", __debug__, pme_block->map_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pblock_start: %u", __debug__, pme_block->pblock_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pblock_count: %u", __debug__, pme_block->pblock_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part_name: %s", __debug__, pme_block->part_name);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part_type: %s", __debug__, pme_block->part_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lblock_start: %u", __debug__, pme_block->lblock_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lblock_count: %u", __debug__, pme_block->lblock_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: %u", __debug__, pme_block->flags);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_block: %u", __debug__, pme_block->boot_block);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_bytes: %u", __debug__, pme_block->boot_bytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  load_address: %u", __debug__, pme_block->load_address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  load_address2: %u", __debug__, pme_block->load_address2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  goto_address: %u", __debug__, pme_block->goto_address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  goto_address2: %u", __debug__, pme_block->goto_address2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  boot_checksum: %u", __debug__, pme_block->boot_checksum);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  processor_id: %s", __debug__, pme_block->processor_id);
 }
 
 void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header)
 {
     g_assert(self && gpt_header);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.8s\n", __debug__, gpt_header->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  revision: %u\n", __debug__, gpt_header->revision);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u\n", __debug__, gpt_header->header_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_crc: 0x%08x\n", __debug__, gpt_header->header_crc);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  reserved: %u\n", __debug__, gpt_header->reserved);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_header: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_header);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_backup: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_backup);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT header:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.8s", __debug__, gpt_header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  revision: %u", __debug__, gpt_header->revision);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u", __debug__, gpt_header->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_crc: 0x%08x", __debug__, gpt_header->header_crc);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  reserved: %u", __debug__, gpt_header->reserved);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_header: %" G_GINT64_MODIFIER "u", __debug__, gpt_header->lba_header);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_backup: %" G_GINT64_MODIFIER "u", __debug__, gpt_header->lba_backup);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u", __debug__, gpt_header->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u", __debug__, gpt_header->lba_end);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x", __debug__,
                  gpt_header->guid.as_int[0], gpt_header->guid.as_int[1]);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_header->lba_gpt_table);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entries: %u\n", __debug__, gpt_header->gpt_entries);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entry_size: %u\n", __debug__, gpt_header->gpt_entry_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  crc_gpt_table: 0x%08x\n", __debug__, gpt_header->crc_gpt_table);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %" G_GINT64_MODIFIER "u", __debug__, gpt_header->lba_gpt_table);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entries: %u", __debug__, gpt_header->gpt_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entry_size: %u", __debug__, gpt_header->gpt_entry_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  crc_gpt_table: 0x%08x", __debug__, gpt_header->crc_gpt_table);
 }
 
 void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry)
@@ -176,17 +170,15 @@ void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry)
     name_str = g_utf16_to_utf8(gpt_entry->name, 36, &items_read, &items_written, NULL);
     g_assert(name_str);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT entry:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT entry:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x", __debug__,
                  gpt_entry->type.as_int[0], gpt_entry->type.as_int[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016" G_GINT64_MODIFIER "x%016" G_GINT64_MODIFIER "x", __debug__,
                  gpt_entry->guid.as_int[0], gpt_entry->guid.as_int[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_entry->lba_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u\n", __debug__, gpt_entry->lba_end);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016" G_GINT64_MODIFIER "x\n", __debug__, gpt_entry->attributes);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s\n", __debug__, name_str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %" G_GINT64_MODIFIER "u", __debug__, gpt_entry->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %" G_GINT64_MODIFIER "u", __debug__, gpt_entry->lba_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016" G_GINT64_MODIFIER "x", __debug__, gpt_entry->attributes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s", __debug__, name_str);
 
     g_free(name_str);
 }

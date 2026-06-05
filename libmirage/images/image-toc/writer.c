@@ -70,7 +70,7 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
     gint num_tracks = mirage_disc_get_number_of_tracks(disc);
 
     if (num_tracks > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: renaming track files...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: renaming track files...", __debug__);
 
         const gchar *original_filename, *extension;
         gchar *new_filename;
@@ -103,9 +103,9 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
             }
 
             /* Move */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: '%s' -> '%s'\n", __debug__, original_filename, new_filename);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: '%s' -> '%s'", __debug__, original_filename, new_filename);
             if (!mirage_stream_move_file(iter->data, new_filename, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to rename file for track #%d to '%s'!\n", __debug__, track, new_filename);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to rename file for track #%d to '%s'!", __debug__, track, new_filename);
             }
             g_free(new_filename);
 
@@ -468,7 +468,7 @@ static gboolean mirage_writer_toc_open_image_impl (MirageWriter *_self, MirageDi
 
     /* This writer supports only CD-ROM medium */
     if (mirage_disc_get_medium_type(disc) != MIRAGE_MEDIUM_CD) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: TOC image writer supports only CD-ROM medium format!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: TOC image writer supports only CD-ROM medium format!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, Q_("Unsupported medium format!"));
         return FALSE;
     }
@@ -484,10 +484,10 @@ static gboolean mirage_writer_toc_open_image_impl (MirageWriter *_self, MirageDi
     }
 
     /* Print parameters */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'\n", __debug__, self->priv->image_file_basename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'", __debug__, self->priv->image_file_basename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
 
     return TRUE;
 }

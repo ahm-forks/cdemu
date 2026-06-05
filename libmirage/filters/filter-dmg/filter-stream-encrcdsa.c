@@ -149,30 +149,30 @@ static gboolean mirage_filter_stream_encrcdsa_find_compatible_key_header (Mirage
 {
     encrcdsa_key_pointer_t *key_pointer = &self->priv->key_pointer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading key pointers (%u)...\n", __debug__, self->priv->header.num_keys);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading key pointers (%u)...", __debug__, self->priv->header.num_keys);
 
     for (guint i = 0; i < self->priv->header.num_keys; i++) {
         if (mirage_stream_read(self->priv->stream, key_pointer, sizeof(encrcdsa_key_pointer_t), NULL) != sizeof(encrcdsa_key_pointer_t)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read key pointer at index %u!\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read key pointer at index %u!", __debug__, i);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read key pointer!"));
             return FALSE;
         }
 
         mirage_filter_stream_encrcdsa_key_pointer_fix_endian(key_pointer);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: key pointer #%u:\n", __debug__, i);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%X\n", __debug__, key_pointer->type);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, key_pointer->offset, key_pointer->offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, key_pointer->size, key_pointer->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: key pointer #%u:", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%X", __debug__, key_pointer->type);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)", __debug__, key_pointer->offset, key_pointer->offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)", __debug__, key_pointer->size, key_pointer->size);
 
         if (key_pointer->type == CSSM_APPLE_UNLOCK_TYPE_KEY_DIRECT) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found compatible key pointer at index %u - stopping search!\n\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found compatible key pointer at index %u - stopping search!", __debug__, i);
             return TRUE;
         }
     }
 
     /* No compatible key pointer found */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not find a key pointer with supported key-wrapping type!\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not find a key pointer with supported key-wrapping type!", __debug__);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Unsupported encryption parameters!"));
     return FALSE;
 }
@@ -189,17 +189,17 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
      * the size declared in the pointer entry (although it seems there
      * is a large zero-padded area included) */
     if (sizeof(encrcdsa_passphrase_wrapped_key_header_t) > key_pointer->size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: length of header (%lu) exceeds the size declared in key pointer entry (%" G_GINT64_MODIFIER "u)\n", __debug__, sizeof(encrcdsa_passphrase_wrapped_key_header_t), key_pointer->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: length of header (%lu) exceeds the size declared in key pointer entry (%" G_GINT64_MODIFIER "u)", __debug__, sizeof(encrcdsa_passphrase_wrapped_key_header_t), key_pointer->size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
 
     /* Read the passphrase-wrapped key header */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading passphrase-wrapped key header...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading passphrase-wrapped key header...", __debug__);
 
     mirage_stream_seek(self->priv->stream, key_pointer->offset, G_SEEK_SET, NULL);
     if (mirage_stream_read(self->priv->stream, key_header, sizeof(encrcdsa_passphrase_wrapped_key_header_t), NULL) != sizeof(encrcdsa_passphrase_wrapped_key_header_t)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read passphrase-wrapped key header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read passphrase-wrapped key header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read passphrase-wrapped key header!"));
         return FALSE;
     }
@@ -208,23 +208,23 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
     mirage_filter_stream_encrcdsa_passphrase_wrapped_key_header_fix_endian(key_header);
 
     /* Display header */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_algorithm: 0x%X\n", __debug__, key_header->kdf_algorithm);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_prf: 0x%X\n", __debug__, key_header->kdf_prf);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_iteration_count: %u\n", __debug__, key_header->kdf_iteration_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_salt_len: %u\n", __debug__, key_header->kdf_salt_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_iv_len: %u\n", __debug__, key_header->blob_enc_iv_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_key_bits: %u\n", __debug__, key_header->blob_enc_key_bits);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_algorithm: 0x%X\n", __debug__, key_header->blob_enc_algorithm);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_padding: 0x%X\n", __debug__, key_header->blob_enc_padding);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_mode: 0x%X\n", __debug__, key_header->blob_enc_mode);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_len: %u\n", __debug__, key_header->blob_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key header:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_algorithm: 0x%X", __debug__, key_header->kdf_algorithm);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_prf: 0x%X", __debug__, key_header->kdf_prf);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_iteration_count: %u", __debug__, key_header->kdf_iteration_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  kdf_salt_len: %u", __debug__, key_header->kdf_salt_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_iv_len: %u", __debug__, key_header->blob_enc_iv_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_key_bits: %u", __debug__, key_header->blob_enc_key_bits);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_algorithm: 0x%X", __debug__, key_header->blob_enc_algorithm);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_padding: 0x%X", __debug__, key_header->blob_enc_padding);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_enc_mode: 0x%X", __debug__, key_header->blob_enc_mode);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blob_len: %u", __debug__, key_header->blob_len);
 
     /* Sanity check; length of header and data blob should be within
      * the size declared in the pointer entry (although it seems there
      * is a large zero-padded area included) */
     if (sizeof(encrcdsa_passphrase_wrapped_key_header_t) + key_header->blob_len > key_pointer->size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: length of header (%lu) + blob length (%u) exceeds the size declared in key pointer entry (%" G_GINT64_MODIFIER "u)\n", __debug__, sizeof(encrcdsa_passphrase_wrapped_key_header_t), key_header->blob_len, key_pointer->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: length of header (%lu) + blob length (%u) exceeds the size declared in key pointer entry (%" G_GINT64_MODIFIER "u)", __debug__, sizeof(encrcdsa_passphrase_wrapped_key_header_t), key_header->blob_len, key_pointer->size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
@@ -232,19 +232,19 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
     /* Validate key encryption parameters */
     supported = FALSE;
     if (key_header->kdf_algorithm != CSSM_ALGID_PKCS5_PBKDF2) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_algorithm (0x%X)!\n", __debug__, key_header->kdf_algorithm);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_algorithm (0x%X)!", __debug__, key_header->kdf_algorithm);
     } else if (key_header->kdf_prf != CSSM_PKCS5_PBKDF2_PRF_HMAC_SHA1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_prf (0x%X)!\n", __debug__, key_header->kdf_prf);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported kdf_prf (0x%X)!", __debug__, key_header->kdf_prf);
     } else if (key_header->blob_enc_key_bits != 192) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_key_bits (%u)!\n", __debug__, key_header->blob_enc_key_bits);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_key_bits (%u)!", __debug__, key_header->blob_enc_key_bits);
     } else if (key_header->blob_enc_algorithm != CSSM_ALGID_3DES_3KEY_EDE && key_header->blob_enc_algorithm != CSSM_ALGID_AES) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_algorithm (0x%X)!\n", __debug__, key_header->blob_enc_algorithm);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_algorithm (0x%X)!", __debug__, key_header->blob_enc_algorithm);
     } else if (key_header->blob_enc_padding != CSSM_PADDING_PKCS7) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_padding (0x%X)!\n", __debug__, key_header->blob_enc_padding);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_padding (0x%X)!", __debug__, key_header->blob_enc_padding);
     } else if (key_header->blob_enc_mode != CSSM_ALGMODE_CBCPadIV8) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_mode (0x%X)!\n", __debug__, key_header->blob_enc_mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_enc_mode (0x%X)!", __debug__, key_header->blob_enc_mode);
     } else if (key_header->blob_len != 48 && key_header->blob_len != 64) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_len (0x%X)!\n", __debug__, key_header->blob_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported blob_len (0x%X)!", __debug__, key_header->blob_len);
     } else {
         supported = TRUE;
     }
@@ -254,17 +254,17 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
     }
 
     /* Read encrypted key blob */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading passphrase-wrapped key blob (%u bytes)...\n", __debug__, key_header->blob_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading passphrase-wrapped key blob (%u bytes)...", __debug__, key_header->blob_len);
 
     if (mirage_stream_read(self->priv->stream, key_data, key_header->blob_len, NULL) != key_header->blob_len) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read passphrase-wrapped key blob!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read passphrase-wrapped key blob!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read passphrase-wrapped key blob!"));
         return FALSE;
     }
 
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         GString *key_data_dump = dump_buffer_to_hex(key_data, key_header->blob_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key blob (%u): %s\n", __debug__, key_header->blob_len, key_data_dump->str);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key blob (%u): %s", __debug__, key_header->blob_len, key_data_dump->str);
         g_string_free(key_data_dump, TRUE);
     }
 
@@ -306,16 +306,16 @@ static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (Mir
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         const gsize derived_key_len = key_header->blob_enc_key_bits / 8;
         GString *derived_key_dump = dump_buffer_to_hex(derived_key, derived_key_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: derived key (%" G_GINT64_MODIFIER "u): %s\n", __debug__, derived_key_len, derived_key_dump->str);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: derived key (%" G_GINT64_MODIFIER "u): %s", __debug__, derived_key_len, derived_key_dump->str);
         g_string_free(derived_key_dump, TRUE);
 
         GString *iv_dump = dump_buffer_to_hex(key_header->blob_enc_iv, key_header->blob_enc_iv_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV (%u): %s\n", __debug__, key_header->blob_enc_iv_len, iv_dump->str);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV (%u): %s", __debug__, key_header->blob_enc_iv_len, iv_dump->str);
         g_string_free(iv_dump, TRUE);
     }
 
     /* Decrypt key blob */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypting key blob using %s...\n", __debug__, use_3des ? "3DES" : "AES192");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypting key blob using %s...", __debug__, use_3des ? "3DES" : "AES192");
     rc = gcry_cipher_open(
         &crypt_handle,
         use_3des ? GCRY_CIPHER_3DES : GCRY_CIPHER_AES192, /* blob_enc_key_bits = 192 */
@@ -467,36 +467,36 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     }
 
     /* Display header */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.8s\n", __debug__, header->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, header->version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_iv_len: %u\n", __debug__, header->block_iv_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_mode: 0x%X\n", __debug__, header->block_mode);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_algorithm: 0x%X\n", __debug__, header->block_algorithm);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  key_bits: %u\n", __debug__, header->key_bits);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ivkey_algorithm: 0x%X\n", __debug__, header->ivkey_algorithm);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ivkey_bits: %u\n", __debug__, header->ivkey_bits);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_size: %u\n", __debug__, header->block_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_len: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, header->data_len, header->data_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_offset: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, header->data_offset, header->data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  num_keys: %u\n\n", __debug__, header->num_keys);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: header:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.8s", __debug__, header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u", __debug__, header->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_iv_len: %u", __debug__, header->block_iv_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_mode: 0x%X", __debug__, header->block_mode);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_algorithm: 0x%X", __debug__, header->block_algorithm);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  key_bits: %u", __debug__, header->key_bits);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ivkey_algorithm: 0x%X", __debug__, header->ivkey_algorithm);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ivkey_bits: %u", __debug__, header->ivkey_bits);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  block_size: %u", __debug__, header->block_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_len: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)", __debug__, header->data_len, header->data_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_offset: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)", __debug__, header->data_offset, header->data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  num_keys: %u", __debug__, header->num_keys);
 
     /* Validate encryption parameters */
     supported = FALSE;
     if (header->version != 2) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported version (%u)!\n", __debug__, header->version);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported version (%u)!", __debug__, header->version);
     } else if (header->block_iv_len != 16) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_iv_len (%u)!\n", __debug__, header->block_iv_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_iv_len (%u)!", __debug__, header->block_iv_len);
     } else  if (header->block_mode != CSSM_ALGMODE_CBC_IV8) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_mode (0x%X)!\n", __debug__, header->block_mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_mode (0x%X)!", __debug__, header->block_mode);
     } else if (header->block_algorithm != CSSM_ALGID_AES) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_algorithm (0x%X)!\n", __debug__, header->block_algorithm);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_algorithm (0x%X)!", __debug__, header->block_algorithm);
     } else if (header->key_bits != 128 && header->key_bits != 256) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported key_bits (%u)!\n", __debug__, header->key_bits);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported key_bits (%u)!", __debug__, header->key_bits);
     } else if (header->ivkey_algorithm != CSSM_ALGID_SHA1HMAC) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported ivkey_algorithm (0x%X)!\n", __debug__, header->ivkey_algorithm);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported ivkey_algorithm (0x%X)!", __debug__, header->ivkey_algorithm);
     } else if (header->block_size != 512) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_size (%u)!\n", __debug__, header->block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported block_size (%u)!", __debug__, header->block_size);
     } else {
         supported = TRUE;
     }
@@ -541,7 +541,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
 
     if (!password) {
         /* Password not provided (or password function is not set) */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to obtain password for encrypted image!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to obtain password for encrypted image!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Image is encrypted!"));
         return FALSE;
     }
@@ -556,14 +556,14 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     /* Dump decrypted key blob */
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         GString *key_data_dump = dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob (%" G_GSIZE_MODIFIER "u): %s\n", __debug__, self->priv->key_length, key_data_dump->str);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump->str);
         g_string_free(key_data_dump, TRUE);
     }
 
     /* Remove PKCS#7 padding - failure to do so may indicate that decryption
      * failed due to incorrect password. */
     if (!_remove_pkcs7_padding(self->priv->key_data, &self->priv->key_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to remove PKCS#7 padding!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to remove PKCS#7 padding!", __debug__);
         g_free(password);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Failed to decrypt image key! Incorrect password?"));
         return FALSE;
@@ -572,7 +572,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     /* Check for presence of CKIE suffix - lack of it indicates that decryption
      * failed due to incorrect password. */
     if (!_check_for_ckie_suffix(self->priv->key_data, self->priv->key_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob does not end with CKIE suffix!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob does not end with CKIE suffix!", __debug__);
         g_free(password);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, Q_("Failed to decrypt image key! Incorrect password?"));
         return FALSE;
@@ -581,7 +581,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
 
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         GString *key_data_dump = dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image key (%" G_GSIZE_MODIFIER "u): %s\n", __debug__, self->priv->key_length, key_data_dump->str);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image key (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump->str);
         g_string_free(key_data_dump, TRUE);
     }
 
@@ -612,7 +612,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     const guint aes_key_size = header->key_bits / 8;
     const guint hmac_key_size = header->ivkey_bits / 8;
     if (aes_key_size + hmac_key_size != self->priv->key_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: AES key size (%u bits / %u bytes) and HMAC key size (%u bits / %u bytes) does not match the obtained key size (%" G_GSIZE_MODIFIER "u bytes)!\n", __debug__, header->key_bits, aes_key_size, header->ivkey_bits, hmac_key_size, self->priv->key_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed: AES key size (%u bits / %u bytes) and HMAC key size (%u bits / %u bytes) does not match the obtained key size (%" G_GSIZE_MODIFIER "u bytes)!", __debug__, header->key_bits, aes_key_size, header->ivkey_bits, hmac_key_size, self->priv->key_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
@@ -627,7 +627,7 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     /* Set file size */
     mirage_filter_stream_simplified_set_stream_length(_self, header->data_len);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     return TRUE;
 #endif
@@ -648,7 +648,7 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
     position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
     block_idx = position / BLOCK_SIZE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%u (cached: #%u)\n", __debug__, position, position, block_idx, self->priv->cached_block_idx);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%u (cached: #%u)", __debug__, position, position, block_idx, self->priv->cached_block_idx);
 
     /* If we do not the block in cache, read and decrypt it */
     if (block_idx != self->priv->cached_block_idx) {
@@ -659,7 +659,7 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
 
         const guint32 block_idx_be = GUINT32_TO_BE(block_idx);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...", __debug__);
 
         /* Read the 512-byte data block. The very last block seems to be
          * padded to 512 bytes as necessary, so we do not have to worry
@@ -667,13 +667,13 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
         data_offset = self->priv->header.data_offset + (guint64)block_idx * BLOCK_SIZE; /* Make sure second operand becomes 64-bit! */
 
         if (!mirage_stream_seek(self->priv->stream, data_offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, data_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, data_offset);
             return -1;
         }
 
         read_bytes = mirage_stream_read(self->priv->stream, self->priv->block_data, BLOCK_SIZE, NULL);
         if (read_bytes < 0 || (gsize)read_bytes != BLOCK_SIZE) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %u bytes from underlying stream!\n", __debug__, BLOCK_SIZE);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %u bytes from underlying stream!", __debug__, BLOCK_SIZE);
             return -1;
         }
 
@@ -701,7 +701,7 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
         /* Dump IV for debug purposes */
         if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_STREAM)) {
             GString *iv_dump = dump_buffer_to_hex(self->priv->block_iv, iv_length, FALSE, 0);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV for block #%u (%" G_GSIZE_MODIFIER "u): %s\n", __debug__, block_idx, iv_length, iv_dump->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV for block #%u (%" G_GSIZE_MODIFIER "u): %s", __debug__, block_idx, iv_length, iv_dump->str);
             g_string_free(iv_dump, TRUE);
         }
 
@@ -731,7 +731,7 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
     cache_offset = position - ((goffset)block_idx * (goffset)BLOCK_SIZE); /* Offset within cache buffer */
     count = MIN(count, BLOCK_SIZE - cache_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %u, copying %" G_GSIZE_MODIFIER "u bytes\n", __debug__, cache_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %u, copying %" G_GSIZE_MODIFIER "u bytes", __debug__, cache_offset, count);
 
     memcpy(buffer, self->priv->block_data + cache_offset, count);
 

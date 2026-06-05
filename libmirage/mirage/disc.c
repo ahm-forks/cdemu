@@ -130,7 +130,7 @@ static void mirage_disc_commit_bottomup_change (MirageDisc *self)
 
 static void mirage_disc_session_layout_changed_handler (MirageDisc *self, MirageSession *session)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start", __debug__, __func__);
 
     /* If session has been emptied, remove it (it'll do bottom-up change automatically);
      * otherwise, signal bottom-up change */
@@ -140,12 +140,12 @@ static void mirage_disc_session_layout_changed_handler (MirageDisc *self, Mirage
         mirage_disc_commit_bottomup_change(self);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end", __debug__, __func__);
 }
 
 static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: start", __debug__, __func__);
 
     /* Disconnect signal handler (find it by handler function and user data) */
     mirage_signal_handlers_disconnect_by_func(session, G_CALLBACK(mirage_disc_session_layout_changed_handler), self);
@@ -155,10 +155,10 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     g_object_unref(session);
 
     /* Bottom-up change */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: committing bottom-up change\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: committing bottom-up change", __debug__, __func__);
     mirage_disc_commit_bottomup_change(self);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: %s: end", __debug__, __func__);
 }
 
 static gint sort_sessions_by_number (MirageSession *session1, MirageSession *session2)

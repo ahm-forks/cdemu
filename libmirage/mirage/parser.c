@@ -186,22 +186,22 @@ gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
 
     /* FIXME: add other media types? */
     if (length <= 90*60*75) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image", __debug__);
         return MIRAGE_MEDIUM_CD;
     } else if (length <= 2295104) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer DVD-ROM image\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer DVD-ROM image", __debug__);
         return MIRAGE_MEDIUM_DVD;
     } else if (length <= 4173824) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer DVD-ROM image\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer DVD-ROM image", __debug__);
         return MIRAGE_MEDIUM_DVD;
     } else if (length <= 12219392) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer BD-ROM image\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies single-layer BD-ROM image", __debug__);
         return MIRAGE_MEDIUM_BD;
     } else if (length <= 24438784) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer BD-ROM image\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies dual-layer BD-ROM image", __debug__);
         return MIRAGE_MEDIUM_BD;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: disc layout size (%d) exceeds all known media types - assuming BD-ROM!\n", __debug__, length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: disc layout size (%d) exceeds all known media types - assuming BD-ROM!", __debug__, length);
         return MIRAGE_MEDIUM_BD;
     }
 }
@@ -227,18 +227,18 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 
     /* Red Book pregap is found only on CD-ROMs */
     if (mirage_disc_get_medium_type(disc) != MIRAGE_MEDIUM_CD) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Red Book pregap exists only on CD-ROMs!", __debug__);
         return;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...", __debug__);
 
     /* CD-ROMs start at -150 as per Red Book... */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150", __debug__);
     mirage_disc_layout_set_start_sector(disc, -150);
 
     num_sessions = mirage_disc_get_number_of_sessions(disc);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)\n", __debug__, num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)", __debug__, num_sessions);
 
     /* Put 150 sector pregap into every first track of each session */
     for (gint i = 0; i < num_sessions; i++) {
@@ -250,13 +250,13 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 
         session = mirage_disc_get_session_by_index(disc, i, NULL);
         if (!session) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!", __debug__, i);
             return;
         }
 
         track = mirage_session_get_track_by_index(session, 0, NULL);
         if (!track) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!", __debug__, i);
             g_object_unref(session);
             return;
         }
@@ -276,7 +276,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
         g_object_unref(track);
         g_object_unref(session);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i", __debug__, i);
     }
 }
 
@@ -307,7 +307,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
     if (encoding_value) {
         encoding = g_variant_get_string(encoding_value, NULL);
         g_variant_unref(encoding_value);
-        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
+        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s", __debug__, encoding);
     } else {
         /* Detect encoding */
         guint8 bom[4] = {0};
@@ -317,7 +317,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
 
         encoding = mirage_helper_encoding_from_bom(bom);
 
-        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: detect encoding: %s\n", __debug__, encoding);
+        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: detect encoding: %s", __debug__, encoding);
     }
 
     /* Reset stream position, just in case */
@@ -334,7 +334,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
         /* Create converter */
         converter = g_charset_converter_new("UTF-8", encoding, error);
         if (!converter) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!", __debug__, encoding);
             g_object_unref(input_stream);
             return FALSE;
         }
@@ -353,7 +353,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
     /* Create data stream */
     data_stream = g_data_input_stream_new(input_stream);
     if (!data_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to create data stream!"));
         g_object_unref(stream);
         return FALSE;

@@ -84,7 +84,7 @@ static MirageTrack *mirage_session_find_track_with_subchannel (MirageSession *se
         if (track) {
             MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(track, NULL);
             if (fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: track %i contains subchannel\n", __debug__, i);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: track %i contains subchannel", __debug__, i);
                 g_object_unref(fragment);
                 break;
             } else {
@@ -138,7 +138,7 @@ static gchar *mirage_session_scan_for_mcn (MirageSession *self)
 
             mirage_helper_subchannel_q_decode_mcn(&buf[1], tmp_mcn);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>", __debug__, tmp_mcn);
 
             /* Set MCN */
             mcn = g_strndup(tmp_mcn, 13);
@@ -332,7 +332,7 @@ void mirage_session_set_mcn (MirageSession *self, const gchar *mcn)
      * subchannel; this is because MCN is encoded in the subchannel, and cannot
      * be altered... */
     if (self->priv->mcn_fixed) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: MCN is already encoded in subchannel!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: MCN is already encoded in subchannel!", __debug__);
     } else {
         g_free(self->priv->mcn);
         self->priv->mcn = g_strndup(mcn, 13);
@@ -1394,7 +1394,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
             gint session_language_len = 0;
 
             if (mirage_language_get_pack_data(session_language, pack_type, &session_language_data, &session_language_len, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, pack_type, session_language_len, session_language_data);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>", __debug__, pack_type, session_language_len, session_language_data);
                 mirage_cdtext_encoder_add_data(encoder, code, pack_type, 0, session_language_data, session_language_len);
             }
 
@@ -1412,13 +1412,13 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
 
                 track_language = mirage_track_get_language_by_code(track, code, NULL);
                 if (!track_language) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to get language with code %i on track %i!\n", __debug__, code, number);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to get language with code %i on track %i!", __debug__, code, number);
                     g_object_unref(track);
                     continue;
                 }
 
                 if (mirage_language_get_pack_data(track_language, pack_type, &track_language_data, &track_language_len, NULL)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, number, pack_type, track_language_len, track_language_data);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>", __debug__, number, pack_type, track_language_len, track_language_data);
                     mirage_cdtext_encoder_add_data(encoder, code, pack_type, number, track_language_data, track_language_len);
                 }
 

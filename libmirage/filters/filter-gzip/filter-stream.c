@@ -95,7 +95,7 @@ static gboolean mirage_filter_stream_gzip_compute_part_sizes (MirageFilterStream
         part = &self->priv->parts[i];
 
         part->size = (part+1)->offset - part->offset;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d\n", __debug__, i, part->offset, part->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d", __debug__, i, part->offset, part->size);
 
         max_size = MAX(max_size, part->size);
     }
@@ -103,11 +103,11 @@ static gboolean mirage_filter_stream_gzip_compute_part_sizes (MirageFilterStream
     /* Last part size */
     part = &self->priv->parts[self->priv->num_parts-1];
     part->size = file_size - part->offset;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d\n", __debug__, self->priv->num_parts-1, part->offset, part->size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %" G_GOFFSET_MODIFIER "d, size: %d", __debug__, self->priv->num_parts-1, part->offset, part->size);
 
     max_size = MAX(max_size, part->size);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: largest part size: %d\n", __debug__, max_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: largest part size: %d", __debug__, max_size);
 
     /* Allocate part buffer */
     self->priv->part_buffer_size = max_size;
@@ -186,7 +186,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building part index\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building part index", __debug__);
 
     /* Initialize zlib stream */
     zlib_stream->zalloc = Z_NULL;
@@ -264,9 +264,9 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     } while (ret != Z_STREAM_END);
 
     /* At least one part must be present */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d", __debug__, self->priv->num_parts);
     if (!self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in GZIP file!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in GZIP file!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in GZIP file!"));
         return FALSE;
     }
@@ -280,10 +280,10 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
     }
 
     /* Store file size (= total_out) */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)\n", __debug__, total_out, total_out);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X)", __debug__, total_out, total_out);
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), total_out);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed", __debug__);
 
     return TRUE;
 }
@@ -311,15 +311,15 @@ static gboolean mirage_filter_stream_gzip_open (MirageFilterStream *_self, Mirag
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...", __debug__);
 
     /* Build index */
     if (!mirage_filter_stream_gzip_build_index(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!", __debug__);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     return TRUE;
 }
@@ -390,12 +390,12 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
     /* Find part that corresponds to current position */
     part_idx = mirage_filter_stream_gzip_find_part(self, position);
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!", __debug__, position, position);
         return 0;
     }
     part = &self->priv->parts[part_idx];
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -403,7 +403,7 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
         goffset underlying_stream_offset;
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...", __debug__);
 
         /* Offset in underlying stream */
         underlying_stream_offset = part->raw_offset;
@@ -413,14 +413,14 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, underlying_stream_offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, underlying_stream_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, underlying_stream_offset);
             return -1;
         }
 
         /* Reset inflate engine */
         ret = inflateReset2(zlib_stream, -15); /* -15 = raw inflate */
         if (ret != Z_OK) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!", __debug__);
             return -1;
         }
 
@@ -429,7 +429,7 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
             guint8 value;
             ret = mirage_stream_read(stream, &value, sizeof(value), NULL);
             if (ret != sizeof(value)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read bits!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read bits!", __debug__);
                 return -1;
             }
             inflatePrime(zlib_stream, part->bits, value >> (8 - part->bits));
@@ -469,14 +469,14 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
         /* Set currently cached part */
         self->priv->cached_part = part_idx;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached", __debug__);
     }
 
     /* Copy data */
     gsize part_offset = position - part->offset;
     count = MIN(count, part->size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, part_offset, count);
 
     memcpy(buffer, self->priv->part_buffer + part_offset, count);
 

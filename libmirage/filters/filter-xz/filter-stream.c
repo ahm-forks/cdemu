@@ -68,7 +68,7 @@ static gboolean mirage_filter_stream_xz_reallocate_read_buffer (MirageFilterStre
 {
     self->priv->io_buffer = g_try_realloc(self->priv->io_buffer, size);
     if (!self->priv->io_buffer) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to (re)allocate read buffer (%d bytes)!\n", __debug__, size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to (re)allocate read buffer (%d bytes)!", __debug__, size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to (re)allocate read buffer (%d bytes)!"), size);
         return FALSE;
     }
@@ -86,7 +86,7 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     lzma_ret ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing header and footer...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing header and footer...", __debug__);
 
     /* Allocate read buffer: header and footer (12 bytes) */
     if (!mirage_filter_stream_xz_reallocate_read_buffer(self, LZMA_STREAM_HEADER_SIZE, error)) {
@@ -95,20 +95,20 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
 
     /* Read and decode header */
     if (!mirage_stream_seek(stream, 0, G_SEEK_SET, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of header!"));
         return FALSE;
     }
 
     if (mirage_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL) != LZMA_STREAM_HEADER_SIZE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's header!"));
         return FALSE;
     }
 
     ret = lzma_stream_header_decode(&self->priv->header, self->priv->io_buffer);
     if (ret != LZMA_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to decode stream's header!"));
         return FALSE;
     }
@@ -116,20 +116,20 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
 
     /* Read and decode footer */
     if (!mirage_stream_seek(stream, -LZMA_STREAM_HEADER_SIZE, G_SEEK_END, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of footer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the beginning of footer!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to seek to the beginning of footer!"));
         return FALSE;
     }
 
     if (mirage_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL) != LZMA_STREAM_HEADER_SIZE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's footer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's footer!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read stream's footer!"));
         return FALSE;
     }
 
     ret = lzma_stream_footer_decode(&self->priv->footer, self->priv->io_buffer);
     if (ret != LZMA_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's footer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode stream's footer!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to decode stream's footer!"));
         return FALSE;
     }
@@ -138,7 +138,7 @@ static gboolean mirage_filter_stream_xz_read_header_and_footer (MirageFilterStre
     /* Validate */
     ret = lzma_stream_flags_compare(&self->priv->header, &self->priv->footer);
     if (ret != LZMA_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: stream's header and footer do not match!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: stream's header and footer do not match!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Stream's header and footer do not match!"));
         return FALSE;
     }
@@ -154,7 +154,7 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
     gsize in_pos = 0;
     lzma_ret ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing index...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing index...", __debug__);
 
     /* Allocate read buffer: compressed index size is declared in footer */
     if (!mirage_filter_stream_xz_reallocate_read_buffer(self, self->priv->footer.backward_size, error)) {
@@ -187,7 +187,7 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
 
     /* Store file size */
     guint64 file_size = lzma_index_uncompressed_size(self->priv->index);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)\n", __debug__, file_size, file_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X)", __debug__, file_size, file_size);
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
 
     return TRUE;
@@ -200,43 +200,42 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 
     /* Read and decode header and footer */
     if (!mirage_filter_stream_xz_read_header_and_footer(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read/decode header and footer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read/decode header and footer!", __debug__);
         return FALSE;
     }
 
     /* Read and decode index */
     if (!mirage_filter_stream_xz_read_index(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read/decode index!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read/decode index!", __debug__);
         return FALSE;
     }
 
     /* Warn about multiple streams */
     if (lzma_index_stream_count(self->priv->index) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%" G_GINT64_MODIFIER "d) streams! Their content will be treated as a single compressed file!\n", __debug__, lzma_index_stream_count(self->priv->index));
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ file contains multiple (%" G_GINT64_MODIFIER "d) streams! Their content will be treated as a single compressed file!", __debug__, lzma_index_stream_count(self->priv->index));
     }
 
 
     /* Warn about single-block streams */
     if (lzma_index_block_count(self->priv->index) == 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ stream contains a single large block! To allow efficient seeking, consider re-compressing the file using smaller blocks (e.g. 'xz --block-size=1M ...')!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: XZ stream contains a single large block! To allow efficient seeking, consider re-compressing the file using smaller blocks (e.g. 'xz --block-size=1M ...')!", __debug__);
     }
 
     /* Find maximum block size */
     lzma_index_iter index_iter;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...", __debug__);
     lzma_index_iter_init(&index_iter, self->priv->index);
     while (lzma_index_iter_next(&index_iter, LZMA_INDEX_ITER_BLOCK) == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%" G_GINT64_MODIFIER "d\n", __debug__, index_iter.block.number_in_file);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%" G_GINT64_MODIFIER "d (max: %" G_GINT64_MODIFIER "d)\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%" G_GINT64_MODIFIER "d", __debug__, index_iter.block.number_in_file);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%" G_GINT64_MODIFIER "d (max: %" G_GINT64_MODIFIER "d)", __debug__, index_iter.block.uncompressed_size, max_block_size);
         max_block_size = MAX(max_block_size, index_iter.block.uncompressed_size);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
 
     /* For performance reasons, we limit the allowed size of blocks */
     if (max_block_size > MAX_BLOCK_SIZE) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%" G_GINT64_MODIFIER "d bytes) exceeds the limit of %d bytes!\n", __debug__, max_block_size, MAX_BLOCK_SIZE);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: the largest block (%" G_GINT64_MODIFIER "d bytes) exceeds the limit of %d bytes!", __debug__, max_block_size, MAX_BLOCK_SIZE);
 
         gchar tmp[100] = ""; /* Work-around for lack of direct G_GINT64_MODIFIER support in xgettext() */
         g_snprintf(tmp, sizeof(tmp)/sizeof(tmp[0]), "%" G_GINT64_MODIFIER "d", max_block_size);
@@ -285,15 +284,15 @@ static gboolean mirage_filter_stream_xz_open (MirageFilterStream *_self, MirageS
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...", __debug__);
 
     /* Parse XZ stream */
     if (!mirage_filter_stream_xz_parse_stream(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!", __debug__);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     return TRUE;
 }
@@ -308,11 +307,11 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
     /* Find block that corresponds to current position */
     lzma_index_iter_init(&index_iter, self->priv->index);
     if (lzma_index_iter_locate(&index_iter, position)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%" G_GINT64_MODIFIER "d (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%" G_GINT64_MODIFIER "d (cached: #%d)", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
@@ -323,22 +322,22 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
         guint8 value;
         guint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...", __debug__);
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, index_iter.block.compressed_file_offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GINT64_MODIFIER "d in underlying stream!\n", __debug__, index_iter.block.compressed_file_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GINT64_MODIFIER "d in underlying stream!", __debug__, index_iter.block.compressed_file_offset);
             return -1;
         }
 
         /* Read first byte of block header */
         ret = mirage_stream_read(stream, &value, sizeof(value), NULL);
         if (ret != sizeof(value)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first byte of block header!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first byte of block header!", __debug__);
             return -1;
         }
         if (!mirage_stream_seek(stream, -sizeof(value), G_SEEK_CUR, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek at beginning of block header!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek at beginning of block header!", __debug__);
             return -1;
         }
 
@@ -350,19 +349,19 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
         block.compressed_size = LZMA_VLI_UNKNOWN;
         block.filters = filters;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block header size: %d!\n", __debug__, block.header_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block header size: %d!", __debug__, block.header_size);
 
 
         /* Read and decode header */
         ret = mirage_stream_read(stream, self->priv->io_buffer, block.header_size, NULL);
         if (ret != block.header_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block header!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block header!", __debug__);
             return -1;
         }
 
         ret = lzma_block_header_decode(&block, NULL, self->priv->io_buffer);
         if (ret != LZMA_OK) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode block header (error: %d)!\n", __debug__, ret);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to decode block header (error: %d)!", __debug__, ret);
             return -1;
         }
 
@@ -373,7 +372,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
 
         ret = lzma_block_decoder(&lzma, &block);
         if (ret != LZMA_OK) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize block decoder!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize block decoder!", __debug__);
             return -1;
         }
 
@@ -386,7 +385,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
             if (ret == LZMA_STREAM_END) {
                 break;
             } else if (ret != LZMA_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: error while decoding block: %d (consumed %" G_GINT64_MODIFIER "d bytes, uncompressed %" G_GINT64_MODIFIER "d bytes)!\n", __debug__, ret, lzma.total_in, lzma.total_out);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: error while decoding block: %d (consumed %" G_GINT64_MODIFIER "d bytes, uncompressed %" G_GINT64_MODIFIER "d bytes)!", __debug__, ret, lzma.total_in, lzma.total_out);
                 return -1;
             }
         }
@@ -396,14 +395,14 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
         /* Store the number of currently stored block */
         self->priv->cached_block_number = index_iter.block.number_in_file;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block already cached", __debug__);
     }
 
     /* Copy data */
     goffset block_offset = position - index_iter.block.uncompressed_stream_offset;
     count = MIN(count, index_iter.block.uncompressed_size - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->block_buffer + block_offset, count);
 

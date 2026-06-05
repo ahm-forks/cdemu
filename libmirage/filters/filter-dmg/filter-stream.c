@@ -200,45 +200,45 @@ static inline void mirage_filter_stream_dmg_size_fix_endian (size_block_t *size_
 \**********************************************************************/
 static inline void _dump_checksum_fields (MirageFilterStreamDmg *self, const guint32 *data, const gchar *indent)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08X 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", __debug__, indent, data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08X 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x", __debug__, indent, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x", __debug__, indent, data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x", __debug__, indent, data[16], data[17], data[18], data[19], data[20], data[21], data[22], data[23]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x", __debug__, indent, data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31]);
 }
 
 static void mirage_filter_stream_dmg_print_koly_block (MirageFilterStreamDmg *self, koly_block_t *koly_block)
 {
     g_assert(self && koly_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DMG trailer:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, koly_block->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, koly_block->version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u\n", __debug__, koly_block->header_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: 0x%X\n", __debug__, koly_block->flags);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  image_variant: %u\n", __debug__, koly_block->image_variant);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DMG trailer:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s", __debug__, koly_block->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u", __debug__, koly_block->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u", __debug__, koly_block->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  flags: 0x%X", __debug__, koly_block->flags);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  image_variant: %u", __debug__, koly_block->image_variant);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  running_data_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->running_data_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->data_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->data_fork_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->rsrc_fork_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->rsrc_fork_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_offset: 0x%" G_GINT64_MODIFIER "x\n", __debug__, koly_block->xml_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_length: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->xml_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->sector_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  running_data_fork_offset: 0x%" G_GINT64_MODIFIER "x", __debug__, koly_block->running_data_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_offset: 0x%" G_GINT64_MODIFIER "x", __debug__, koly_block->data_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_length: %" G_GINT64_MODIFIER "u", __debug__, koly_block->data_fork_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_offset: 0x%" G_GINT64_MODIFIER "x", __debug__, koly_block->rsrc_fork_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_fork_length: %" G_GINT64_MODIFIER "u", __debug__, koly_block->rsrc_fork_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_offset: 0x%" G_GINT64_MODIFIER "x", __debug__, koly_block->xml_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  xml_length: %" G_GINT64_MODIFIER "u", __debug__, koly_block->xml_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u", __debug__, koly_block->sector_count);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_number: %u\n", __debug__, koly_block->segment_number);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u\n", __debug__, koly_block->segment_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_number: %u", __debug__, koly_block->segment_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u", __debug__, koly_block->segment_count);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id: 0x%08x 0x%08x 0x%08x 0x0%08x\n", __debug__, koly_block->segment_id[0], koly_block->segment_id[1], koly_block->segment_id[2], koly_block->segment_id[3]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id: 0x%08x 0x%08x 0x%08x 0x0%08x", __debug__, koly_block->segment_id[0], koly_block->segment_id[1], koly_block->segment_id[2], koly_block->segment_id[3]);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.type: %u\n", __debug__, koly_block->data_fork_checksum.type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.size: %u\n", __debug__, koly_block->data_fork_checksum.size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.data:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.type: %u", __debug__, koly_block->data_fork_checksum.type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.size: %u", __debug__, koly_block->data_fork_checksum.size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.data:", __debug__);
     _dump_checksum_fields(self, koly_block->data_fork_checksum.data, " ");
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.type: %u\n", __debug__, koly_block->master_checksum.type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.size: %u\n", __debug__, koly_block->master_checksum.size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.data:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.type: %u", __debug__, koly_block->master_checksum.type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.size: %u", __debug__, koly_block->master_checksum.size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.data:", __debug__);
     _dump_checksum_fields(self, koly_block->master_checksum.data, " ");
 }
 
@@ -246,46 +246,46 @@ static void mirage_filter_stream_dmg_print_blkx_block (MirageFilterStreamDmg *se
 {
     g_assert(self && blkx_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, blkx_block->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  info_version: %u\n", __debug__, blkx_block->info_version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first_sector_number: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->first_sector_number);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->sector_count);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_start: %" G_GINT64_MODIFIER "u\n", __debug__, blkx_block->data_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  decompressed_buffer_requested: %u\n", __debug__, blkx_block->decompressed_buffer_requested);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_descriptor: %i\n", __debug__, blkx_block->blocks_descriptor);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.type: %u\n", __debug__, blkx_block->checksum.type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.size: %u\n", __debug__, blkx_block->checksum.size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.data:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s", __debug__, blkx_block->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  info_version: %u", __debug__, blkx_block->info_version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first_sector_number: %" G_GINT64_MODIFIER "u", __debug__, blkx_block->first_sector_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector_count: %" G_GINT64_MODIFIER "u", __debug__, blkx_block->sector_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_start: %" G_GINT64_MODIFIER "u", __debug__, blkx_block->data_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  decompressed_buffer_requested: %u", __debug__, blkx_block->decompressed_buffer_requested);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_descriptor: %i", __debug__, blkx_block->blocks_descriptor);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.type: %u", __debug__, blkx_block->checksum.type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.size: %u", __debug__, blkx_block->checksum.size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.data:", __debug__);
     _dump_checksum_fields(self, blkx_block->checksum.data, " ");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_run_count: %u\n", __debug__, blkx_block->blocks_run_count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  blocks_run_count: %u", __debug__, blkx_block->blocks_run_count);
 }
 
 static void mirage_filter_stream_dmg_print_csum_block (MirageFilterStreamDmg *self, csum_block_t *csum_block)
 {
     g_assert(self && csum_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: cSum block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, csum_block->version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %u\n", __debug__, csum_block->type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data: 0x%08x\n", __debug__, csum_block->data);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: cSum block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u", __debug__, csum_block->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %u", __debug__, csum_block->type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data: 0x%08x", __debug__, csum_block->data);
 }
 
 static void mirage_filter_stream_dmg_print_size_block (MirageFilterStreamDmg *self, size_block_t *size_block)
 {
     g_assert(self && size_block);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: size block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, size_block->version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  is_hfs: %u\n", __debug__, size_block->is_hfs);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: 0x%08x\n", __debug__, size_block->unknown1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_length: %u\n", __debug__, size_block->data_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown2: 0x%08x\n", __debug__, size_block->unknown2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: 0x%08x\n", __debug__, size_block->unknown3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_modified: 0x%08x\n", __debug__, size_block->vol_modified);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: 0x%08x\n", __debug__, size_block->unknown4);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s\n", __debug__, size_block->vol_sig.as_array);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_present: %u\n", __debug__, size_block->size_present);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: size block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u", __debug__, size_block->version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  is_hfs: %u", __debug__, size_block->is_hfs);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: 0x%08x", __debug__, size_block->unknown1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_length: %u", __debug__, size_block->data_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown2: 0x%08x", __debug__, size_block->unknown2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: 0x%08x", __debug__, size_block->unknown3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_modified: 0x%08x", __debug__, size_block->vol_modified);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: 0x%08x", __debug__, size_block->unknown4);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s", __debug__, size_block->vol_sig.as_array);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_present: %u", __debug__, size_block->size_present);
 }
 
 
@@ -315,7 +315,7 @@ static gchar *create_filename_func_legacy (const gchar *main_filename, gint inde
     }
 
     gint main_fn_len = strlen(main_filename) - 7; /* volname. (without 001.dmg) */
-    gchar *ret_filename = g_try_malloc(main_fn_len + 7 + 1); /* len + NNN.dmg + \NULL */
+    gchar *ret_filename = g_try_malloc(main_fn_len + 7 + 1); /* len + NNN.dmg + \NUL */
 
     if (!ret_filename) {
         return NULL;
@@ -365,40 +365,40 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     rsrc_fork_t  *rsrc_fork = NULL;
     gchar *rsrc_fork_data = NULL;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading descriptor...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading descriptor...", __debug__);
 
     /* Read and parse resource-fork */
     if (koly_block->xml_offset && koly_block->xml_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains XML resource-fork...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains XML resource-fork...", __debug__);
 
         rsrc_fork_data = g_try_malloc(koly_block->xml_length);
         if (!rsrc_fork_data) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for XML resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for XML resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->xml_offset, G_SEEK_SET, NULL);
         if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read XML resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read XML resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read XML resource-fork!"));
             return FALSE;
         }
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_xml(rsrc_fork_data, koly_block->xml_length);
     } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains binary resource-fork...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image contains binary resource-fork...", __debug__);
 
         rsrc_fork_data = g_try_malloc(koly_block->rsrc_fork_length);
         if (!rsrc_fork_data) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for binary resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for binary resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, koly_block->rsrc_fork_offset, G_SEEK_SET, NULL);
         if ((gsize)mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read binary resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read binary resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read binary resource-fork!"));
             return FALSE;
         }
@@ -411,7 +411,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
 
     /* Did all go well? */
     if (!rsrc_fork) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse resource-fork!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse resource-fork!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to parse resource-fork!"));
         return FALSE;
     }
@@ -420,7 +420,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
     rsrc_fork_data = NULL;
 
     /* Loop through resource types */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing data from resource-fork...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing data from resource-fork...", __debug__);
     for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
         rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
 
@@ -428,16 +428,16 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
         for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
             rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing resource:\n", __debug__);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %.4s\n", __debug__, rsrc_type->type.as_array);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  id: %i\n", __debug__, rsrc_ref->id);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s\n", __debug__, rsrc_ref->name->str);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attrs: 0x%04hx\n", __debug__, rsrc_ref->attrs);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data length: %i\n", __debug__, rsrc_ref->data_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing resource:", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: %.4s", __debug__, rsrc_type->type.as_array);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  id: %i", __debug__, rsrc_ref->id);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s", __debug__, rsrc_ref->name->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attrs: 0x%04hx", __debug__, rsrc_ref->attrs);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data length: %i", __debug__, rsrc_ref->data_length);
 
             /* Convert resource endianness */
             if (!memcmp(rsrc_type->type.as_array, "plst", 4)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: this resource contains partition table information - skipping...\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: this resource contains partition table information - skipping...", __debug__);
             } else if (!memcmp(rsrc_type->type.as_array, "cSum", 4)) {
                 csum_block_t *csum_block = (csum_block_t *)rsrc_ref->data;
 
@@ -457,7 +457,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                 nsiz_data = g_string_new_len(rsrc_ref->data, rsrc_ref->data_length);
                 g_assert(nsiz_data);
 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: nsiz data: %s\n", __debug__, nsiz_data->str);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: nsiz data: %s", __debug__, nsiz_data->str);
 
                 g_string_free(nsiz_data, TRUE);
             } else if (!memcmp(rsrc_type->type.as_array, "blkx", 4)) {
@@ -467,7 +467,7 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                 mirage_filter_stream_dmg_blkx_block_fix_endian(blkx_block);
                 mirage_filter_stream_dmg_print_blkx_block(self, blkx_block); /* Prints only blkx header, without data */
 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing blkx entry with %d block(s)...\n", __debug__, blkx_block->blocks_run_count);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing blkx entry with %d block(s)...", __debug__, blkx_block->blocks_run_count);
                 for (guint d = 0; d < blkx_block->blocks_run_count; d++) {
                     mirage_filter_stream_dmg_blkx_data_fix_endian(&blkx_data[d]);
 
@@ -489,19 +489,19 @@ static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg 
                             break;
                         }
                         default: {
-                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown block type: %d\n", __debug__, block_type);
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown block type: %d", __debug__, block_type);
                             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Encountered unknown block type: %d!"), block_type);
                             return FALSE;
                         }
                     }
                 }
             } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type.as_array);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encountered unknown resource type: %.4s", __debug__, rsrc_type->type.as_array);
             }
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing descriptor\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing descriptor", __debug__);
 
     return TRUE;
 }
@@ -518,22 +518,22 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     gint cur_part = 0;
     gint ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index...", __debug__);
 
     /* Allocate part index */
     self->priv->parts = g_try_new(DMG_Part, self->priv->num_parts);
     if (!self->priv->parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for part index!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for part index!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for part index!"));
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d", __debug__, self->priv->num_parts);
 
     /* Loop through resource refs of type 'blkx' */
     rsrc_type = rsrc_find_type(rsrc_fork, "blkx");
     if (!rsrc_type) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find required 'blkx' resource type!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find required 'blkx' resource type!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to find required 'blkx' resource type!"));
         return FALSE;
     }
@@ -605,8 +605,8 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required I/O buffer size: %u\n", __debug__, self->priv->io_buffer_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required inflate buffer size: %u\n", __debug__, self->priv->inflate_buffer_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required I/O buffer size: %u", __debug__, self->priv->io_buffer_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: required inflate buffer size: %u", __debug__, self->priv->inflate_buffer_size);
 
     /* Initialize zlib stream */
     zlib_stream->zalloc = Z_NULL;
@@ -618,7 +618,7 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     ret = inflateInit2(zlib_stream, 15);
 
     if (ret != Z_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib's inflate! Error: %d\n", __debug__, ret);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib's inflate! Error: %d", __debug__, ret);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize zlib's inflate (error: %d)!"), ret);
         return FALSE;
     }
@@ -633,7 +633,7 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
 
     if (ret != BZ_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize libbz2's decompress! Error: %d\n", __debug__, ret);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize libbz2's decompress! Error: %d", __debug__, ret);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to initialize libbz2's decompress (error: %d)!"), ret);
         return FALSE;
     }
@@ -641,7 +641,7 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     /* Allocate inflate buffer */
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
     if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for inflate buffer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for inflate buffer!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for inflate buffer!"));
         return FALSE;
     }
@@ -649,12 +649,12 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
     /* Allocate I/O buffer */
     self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
     if (!self->priv->io_buffer && self->priv->io_buffer_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for I/O buffer!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for I/O buffer!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for I/O buffer!"));
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read part index\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read part index", __debug__);
 
     return TRUE;
 }
@@ -665,13 +665,13 @@ static gboolean mirage_filter_stream_dmg_read_part_index (MirageFilterStreamDmg 
 \**********************************************************************/
 static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *self, GError **error)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...\n", __debug__, self->priv->num_segments);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening stream(s) for %d segment(s)...", __debug__, self->priv->num_segments);
 
     /* Fill in existing stream */
     self->priv->streams[0] = g_object_ref(mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self)));
 
     const gchar *original_filename = mirage_stream_get_filename(self->priv->streams[0]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s\n", __debug__, original_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reusing stream #0 on filename: %s", __debug__, original_filename);
 
     /* Create the rest of the streams */
     for (guint s = 1; s < self->priv->num_segments; s++) {
@@ -679,7 +679,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         GError *local_error = NULL;
         gchar *filename = self->priv->create_filename_func(original_filename, s);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s\n", __debug__, s, filename);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create stream #%d for file: %s", __debug__, s, filename);
 
         /* Directly create an instance of MirageFileStream, instead of
          * going through mirage_contextual_create_input_stream(). Using
@@ -694,7 +694,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         mirage_contextual_inherit_context(MIRAGE_CONTEXTUAL(stream), MIRAGE_CONTEXTUAL(self));
 
         if (!mirage_file_stream_open(MIRAGE_FILE_STREAM(stream), filename, FALSE, &local_error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s\n", __debug__, s, filename, local_error->message);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream #%d on file %s: %s", __debug__, s, filename, local_error->message);
             g_error_free(local_error);
             g_object_unref(stream);
             g_free(filename);
@@ -710,7 +710,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         if (MIRAGE_IS_FILTER_STREAM_ENCRCDSA(self->priv->streams[0])) {
             MirageStream *orig_stream = stream;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create EncrCDSA stream on top of stream #%d...\n", __debug__, s);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: trying to create EncrCDSA stream on top of stream #%d...", __debug__, s);
 
             stream = g_object_new(MIRAGE_TYPE_FILTER_STREAM_ENCRCDSA, NULL);
 
@@ -718,7 +718,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
             mirage_contextual_inherit_context(MIRAGE_CONTEXTUAL(stream), MIRAGE_CONTEXTUAL(self));
 
             if (!mirage_filter_stream_open(MIRAGE_FILTER_STREAM(stream), orig_stream, FALSE, &local_error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create EncrCDSA stream on top of stream #%d: %s\n", __debug__, s, local_error->message);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create EncrCDSA stream on top of stream #%d: %s", __debug__, s, local_error->message);
                 g_error_free(local_error);
                 g_object_unref(stream);
                 g_object_unref(orig_stream);
@@ -737,7 +737,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         MirageStream *stream = self->priv->streams[s];
         koly_block_t *koly_block = &self->priv->koly_blocks[s];
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading koly block in stream #%d...!\n", __debug__, s);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading koly block in stream #%d...!", __debug__, s);
         for (guint try = 0; try < 2; try++) {
             /* Find koly block either on end (most often) or beginning of file */
             if (try == 0) {
@@ -748,7 +748,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
 
             /* Read koly block */
             if (mirage_stream_read(stream, koly_block, sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read koly block!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read koly block!", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to read koly block!"));
                 return FALSE;
             }
@@ -756,7 +756,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
             /* Validate koly block */
             if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
                 if (try == 1) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid koly block!\n", __debug__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid koly block!", __debug__);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid koly block!"));
                     return FALSE;
                 }
@@ -770,7 +770,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         mirage_filter_stream_dmg_print_koly_block(self, koly_block);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened %d streams\n\n", __debug__, self->priv->num_segments);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened %d streams", __debug__, self->priv->num_segments);
 
     return TRUE;
 }
@@ -815,17 +815,17 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...", __debug__);
 
     /* Display koly block for debugging purposes */
     mirage_filter_stream_dmg_print_koly_block(self, koly_block);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:", __debug__);
 
     /* Only perform parsing on the first file in a segment image.
      * Note that non-segmented images may have num_segments and
      * segment_number set either both to 0 or both to 1. */
     if (koly_block->segment_count > 1 && koly_block->segment_number != 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file is not the first file of a set (has segment_number=%d)!\n", __debug__, koly_block->segment_number);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file is not the first file of a set (has segment_number=%d)!", __debug__, koly_block->segment_number);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("File is not the first file of a set!"));
         return FALSE;
     }
@@ -864,10 +864,10 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     if (self->priv->num_segments > 1) {
         const gchar *original_filename = mirage_stream_get_filename(stream);
         if (check_filename_suffix(original_filename, ".001.dmg")) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.001.dmg, volname.002.dmg, ...\n\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.001.dmg, volname.002.dmg, ...", __debug__);
             self->priv->create_filename_func = create_filename_func_legacy;
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.dmg, volname.002.dmgpart, ...\n\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: multi-segment image; assumed filename format: volname.dmg, volname.002.dmgpart, ...", __debug__);
             self->priv->create_filename_func = create_filename_func;
         }
     }
@@ -876,7 +876,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     if (self->priv->num_segments > 1) {
         self->priv->koly_blocks = g_try_renew(koly_block_t, self->priv->koly_blocks, self->priv->num_segments);
         if (!self->priv->koly_blocks) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reallocate memory for koly blocks!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reallocate memory for koly blocks!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to reallocate memory for koly blocks!"));
             return FALSE;
         }
@@ -889,7 +889,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
      * streams). */
     self->priv->streams = g_try_new0(MirageStream *, self->priv->num_segments);
     if (!self->priv->streams) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for streams!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for streams!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Failed to allocate memory for streams!"));
         return FALSE;
     }
@@ -911,9 +911,9 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
 
     /* Set file size */
     mirage_filter_stream_simplified_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "u\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %" G_GINT64_MODIFIER "u", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     return TRUE;
 }
@@ -932,25 +932,25 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, part_offs);
         return -1;
     }
 
-    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
+    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u", __debug__, part_offs);*/
 
     /* Read raw chunk data */
     ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!", __debug__);
         return -1;
     } else if ((gsize)ret == to_read) {
         have_read += ret;
         to_read -= ret;
     } else if ((gsize)ret < to_read) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!", __debug__);
         have_read += ret;
         to_read -= ret;
 
@@ -960,17 +960,17 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, part_offs);
             return -1;
         }
 
         /* Read raw chunk data */
         ret = mirage_stream_read(stream, &buffer[have_read], to_read, NULL);
         if (ret < 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!", __debug__, to_read);
             return -1;
         } else if (ret == 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!", __debug__);
             return -1;
         } else if ((gsize)ret == to_read) {
             have_read += ret;
@@ -1000,17 +1000,17 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     }
 
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!", __debug__);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const DMG_Part *part = &self->priv->parts[part_idx];
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...", __debug__);
 
         /* Read a part */
         if (part->type == ZERO || part->type == IGNORE) {
@@ -1019,7 +1019,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Read uncompressed part */
             gssize ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if ((gsize)ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
         } else if (part->type == ZLIB) {
@@ -1030,7 +1030,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Reset inflate engine */
             zlib_ret = inflateReset2(zlib_stream, 15);
             if (zlib_ret != Z_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!", __debug__);
                 return -1;
             }
 
@@ -1043,7 +1043,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if ((gsize)read_bytes != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
 
@@ -1051,7 +1051,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
                 /* Inflate */
                 zlib_ret = inflate(zlib_stream, Z_NO_FLUSH);
                 if (zlib_ret == Z_NEED_DICT || zlib_ret == Z_MEM_ERROR || zlib_ret == Z_DATA_ERROR) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!\n", __debug__, zlib_stream->msg);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!", __debug__, zlib_stream->msg);
                     return -1;
                 }
             } while (zlib_stream->avail_in);
@@ -1063,7 +1063,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Reset decompress engine */
             bz_ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
             if (bz_ret != BZ_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!", __debug__);
                 return -1;
             }
 
@@ -1076,7 +1076,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if ((gsize)read_bytes != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
 
@@ -1084,7 +1084,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
                 /* Inflate */
                 bz_ret = BZ2_bzDecompress(bzip2_stream);
                 if (bz_ret < 0) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!\n", __debug__, bz_ret);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %d!", __debug__, bz_ret);
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
@@ -1092,7 +1092,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Uninitialize decompress engine */
             bz_ret = BZ2_bzDecompressEnd(bzip2_stream);
             if (bz_ret != BZ_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!", __debug__);
                 return -1;
             }
         } else if (part->type == ADC) {
@@ -1103,7 +1103,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             /* Read some compressed data */
             read_bytes = mirage_filter_stream_dmg_read_raw_chunk(self, self->priv->io_buffer, part_idx);
             if ((gsize)read_bytes != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
 
@@ -1114,7 +1114,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             g_assert(written_bytes == part->num_sectors * DMG_SECTOR_SIZE);
         } else {
             /* We should never get here... */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!", __debug__, part->type);
             return -1;
         }
 
@@ -1123,7 +1123,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
             self->priv->cached_part = part_idx;
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached", __debug__);
     }
 
     /* Copy data */
@@ -1133,7 +1133,7 @@ static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, 
     guint64 part_offset = position - (part->first_sector * DMG_SECTOR_SIZE);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, part_offset, count);
 
     if (part->type == ZERO || part->type == IGNORE) {
         memset(buffer, 0, count);

@@ -365,12 +365,12 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
 {
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: invalid block (%i)!\n", __debug__, block);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: invalid block (%i)!", __debug__, block);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, Q_("Invalid block number #%i!"), block);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: initialized block %i; code: %i; charset: %i; copyright: %i\n", __debug__, block, code, charset, copyright);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: initialized block %i; code: %i; charset: %i; copyright: %i", __debug__, block, code, charset, copyright);
     self->priv->blocks[block].code = code;
     self->priv->blocks[block].charset = charset;
     self->priv->blocks[block].copyright = copyright;
@@ -443,13 +443,13 @@ void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint ty
  */
 void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gint *buflen)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding CD-TEXT...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding CD-TEXT...", __debug__);
 
     /* Encode all blocks */
     for (gint i = 0; i < self->priv->num_blocks; i++) {
         /* Block is valid only if it has language code set */
         if (self->priv->blocks[i].code) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; code %i\n", __debug__, i, self->priv->blocks[i].code);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; code %i", __debug__, i, self->priv->blocks[i].code);
 
             /* Encode all on list */
             for (GList *entry = self->priv->blocks[i].packs_list; entry; entry = entry->next) {
@@ -469,7 +469,7 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
 
             mirage_cdtext_encoder_encode_pack(self, &pack_data);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: block %i not valid\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: block %i not valid", __debug__, i);
         }
     }
 
@@ -520,7 +520,7 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
     *buflen = self->priv->length*sizeof(CDTextEncodedPack);
     *buffer = self->priv->buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: done encoding CD-TEXT; length: 0x%X\n", __debug__, *buflen);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: done encoding CD-TEXT; length: 0x%X", __debug__, *buflen);
 }
 
 

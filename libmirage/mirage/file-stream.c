@@ -167,7 +167,7 @@ static gssize mirage_file_stream_read (MirageStream *_self, void *buffer, gsize 
     MirageFileStream *self = MIRAGE_FILE_STREAM(_self);
 
     if (!self->priv->input_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file input stream!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file input stream!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file input stream!"));
         return -1;
     }
@@ -180,7 +180,7 @@ static gssize mirage_file_stream_write (MirageStream *_self, const void *buffer,
     MirageFileStream *self = MIRAGE_FILE_STREAM(_self);
 
     if (!self->priv->output_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file output stream!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file output stream!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file output stream!"));
         return -1;
     }
@@ -193,7 +193,7 @@ static gboolean mirage_file_stream_seek (MirageStream *_self, goffset offset, GS
     MirageFileStream *self = MIRAGE_FILE_STREAM(_self);
 
     if (!self->priv->stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file stream!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file stream!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No file stream!"));
         return FALSE;
     }
@@ -207,7 +207,7 @@ static goffset mirage_file_stream_tell (MirageStream *_self)
     MirageFileStream *self = MIRAGE_FILE_STREAM(_self);
 
     if (!self->priv->stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file stream!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no file stream!", __debug__);
         return -1;
     }
 

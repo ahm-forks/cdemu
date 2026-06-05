@@ -71,7 +71,7 @@ static void mirage_writer_iso_rename_track_image_files (MirageWriterIso *self, M
     gint num_tracks = mirage_disc_get_number_of_tracks(disc);
 
     if (num_tracks > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: renaming track files...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: renaming track files...", __debug__);
 
         const gchar *original_filename, *extension;
         gchar *new_filename;
@@ -104,9 +104,9 @@ static void mirage_writer_iso_rename_track_image_files (MirageWriterIso *self, M
             }
 
             /* Move */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: '%s' -> '%s'\n", __debug__, original_filename, new_filename);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: '%s' -> '%s'", __debug__, original_filename, new_filename);
             if (!mirage_stream_move_file(iter->data, new_filename, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to rename file for track #%d to '%s'!\n", __debug__, track, new_filename);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to rename file for track #%d to '%s'!", __debug__, track, new_filename);
             }
             g_free(new_filename);
 
@@ -179,21 +179,21 @@ static gboolean mirage_writer_iso_open_image_impl (MirageWriter *_self, MirageDi
     }
 
     /* Print parameters */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'\n", __debug__, self->priv->image_file_basename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'", __debug__, self->priv->image_file_basename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'", __debug__, mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
 
     /* Disable raw mode and subchannel for non-CD media */
     self->priv->is_cd_rom = mirage_disc_get_medium_type(disc) == MIRAGE_MEDIUM_CD;
     if (!self->priv->is_cd_rom) {
         if (mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw write mode is not supported for non-CD media and will be ignored!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: raw write mode is not supported for non-CD media and will be ignored!", __debug__);
         }
 
         if (mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: subchannel write mode is not supported for non-CD media and will be ignored!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: subchannel write mode is not supported for non-CD media and will be ignored!", __debug__);
         }
     }
 
@@ -204,7 +204,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(_self);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: creating new fragment with role %d for track (%d, sector type %d)!\n", __debug__,
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: creating new fragment with role %d for track (%d, sector type %d)!", __debug__,
         role, mirage_track_layout_get_track_number(track), mirage_track_get_sector_type(track));
 
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -312,7 +312,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
     }
 
     /* I/O stream */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment filename = %s\n", __debug__, filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment filename = %s", __debug__, filename);
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
     g_free(filename);
     if (!stream) {

@@ -82,10 +82,10 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     ciso_header_t *header = &self->priv->header;
     gint ret;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index", __debug__);
 
     if (header->total_bytes % header->block_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: original stream size (%" G_GUINT64_FORMAT ") is not a multiple of block size (%d)!\n", __debug__, header->total_bytes, header->block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: original stream size (%" G_GUINT64_FORMAT ") is not a multiple of block size (%d)!", __debug__, header->total_bytes, header->block_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid CSO file!"));
         return FALSE;
     }
@@ -93,12 +93,12 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     self->priv->num_parts = header->total_bytes / header->block_size;
     self->priv->num_indices = self->priv->num_parts + 1; /* Contains EOF offset */
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: 0x%" G_GINT64_MODIFIER "X (%" G_GUINT64_FORMAT ")\n", __debug__, header->total_bytes, header->total_bytes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d", __debug__, self->priv->num_parts);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: 0x%" G_GINT64_MODIFIER "X (%" G_GUINT64_FORMAT ")", __debug__, header->total_bytes, header->total_bytes);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in CSO file!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in CSO file!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("No parts in CSO file!"));
         return FALSE;
     }
@@ -143,7 +143,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
             /* Part size must be either smaller than header->block_size
              * (compressed block ) or equal to it (raw block) */
             if (prev_part->comp_size > header->block_size) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part/index entry: part data length (%" G_GINT64_MODIFIER "d) exceeds declared block size (%d)!\n", __debug__, prev_part->comp_size, header->block_size);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part/index entry: part data length (%" G_GINT64_MODIFIER "d) exceeds declared block size (%d)!", __debug__, prev_part->comp_size, header->block_size);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, Q_("Invalid CSO file!"));
                 return FALSE;
             }
@@ -186,7 +186,7 @@ static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self
     /* Set file size */
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), header->total_bytes);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index", __debug__);
 
     return TRUE;
 }
@@ -227,16 +227,16 @@ static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, Mirage
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CISO file alignment: %d.\n", __debug__, 1 << header->idx_align);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CISO file alignment: %d.", __debug__, 1 << header->idx_align);
 
     /* Read index */
     if (!mirage_filter_stream_cso_read_index(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!", __debug__);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     return TRUE;
 }
@@ -253,11 +253,11 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
     part_idx = position / self->priv->header.block_size;
 
     if (part_idx >= self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) beyond end of stream, doing nothing!", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -265,11 +265,11 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
         z_stream *zlib_stream = &self->priv->zlib_stream;
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...", __debug__);
 
         /* Seek to the position */
         if (!mirage_stream_seek(stream, part->offset, G_SEEK_SET, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part->offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, part->offset);
             return -1;
         }
 
@@ -278,17 +278,17 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
             /* Read uncompressed part */
             ret = mirage_stream_read(stream, self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL);
             if (ret == -1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->inflate_buffer_size);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!", __debug__, self->priv->inflate_buffer_size);
                 return -1;
             } else if (ret == 0) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!", __debug__);
                 return -1;
             }
         } else {
             /* Reset inflate engine */
             ret = inflateReset2(zlib_stream, -15);
             if (ret != Z_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!", __debug__);
                 return -1;
             }
 
@@ -303,10 +303,10 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
                     /* Read some compressed data */
                     ret = mirage_stream_read(stream, self->priv->io_buffer, part->comp_size, NULL);
                     if (ret == -1) {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->io_buffer_size);
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!", __debug__, self->priv->io_buffer_size);
                         return -1;
                     } else if (ret == 0) {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF\n!", __debug__);
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!", __debug__);
                         return -1;
                     }
                     zlib_stream->avail_in = ret;
@@ -316,7 +316,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
                 /* Inflate */
                 ret = inflate(zlib_stream, Z_NO_FLUSH);
                 if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s\n!", __debug__, zlib_stream->msg);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!", __debug__, zlib_stream->msg);
                     return -1;
                 }
             } while (zlib_stream->avail_out);
@@ -325,7 +325,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
         /* Set currently cached part */
         self->priv->cached_part = part_idx;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached", __debug__);
     }
 
 
@@ -333,7 +333,7 @@ static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, 
     gsize part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GSIZE_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GSIZE_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, part_offset, count);
 
     memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 

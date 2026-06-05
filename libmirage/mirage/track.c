@@ -114,7 +114,7 @@ static gchar *mirage_track_scan_for_isrc (MirageTrack *self)
             gchar tmp_isrc[12];
 
             mirage_helper_subchannel_q_decode_isrc(&buf[1], tmp_isrc);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __debug__, tmp_isrc);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>", __debug__, tmp_isrc);
 
             /* Set ISRC */
             isrc = g_strndup(tmp_isrc, 12);
@@ -140,19 +140,19 @@ static void mirage_track_rearrange_indices (MirageTrack *self)
      * after indices were added) */
     gint cur_index = 2;
     g_assert(self->priv->indices_list != NULL);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...\n", __debug__, g_list_length(self->priv->indices_list));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...", __debug__, g_list_length(self->priv->indices_list));
 
     for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         MirageIndex *index = entry->data;
         gint address = mirage_index_get_address(index);
 
         if (address <= self->priv->track_start) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found an index that's set before track's start... removing\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found an index that's set before track's start... removing", __debug__);
             entry = entry->next; /* Because we'll remove the entry */
             mirage_track_remove_index_by_object(self, index);
             continue;
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: setting index number to: %d\n", __debug__, cur_index);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: setting index number to: %d", __debug__, cur_index);
         mirage_index_set_number(index, cur_index++);
     }
 }
@@ -422,11 +422,11 @@ void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc)
      * libMirage), ISRC shouldn't be settable... */
 
     if (self->priv->isrc_fixed) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC is already encoded in subchannel!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC is already encoded in subchannel!", __debug__);
     } else {
         g_free(self->priv->isrc);
         self->priv->isrc = g_strndup(isrc, 12);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: set ISRC to <%.12s>\n", __debug__, self->priv->isrc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: set ISRC to <%.12s>", __debug__, self->priv->isrc);
     }
 }
 
@@ -512,7 +512,7 @@ gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs
     guint8 subchannel_buffer[96];
     gint main_length, subchannel_length;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: getting sector for address 0x%X (%d); absolute: %i\n", __debug__, address, address, abs);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: getting sector for address 0x%X (%d); absolute: %i", __debug__, address, address, abs);
 
     /* We need both disc-absolute and track-relative address */
     if (abs) {
@@ -540,7 +540,7 @@ gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, (void *)fragment, address, address - fragment_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X", __debug__, (void *)fragment, address, address - fragment_start);
 
     /* Main channel data */
     main_length = mirage_fragment_read_main_data_fast(fragment, relative_address - fragment_start, main_buffer, 2352, &local_error);
@@ -645,7 +645,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, (void *)fragment, relative_address, relative_address - fragment_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X", __debug__, (void *)fragment, relative_address, relative_address - fragment_start);
 
     /* Get expected main channel data size from the fragment; if fragment
      * expects subchannel, we always feed 96-byte raw interleaved PW */
@@ -845,7 +845,7 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
 {
     gint num_fragments;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s (index: %i, fragment: %p)\n", __debug__, __func__, index, (void *)fragment);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s (index: %i, fragment: %p)", __debug__, __func__, index, (void *)fragment);
 
     /* First fragment, last fragment... allow negative indexes to go from behind */
     num_fragments = mirage_track_get_number_of_fragments(self);
@@ -877,7 +877,7 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s: end\n", __debug__, __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s: end", __debug__, __func__);
 }
 
 /**
@@ -1143,7 +1143,7 @@ gint mirage_track_get_number_of_indices (MirageTrack *self)
 gboolean mirage_track_add_index (MirageTrack *self, gint address, GError **error)
 {
     MirageIndex *index;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s (address: 0x%X)\n", __debug__, __func__, address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: %s (address: 0x%X)", __debug__, __func__, address);
 
     /* Make sure we're not trying to put index before track start (which has index 1) */
     if (address < self->priv->track_start) {

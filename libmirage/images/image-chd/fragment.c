@@ -74,15 +74,15 @@ gboolean mirage_fragment_chd_setup (
      * since this fragment is used only within CHD parser, we can ensure
      * that this is the case. */
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: setting up CHD fragment:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - start sector: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)\n", __debug__, start_sector, start_sector);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - num sectors: %u (0x%X)\n", __debug__, num_sectors, num_sectors);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - hunk size: %u\n", __debug__, hunk_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - sector size: %u\n", __debug__, sector_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel size: %d\n", __debug__, main_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel format: %d\n", __debug__, main_format);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel size: %d\n", __debug__, subchannel_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel format: %d\n", __debug__, subchannel_format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: setting up CHD fragment:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - start sector: %" G_GINT64_MODIFIER "u (0x%" G_GINT64_MODIFIER "X)", __debug__, start_sector, start_sector);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - num sectors: %u (0x%X)", __debug__, num_sectors, num_sectors);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - hunk size: %u", __debug__, hunk_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - sector size: %u", __debug__, sector_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel size: %d", __debug__, main_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - main channel format: %d", __debug__, main_format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel size: %d", __debug__, subchannel_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  - subchannel format: %d", __debug__, subchannel_format);
 
     /* Store boxed pointer to libchdr reader object, and add reference */
     self->priv->chd_file_ptr = g_rc_box_acquire(chd_file_ptr);
@@ -96,19 +96,19 @@ gboolean mirage_fragment_chd_setup (
     self->priv->sectors_in_hunk = hunk_size / sector_size;
 
     if (hunk_size % sector_size != 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed - hunk size (%u) is not multiple of sector size (%u)!\n", __debug__, self->priv->hunk_size, self->priv->sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed - hunk size (%u) is not multiple of sector size (%u)!", __debug__, self->priv->hunk_size, self->priv->sector_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Sanity check failed!");
         return FALSE;
     }
 
     self->priv->buffer = g_try_malloc0(self->priv->hunk_size);
     if (!self->priv->buffer) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate data buffer (%u bytes)!\n", __debug__, self->priv->hunk_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate data buffer (%u bytes)!", __debug__, self->priv->hunk_size);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate data buffer (%u bytes)!", self->priv->hunk_size);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sectors per hunk: %u\n", __debug__, self->priv->sectors_in_hunk);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: sectors per hunk: %u", __debug__, self->priv->sectors_in_hunk);
 
     /* Set fragment length */
     mirage_fragment_set_length(MIRAGE_FRAGMENT(self), num_sectors);
@@ -152,17 +152,17 @@ static gboolean mirage_fragment_chd_read_sector_data (MirageFragmentChd *self, g
     guint hunk_idx;
     chd_error status;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d\n", __debug__, address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: read sector data request for relative address %d", __debug__, address);
 
     /* Map the fragment-relative address into CHD address space, and
      * compute target hunk index. */
     chd_address = self->priv->start_sector + address;
     hunk_idx = chd_address / self->priv->sectors_in_hunk;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: fragment start offset inside CHD: %" G_GINT64_MODIFIER "u, target sector address inside CHD: %" G_GINT64_MODIFIER "u, hunk index: %u\n", __debug__, self->priv->start_sector, chd_address, hunk_idx);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: fragment start offset inside CHD: %" G_GINT64_MODIFIER "u, target sector address inside CHD: %" G_GINT64_MODIFIER "u, hunk index: %u", __debug__, self->priv->start_sector, chd_address, hunk_idx);
 
     /* Check if data is already in the buffer */
     if (hunk_idx == self->priv->cached_hunk_idx) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for hunk %u is already loaded in buffer!\n", __debug__, hunk_idx);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: data for hunk %u is already loaded in buffer!", __debug__, hunk_idx);
         return TRUE;
     }
 
@@ -229,7 +229,7 @@ static gint mirage_fragment_chd_read_subchannel_data_impl (MirageFragment *_self
 
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->subchannel_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!", __debug__);
         return 0;
     }
 

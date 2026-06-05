@@ -578,7 +578,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
     guint progress_step_size = num_all_sectors*self->priv->progress_step/100;
     guint conversion_progress = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image conversion; filename '%s', original disc: %p\n", __debug__, filename, (void *)original_disc);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image conversion; filename '%s', original disc: %p", __debug__, filename, (void *)original_disc);
 
     /* Create disc */
     MirageDisc *new_disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -586,7 +586,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
     mirage_disc_set_filename(new_disc, filename);
 
     /* Copy properties from original disc */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: copying disc properties...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: copying disc properties...", __debug__);
     mirage_disc_set_medium_type(new_disc, mirage_disc_get_medium_type(original_disc));
 
     mirage_disc_layout_set_first_session(new_disc, mirage_disc_layout_get_first_session(original_disc));
@@ -604,7 +604,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
     }
 
     /* Open image */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: initializing writer...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: initializing writer...", __debug__);
     if (!mirage_writer_open_image(self, new_disc, parameters, error)) {
         g_object_unref(new_disc);
         return FALSE;
@@ -614,7 +614,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
     /* Iterate over sessions and tracks, and copy them */
     gint num_sessions = mirage_disc_get_number_of_sessions(original_disc);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: disc has %d sessions...\n", __debug__, num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: disc has %d sessions...", __debug__, num_sessions);
     for (gint i = 0; i < num_sessions; i++) {
         /* Create and add session */
         MirageSession *original_session = mirage_disc_get_session_by_index(original_disc, i, NULL);
@@ -623,7 +623,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
         gint num_languages;
         gint num_tracks;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: processing session %d...\n", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: processing session %d...", __debug__, i);
 
         mirage_disc_add_session_by_index(new_disc, i, new_session);
 
@@ -633,7 +633,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
         /* Languages */
         num_languages = mirage_session_get_number_of_languages(original_session);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: session has %d languages...\n", __debug__, num_languages);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: session has %d languages...", __debug__, num_languages);
         for (gint j = 0; j < num_languages; j++) {
             MirageLanguage *language = mirage_session_get_language_by_index(original_session, j, NULL);
             gint language_code = mirage_language_get_code(language);
@@ -645,7 +645,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
         /* Tracks */
         num_tracks = mirage_session_get_number_of_tracks(original_session);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: session has %d tracks...\n", __debug__, num_tracks);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: session has %d tracks...", __debug__, num_tracks);
         for (gint j = 0; j < num_tracks; j++) {
             gint num_indices;
             gint num_fragments;
@@ -653,7 +653,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
             gint track_start;
             gint num_sectors;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: processing track %d...\n", __debug__, j);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: processing track %d...", __debug__, j);
 
             /* Create and add track */
             MirageTrack *original_track = mirage_session_get_track_by_index(original_session, j, NULL);
@@ -672,7 +672,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
             /* Indices */
             num_indices = mirage_track_get_number_of_indices(original_track);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d indices\n", __debug__, num_indices);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d indices", __debug__, num_indices);
             for (gint k = 0; k < num_indices; k++) {
                 MirageIndex *index = mirage_track_get_index_by_number(original_track, k, NULL);
                 gint index_address = mirage_index_get_number(index);
@@ -684,7 +684,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
             /* Languages */
             num_languages = mirage_track_get_number_of_languages(original_track);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d languages\n", __debug__, num_languages);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d languages", __debug__, num_languages);
             for (gint k = 0; k < num_languages; k++) {
                 MirageLanguage *language = mirage_track_get_language_by_index(original_track, k, NULL);
                 gint language_code = mirage_language_get_code(language);
@@ -696,7 +696,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
             /* Fragments */
             num_fragments = mirage_track_get_number_of_fragments(original_track);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d fragments\n", __debug__, num_fragments);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: track has %d fragments", __debug__, num_fragments);
             for (gint k = 0; k < num_fragments; k++) {
                 /* Get original fragment, its address and length */
                 MirageFragment *fragment = mirage_track_get_fragment_by_index(original_track, k, NULL);
@@ -704,16 +704,16 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 gint fragment_length = mirage_fragment_get_length(fragment);
                 g_object_unref(fragment);
 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment %d: address %d, length: %d\n", __debug__, k, fragment_address, fragment_length);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment %d: address %d, length: %d", __debug__, k, fragment_address, fragment_length);
 
                 /* Request new fragment from writer */
                 fragment = NULL;
                 if (fragment_address + fragment_length <= track_start) {
                     /* Pure pregap fragment - lies completely before the track start */
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a pure-pregap fragment\n", __debug__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a pure-pregap fragment", __debug__);
                     fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_PREGAP, error);
                 } else {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a data (or pregap + data) fragment\n", __debug__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: fragment is a data (or pregap + data) fragment", __debug__);
                     fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_DATA, error);
                 }
 
@@ -738,7 +738,7 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
 
             /* Now, copy sectors, one by one */
             num_sectors = mirage_track_layout_get_length(original_track);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: copying sectors (%d)\n", __debug__, num_sectors);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: copying sectors (%d)", __debug__, num_sectors);
             for (gint sector_address = 0; sector_address < num_sectors; sector_address++) {
                 gboolean succeeded = TRUE;
 

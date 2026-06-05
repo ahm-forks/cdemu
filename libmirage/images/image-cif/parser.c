@@ -128,7 +128,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
 
     /* Read entry length */
     if (mirage_stream_read(self->priv->cif_stream, &subblock_length, sizeof(subblock_length), NULL) != sizeof(subblock_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block length!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block length!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read sub-block length!"));
         return FALSE;
     }
@@ -139,7 +139,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
 
     /* Sanity check */
     if ((gsize)mirage_stream_tell(self->priv->cif_stream) + subblock_length > self->priv->disc_offset + self->priv->disc_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
@@ -147,7 +147,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     /* Allocate buffer and read data */
     subblock_data = g_malloc(subblock_length);
     if (mirage_stream_read(self->priv->cif_stream, subblock_data, subblock_length, NULL) != subblock_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block data (%d bytes)!\n", __debug__, subblock_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block data (%d bytes)!", __debug__, subblock_length);
         g_free(subblock_data);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read sub-block data (%d bytes)!"), subblock_length);
         return FALSE;
@@ -186,18 +186,18 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     descriptor->dummy7 = GUINT16_FROM_LE(descriptor->dummy7);
     descriptor->sector_data_size = GUINT16_FROM_LE(descriptor->sector_data_size);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Track descriptor:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)\n", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d\n", __debug__, descriptor->dummy1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of sectors: %d (0x%X)\n", __debug__, descriptor->num_sectors, descriptor->num_sectors);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d\n", __debug__, descriptor->dummy2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - track type: %d (%s)\n", __debug__, descriptor->type, debug_track_type(descriptor->type));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy3: %d\n", __debug__, descriptor->dummy3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy4: %d\n", __debug__, descriptor->dummy4);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy5: %d\n", __debug__, descriptor->dummy5);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dao mode: %d\n", __debug__, descriptor->dao_mode);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy7: %d\n", __debug__, descriptor->dummy7);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - sector data size: %d (0x%X)\n", __debug__, descriptor->sector_data_size, descriptor->sector_data_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Track descriptor:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d", __debug__, descriptor->dummy1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of sectors: %d (0x%X)", __debug__, descriptor->num_sectors, descriptor->num_sectors);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d", __debug__, descriptor->dummy2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - track type: %d (%s)", __debug__, descriptor->type, debug_track_type(descriptor->type));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy3: %d", __debug__, descriptor->dummy3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy4: %d", __debug__, descriptor->dummy4);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy5: %d", __debug__, descriptor->dummy5);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dao mode: %d", __debug__, descriptor->dao_mode);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy7: %d", __debug__, descriptor->dummy7);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - sector data size: %d (0x%X)", __debug__, descriptor->sector_data_size, descriptor->sector_data_size);
 
     if ((CIF_Track) descriptor->type == AUDIO) {
         gchar *fadeinlen, *fadeoutlen;
@@ -208,22 +208,20 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
         fadeinlen = mirage_helper_lba2msf_str(audio_descriptor->fadein_length, FALSE);
         fadeoutlen = mirage_helper_lba2msf_str(audio_descriptor->fadeout_length, FALSE);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track descriptor:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - ISRC: %.12s\n", __debug__, audio_descriptor->isrc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-out length: %s (%d)\n", __debug__, fadeoutlen, audio_descriptor->fadeout_length);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-in length: %s (%d)\n", __debug__, fadeinlen, audio_descriptor->fadein_length);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title: \"%s\"\n", __debug__, audio_descriptor->title);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track descriptor:", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - ISRC: %.12s", __debug__, audio_descriptor->isrc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-out length: %s (%d)", __debug__, fadeoutlen, audio_descriptor->fadeout_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-in length: %s (%d)", __debug__, fadeinlen, audio_descriptor->fadein_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title: \"%s\"", __debug__, audio_descriptor->title);
 
         g_free(fadeinlen);
         g_free(fadeoutlen);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Offset entry:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - type: %.4s\n", __debug__, offset_entry->type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - offset: %d (0x%X)\n", __debug__, offset_entry->offset, offset_entry->offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - length: %d (0x%X)\n", __debug__, offset_entry->length, offset_entry->length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Offset entry:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - type: %.4s", __debug__, offset_entry->type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - offset: %d (0x%X)", __debug__, offset_entry->offset, offset_entry->offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - length: %d (0x%X)", __debug__, offset_entry->length, offset_entry->length);
 
     /* Set track mode */
     switch (descriptor->type) {
@@ -248,7 +246,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type (%d)!\n", __debug__, descriptor->type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type (%d)!", __debug__, descriptor->type);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown track type (%d)!"), descriptor->type);
             return NULL;
         }
@@ -256,11 +254,11 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
 
     /* Compute the actual track length */
     track_length = MAX(descriptor->num_sectors, CIF_MIN_TRACK_LEN);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: computed track length: %d (0x%X)\n", __debug__, track_length, track_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: computed track length: %d (0x%X)", __debug__, track_length, track_length);
 
     /* Sanity check */
     if (track_length * sector_size > offset_entry->length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Sanity check failed!"));
         return FALSE;
     }
@@ -285,7 +283,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
         if (mirage_helper_validate_isrc(audio_descriptor->isrc)) {
             mirage_track_set_isrc(track, audio_descriptor->isrc);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!\n", __debug__, audio_descriptor->isrc);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to validate ISRC: <%s>!", __debug__, audio_descriptor->isrc);
         }
     } else {
         mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
@@ -296,8 +294,6 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     mirage_track_add_fragment(track, -1, fragment);
 
     g_object_unref(fragment);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     return track;
 }
@@ -317,18 +313,16 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
     descriptor->dummy5 = GUINT16_FROM_LE(descriptor->dummy5);
     descriptor->dummy6 = GUINT16_FROM_LE(descriptor->dummy6);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Session descriptor:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)\n", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of tracks: %d\n", __debug__, descriptor->num_tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d\n", __debug__, descriptor->dummy1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d\n", __debug__, descriptor->dummy2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy3: %d\n", __debug__, descriptor->dummy3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - session type: %d (%s)\n", __debug__, descriptor->session_type, debug_session_type(descriptor->session_type));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy4: %d\n", __debug__, descriptor->dummy4);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy5: %d\n", __debug__, descriptor->dummy5);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy6: %d\n", __debug__, descriptor->dummy6);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Session descriptor:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of tracks: %d", __debug__, descriptor->num_tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d", __debug__, descriptor->dummy1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d", __debug__, descriptor->dummy2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy3: %d", __debug__, descriptor->dummy3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - session type: %d (%s)", __debug__, descriptor->session_type, debug_session_type(descriptor->session_type));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy4: %d", __debug__, descriptor->dummy4);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy5: %d", __debug__, descriptor->dummy5);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy6: %d", __debug__, descriptor->dummy6);
 
     /* Create new session */
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
@@ -348,7 +342,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown session type (%d)!\n", __debug__, descriptor->session_type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown session type (%d)!", __debug__, descriptor->session_type);
             g_object_unref(session);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Unknown session type (%d)!"), descriptor->session_type);
             return NULL;
@@ -364,7 +358,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
 
         /* Read track descriptor */
         if (!mirage_parser_cif_read_descriptor(self, &descriptor_data, &descriptor_length, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read track descriptor!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read track descriptor!", __debug__);
             g_object_unref(session);
             return NULL;
         }
@@ -372,7 +366,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
         /* Parse track descriptor */
         track = mirage_parser_cif_parse_track_descriptor(self, descriptor_data, descriptor_length, error);
         if (!track) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track descriptor!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track descriptor!", __debug__);
             g_object_unref(session);
             return NULL;
         }
@@ -385,7 +379,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
             MirageFragment *fragment;
             gint pregap_length = 150;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)", __debug__, pregap_length, pregap_length);
 
             /* Create NULL fragment */
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -425,19 +419,17 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
     descriptor->image_type = GUINT16_FROM_LE(descriptor->image_type);
     descriptor->dummy2 = GUINT16_FROM_LE(descriptor->dummy2);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Disc descriptor:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)\n", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of sessions: %d\n", __debug__, descriptor->num_sessions);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of tracks: %d\n", __debug__, descriptor->num_tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title length: %d (0x%X)\n", __debug__, descriptor->title_length, descriptor->title_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length 2: %d (0x%X)\n", __debug__, descriptor->descriptor_length2, descriptor->descriptor_length2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d (0x%X)\n", __debug__, descriptor->dummy1, descriptor->dummy1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - image type: %d (%s)\n", __debug__, descriptor->image_type, debug_image_type(descriptor->image_type));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d (0x%X)\n", __debug__, descriptor->dummy2, descriptor->dummy2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title: \"%.*s\"\n", __debug__, descriptor->title_length, descriptor->title_and_artist);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - artist: \"%s\"\n", __debug__, descriptor->title_and_artist+descriptor->title_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Disc descriptor:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length: %d (0x%X)", __debug__, descriptor->descriptor_length, descriptor->descriptor_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of sessions: %d", __debug__, descriptor->num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - number of tracks: %d", __debug__, descriptor->num_tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title length: %d (0x%X)", __debug__, descriptor->title_length, descriptor->title_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - descriptor length 2: %d (0x%X)", __debug__, descriptor->descriptor_length2, descriptor->descriptor_length2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy1: %d (0x%X)", __debug__, descriptor->dummy1, descriptor->dummy1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - image type: %d (%s)", __debug__, descriptor->image_type, debug_image_type(descriptor->image_type));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy2: %d (0x%X)", __debug__, descriptor->dummy2, descriptor->dummy2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title: \"%.*s\"", __debug__, descriptor->title_length, descriptor->title_and_artist);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - artist: \"%s\"", __debug__, descriptor->title_and_artist+descriptor->title_length);
 
     /* Process all sessions */
     for (gint i = 0; i < descriptor->num_sessions; i++) {
@@ -447,14 +439,14 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
 
         /* Read session descriptor */
         if (!mirage_parser_cif_read_descriptor(self, &descriptor_data, &descriptor_length, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read session descriptor!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read session descriptor!", __debug__);
             return FALSE;
         }
 
         /* Parse session descriptor */
         session = mirage_parser_cif_parse_session_descriptor(self, descriptor_data, descriptor_length, error);
         if (!session) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse session descriptor!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse session descriptor!", __debug__);
             return FALSE;
         }
 
@@ -470,7 +462,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
 
             prev_session = mirage_disc_get_session_by_index(self->priv->disc, i-1, error);
             if (!prev_session) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!", __debug__);
                 return FALSE;
             }
 
@@ -505,7 +497,7 @@ static gboolean mirage_parser_cif_parse_disc_block (MirageParserCif *self, GErro
 
     /* Read disc descriptor */
     if (!mirage_parser_cif_read_descriptor(self, &descriptor_data, &descriptor_length, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read disc descriptor!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read disc descriptor!", __debug__);
         return FALSE;
     }
 
@@ -519,7 +511,7 @@ static gboolean mirage_parser_cif_parse_disc_block (MirageParserCif *self, GErro
 
     /* Sanity check */
     if ((gsize)mirage_stream_tell(self->priv->cif_stream) != (self->priv->disc_offset + self->priv->disc_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: WARNING: did not finish at the end of disc block!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: WARNING: did not finish at the end of disc block!", __debug__);
     }
 
     return TRUE;
@@ -537,13 +529,13 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
 
     /* Read number of entries */
     if (mirage_stream_read(self->priv->cif_stream, &num_entries, sizeof(num_entries), NULL) != sizeof(num_entries)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of entries!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of entries!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read number of entries!"));
         return FALSE;
     }
     num_entries = GUINT16_FROM_LE(num_entries);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of entries: %d\n", __debug__, num_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of entries: %d", __debug__, num_entries);
 
     self->priv->offset_entries = g_new0(CIF_OffsetEntry, num_entries);
     self->priv->num_offset_entries = num_entries;
@@ -553,14 +545,14 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
 
         /* Read whole entry */
         if (mirage_stream_read(self->priv->cif_stream, &entry, sizeof(entry), NULL) != sizeof(entry)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read \"ofs\" entry!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read \"ofs\" entry!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read \"ofs\" entry!"));
             return FALSE;
         }
 
         /* Match "RIFF" */
         if (memcmp(entry.riff, riff_signature, sizeof(riff_signature))) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, entry.riff);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'", __debug__, entry.riff);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid FOURCC; expected 'RIFF', got '%.4s'"), entry.riff);
             return FALSE;
         }
@@ -568,7 +560,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
         entry.length = GUINT32_FROM_LE(entry.length) - 4; /* Since it includes the size of length field */
         entry.offset = GUINT32_FROM_LE(entry.offset) + 4; /* Since it's offset to type field, which we need to skip */
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry #%d: type '%.4s', offset %d (0x%X), length %d (0x%X)\n", __debug__, i, entry.type, entry.offset, entry.offset, entry.length, entry.length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry #%d: type '%.4s', offset %d (0x%X), length %d (0x%X)", __debug__, i, entry.type, entry.offset, entry.offset, entry.length, entry.length);
 
         /* Store */
         self->priv->offset_entries[i] = entry;
@@ -576,7 +568,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
 
     /* Sanity check */
     if ((gsize)mirage_stream_tell(self->priv->cif_stream) != (self->priv->ofs_offset + self->priv->ofs_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: WARNING: did not finish at the end of ofs block!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: WARNING: did not finish at the end of ofs block!", __debug__);
     }
 
     return TRUE;
@@ -598,14 +590,14 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
     while ((gsize)mirage_stream_tell(self->priv->cif_stream) < file_size) {
         /* Read whole header */
         if (mirage_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL) != sizeof(header)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to read header!"));
             return FALSE;
         }
 
         /* Match "RIFF" */
         if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, header.riff);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'", __debug__, header.riff);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Invalid FOURCC; expected 'RIFF', got '%.4s'"), header.riff);
             return FALSE;
         }
@@ -621,7 +613,7 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
             mirage_stream_seek(self->priv->cif_stream, 1, G_SEEK_CUR, NULL); /* Pad byte */
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: RIFF chunk of type '%.4s': offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X), length %d (0x%X)\n", __debug__, header.type, offset, offset, header.length, header.length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: RIFF chunk of type '%.4s': offset %" G_GINT64_MODIFIER "d (0x%" G_GINT64_MODIFIER "X), length %d (0x%X)", __debug__, header.type, offset, offset, header.length, header.length);
 
         /* We need to store "disc" and "ofs " offsets */
         if (!memcmp(header.type, disc_signature, sizeof(disc_signature))) {
@@ -635,13 +627,13 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
 
     /* Make sure we got "disc" and "ofs " blocks */
     if (!self->priv->disc_offset || !self->priv->disc_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'disc' block not found!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'disc' block not found!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Descriptor does not contain 'disc' block!"));
         return FALSE;
     }
 
     if (!self->priv->ofs_offset || !self->priv->ofs_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'ofs ' block not found!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 'ofs ' block not found!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Descriptor does not contain 'ofs ' block!"));
         return FALSE;
     }
@@ -653,11 +645,10 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
 static gboolean mirage_parser_cif_load_disc (MirageParserCif *self, GError **error)
 {
     /* Parse blocks */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing RIFF blocks\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing RIFF blocks", __debug__);
     if (!mirage_parser_cif_parse_blocks(self, error)) {
         return FALSE;
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* CIF format is CD-only */
     mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
@@ -666,18 +657,16 @@ static gboolean mirage_parser_cif_load_disc (MirageParserCif *self, GError **err
     mirage_disc_layout_set_start_sector(self->priv->disc, -150);
 
     /* Parse "ofs " block */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'ofs ' block\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'ofs ' block", __debug__);
     if (!mirage_parser_cif_parse_ofs_block(self, error)) {
         return FALSE;
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Parse "disc" block */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'disc' block\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'disc' block", __debug__);
     if (!mirage_parser_cif_parse_disc_block(self, error)) {
         return FALSE;
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     return TRUE;
 }
@@ -698,10 +687,10 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
 
     mirage_stream_seek(self->priv->cif_stream, 0, G_SEEK_SET, NULL);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing image header...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing image header...", __debug__);
     if (mirage_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL) != sizeof(header)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: failed to read header!"));
         return FALSE;
     }
@@ -709,21 +698,21 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
     /* Match "RIFF" at the beginning and "imag" that comes after length
      * field. We could probably also match length, since it appears to
      * be fixed, but this should be sufficient... */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image begins with 'RIFF'...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image begins with 'RIFF'...", __debug__);
     if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: image does not begin with 'RIFF'!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: image does not begin with 'RIFF'!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: image does not begin with 'RIFF'!"));
         return FALSE;
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if first RIFF tag is 'imag'...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if first RIFF tag is 'imag'...", __debug__);
     if (memcmp(header.type, imag_signature, sizeof(imag_signature))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: first RIFF tag is not 'imag'!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: first RIFF tag is not 'imag'!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Parser cannot handle given image: invalid header!"));
         return FALSE;
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!", __debug__);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...", __debug__);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -732,17 +721,17 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, MirageStre
     cif_filename = mirage_stream_get_filename(self->priv->cif_stream);
     mirage_disc_set_filename(self->priv->disc, cif_filename);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CIF filename: %s\n", __debug__, cif_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CIF filename: %s", __debug__, cif_filename);
 
     /* Load disc */
     succeeded = mirage_parser_cif_load_disc(self, error);
 
     /* Return disc */
     if (succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
         return self->priv->disc;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

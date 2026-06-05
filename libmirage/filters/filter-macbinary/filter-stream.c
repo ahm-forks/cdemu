@@ -166,26 +166,25 @@ static void mirage_filter_stream_macbinary_print_header (MirageFilterStreamMacBi
     g_date_time_unref(created);
     g_date_time_unref(modified);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: MacBinary header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Original filename: %s\n", __debug__, filename->str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  File type: %.4s creator: %.4s\n", __debug__, header->filetype, header->creator);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Data fork length: %d\n", __debug__, header->datafork_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Resource fork length: %d\n", __debug__, header->resfork_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Created: %s\n", __debug__, created_str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Modified: %s\n", __debug__, modified_str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Get info comment length: %d\n", __debug__, header->getinfo_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MacBinary header:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Original filename: %s", __debug__, filename->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  File type: %.4s creator: %.4s", __debug__, header->filetype, header->creator);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Data fork length: %d", __debug__, header->datafork_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Resource fork length: %d", __debug__, header->resfork_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Created: %s", __debug__, created_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Modified: %s", __debug__, modified_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Get info comment length: %d", __debug__, header->getinfo_len);
 
     if (calculated_crc == header->crc16) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of total files: %d\n", __debug__, header->unpacked_len);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of secondary header: %d\n", __debug__, header->secondary_len);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC16: 0x%04x (calculated: 0x%04x)\n", __debug__, header->crc16, calculated_crc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version used to pack: %d\n", __debug__, header->pack_ver-129);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version needed to unpack: %d\n", __debug__, header->unpack_ver-129);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x\n", __debug__, (header->finder_flags << 8) + header->finder_flags_2);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of total files: %d", __debug__, header->unpacked_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of secondary header: %d", __debug__, header->secondary_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC16: 0x%04x (calculated: 0x%04x)", __debug__, header->crc16, calculated_crc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version used to pack: %d", __debug__, header->pack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version needed to unpack: %d", __debug__, header->unpack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x", __debug__, (header->finder_flags << 8) + header->finder_flags_2);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x\n", __debug__, header->finder_flags << 8);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x", __debug__, header->finder_flags << 8);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     g_string_free(filename, TRUE);
 
@@ -202,18 +201,18 @@ static void mirage_filter_stream_macbinary_print_bcem_block (MirageFilterStreamM
     imagename = g_string_new_len(bcem_block->imagename, bcem_block->imagename_len);
     g_assert(imagename);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: bcem block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version: %u.%u\n", __debug__, bcem_block->version_major, bcem_block->version_minor);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image name: %s\n", __debug__, imagename->str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of sectors: %u\n", __debug__, bcem_block->num_sectors);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Chunk size: %u\n", __debug__, bcem_block->chunk_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BS zero offset: 0x%08x\n", __debug__, bcem_block->bs_zero_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC32: 0x%08x\n", __debug__, bcem_block->crc32);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Is segmented: %u\n", __debug__, bcem_block->is_segmented);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of blocks: %u\n\n", __debug__, bcem_block->num_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: bcem block:", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version: %u.%u", __debug__, bcem_block->version_major, bcem_block->version_minor);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image name: %s", __debug__, imagename->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of sectors: %u", __debug__, bcem_block->num_sectors);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Chunk size: %u", __debug__, bcem_block->chunk_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BS zero offset: 0x%08x", __debug__, bcem_block->bs_zero_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC32: 0x%08x", __debug__, bcem_block->crc32);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Is segmented: %u", __debug__, bcem_block->is_segmented);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of blocks: %u", __debug__, bcem_block->num_blocks);
 
     /*for (guint u = 0; u < 2; u++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown1[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown1[u]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown1[%u]: 0x%08x", __debug__, u, bcem_block->unknown1[u]);
     }*/
 
     g_string_free(imagename, TRUE);
@@ -237,7 +236,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
     /* Read MacBinary header */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
     if (mirage_stream_read(stream, header, sizeof(macbinary_header_t), NULL) != sizeof(macbinary_header_t)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: failed to read MacBinary header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: failed to read MacBinary header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: failed to read MacBinary header!"));
         return FALSE;
     }
@@ -251,7 +250,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
     /* Validate MacBinary header */
     if (header->version != 0 || header->reserved_1 != 0 || header->reserved_2 != 0 ||
         header->fn_length < 1 || header->fn_length > 63) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: invalid header!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: invalid header!", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Filter cannot handle given data: invalid header!"));
         return FALSE;
     }
@@ -260,14 +259,14 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
     if (calculated_crc != header->crc16) {
         /* Do we have v1.0 then? Hard to say for sure... */
         if (!trust_unreliable_v1_check) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!"));
             return FALSE;
         }
     }
 
     /* Print some info */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...", __debug__);
 
     mirage_filter_stream_macbinary_print_header(self, header, calculated_crc);
 
@@ -283,21 +282,21 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
         rsrc_fork_data = g_try_malloc(header->resfork_len);
         if (!rsrc_fork_data) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to allocate memory!"));
             return FALSE;
         }
 
         mirage_stream_seek(stream, rsrc_fork_pos, G_SEEK_SET, NULL);
         if ((gsize)mirage_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL) != header->resfork_len) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to read resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to read resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to read resource-fork!"));
             return FALSE;
         }
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data, header->resfork_len);
         if (!rsrc_fork) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to parse resource-fork!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to parse resource-fork!", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("Failed to parse resource-fork!"));
             return FALSE;
         }
@@ -327,7 +326,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
             self->priv->num_parts = bcem_block->num_blocks - 1;
             self->priv->parts = g_try_new0(NDIF_Part, self->priv->num_parts);
             if (!self->priv->parts) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Failed to allocate memory!"));
                 return FALSE;
             }
@@ -343,7 +342,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
                 start_sector = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
                 end_sector = (bcem_data[b+1].sector[2] << 16) + (bcem_data[b+1].sector[1] << 8) + bcem_data[b+1].sector[0];
 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n",
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)",
                              __debug__, b, start_sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
 
                 if (bcem_data[b].type == BCEM_ADC || bcem_data[b].type == BCEM_ZERO || bcem_data[b].type == BCEM_RAW) {
@@ -374,29 +373,29 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
                     /* Skip the terminating block */
                     g_assert(start_sector == bcem_block->num_sectors);
                 } else if (bcem_data[b].type == BCEM_KENCODE) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: KenCode decompression is not supported!\n", __debug__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: KenCode decompression is not supported!", __debug__);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("KenCode decompression is not supported!"));
                     return FALSE;
                 } else {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Encountered unknown part type: %d!\n", __debug__, bcem_data[b].type);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Encountered unknown part type: %d!", __debug__, bcem_data[b].type);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Encountered unknown part type: %d!"), bcem_data[b].type);
                     return FALSE;
                 }
             }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u\n", __debug__, self->priv->io_buffer_size);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u\n\n", __debug__, self->priv->inflate_buffer_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u", __debug__, self->priv->io_buffer_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u", __debug__, self->priv->inflate_buffer_size);
 
             self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
             if (!self->priv->io_buffer && self->priv->io_buffer_size) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Error allocating memory for buffers!"));
                 return FALSE;
             }
 
             self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
             if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, Q_("Error allocating memory for buffers!"));
                 return FALSE;
             }
@@ -410,22 +409,22 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
 
             mirage_filter_stream_macbinary_fixup_bcm_block(bcm_block);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n",
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!",
                          __debug__, bcm_block->part, bcm_block->parts);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UUID&Unknown1: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x\n\n", __debug__,
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UUID&Unknown1: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x", __debug__,
                          bcm_block->UUID[0], bcm_block->UUID[1], bcm_block->UUID[2], bcm_block->UUID[3],
                          bcm_block->unknown1);
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully", __debug__);
 
     /* NDIF parts list indicates success */
     if (self->priv->parts) {
         return TRUE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: NDIF data structures not found!\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: NDIF data structures not found!", __debug__);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, Q_("NDIF data structures not found!"));
     return FALSE;
 }
@@ -444,25 +443,25 @@ static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamM
 
     /* Seek to the position */
     if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, part_offs);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, part_offs);
         return -1;
     }
 
-    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
+    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u", __debug__, part_offs);*/
 
     /* Read raw chunk data */
     ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!\n", __debug__, to_read);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %" G_GSIZE_MODIFIER "d bytes from underlying stream!", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!", __debug__);
         return -1;
     } else if ((guint)ret == to_read) {
         have_read += ret;
         to_read -= ret;
     } else if ((guint)ret < to_read) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!", __debug__);
         have_read += ret;
         to_read -= ret;
 
@@ -493,18 +492,18 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     }
 
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!", __debug__);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> part #%d (cached: #%d)", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const NDIF_Part *part = &self->priv->parts[part_idx];
         gsize ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...", __debug__);
 
         /* Read a part */
         if (part->type == BCEM_ZERO) {
@@ -513,7 +512,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
             /* Read uncompressed part */
             ret = mirage_filter_stream_macbinary_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if (ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
         } else if (part->type == BCEM_ADC) {
@@ -522,7 +521,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
             /* Read some compressed data */
             ret = mirage_filter_stream_macbinary_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!", __debug__);
                 return -1;
             }
 
@@ -533,7 +532,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
             g_assert (written_bytes == part->num_sectors * 512);
         } else {
             /* We should never get here... */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type: %d!\n", __debug__, part->type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type: %d!", __debug__, part->type);
             return -1;
         }
 
@@ -542,7 +541,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
             self->priv->cached_part = part_idx;
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached", __debug__);
     }
 
     /* Copy data */
@@ -552,7 +551,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
     guint64 part_offset = position - (part->first_sector * 512);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %" G_GINT64_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, part_offset, count);
 
     if (part->type == BCEM_ZERO) {
         memset(buffer, 0, count);

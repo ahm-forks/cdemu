@@ -166,7 +166,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         } else if (!g_ascii_strcasecmp(suffix, ".ogg")) {
             self->priv->format.format = SF_FORMAT_OGG;
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown file suffix '%s'; storing as raw PCM data!\n", __debug__, suffix);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown file suffix '%s'; storing as raw PCM data!", __debug__, suffix);
             self->priv->format.format = SF_FORMAT_RAW;
         }
         self->priv->format.format |= SF_FORMAT_PCM_16; /* Minor format */
@@ -202,13 +202,13 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     /* Print audio file info, but only if we are not opening in write
      * mode (because then we already know) */
     if (!writable) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %" G_GINT64_MODIFIER "d\n", __debug__, self->priv->format.frames);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sections: %d\n", __debug__, self->priv->format.sections);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seekable: %d\n", __debug__, self->priv->format.seekable);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %" G_GINT64_MODIFIER "d", __debug__, self->priv->format.frames);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d", __debug__, self->priv->format.samplerate);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d", __debug__, self->priv->format.channels);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d", __debug__, self->priv->format.format);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sections: %d", __debug__, self->priv->format.sections);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seekable: %d", __debug__, self->priv->format.seekable);
     }
 
     /* Check some additional requirements (two channels, seekable and samplerate) */
@@ -224,14 +224,14 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     /* Compute length in bytes */
     length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
     if (!writable) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes\n", __debug__, length, length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes", __debug__, length, length);
     }
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
 
     /* Allocate read buffer; we wish to hold a single (multichannel) frame */
     self->priv->buflen = self->priv->format.channels * NUM_FRAMES * sizeof(guint16);
     if (!writable) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes\n", __debug__, self->priv->buflen);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes", __debug__, self->priv->buflen);
     }
     self->priv->buffer = g_try_malloc(self->priv->buflen);
     if (!self->priv->buffer) {
@@ -246,7 +246,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         gint buffer_size;
 
         /* Initialize resampler */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio stream needs to be resampled to 44.1 kHZ, initializing resampler...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio stream needs to be resampled to 44.1 kHZ, initializing resampler...", __debug__);
         self->priv->resampler = src_new(SRC_LINEAR, self->priv->format.channels, &resampler_error);
         if (!self->priv->resampler) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to initialize resampler; error code %d!"), resampler_error);
@@ -255,7 +255,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
         /* Allocate resampler's output buffer */
         buffer_size = self->priv->format.channels * NUM_FRAMES * sizeof(float);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's output buffer: %d bytes\n", __debug__, buffer_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's output buffer: %d bytes", __debug__, buffer_size);
         self->priv->resample_buffer_out = g_try_malloc(buffer_size);
         if (!self->priv->resample_buffer_out) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate resampler output buffer!"));
@@ -264,7 +264,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
         /* Allocate resampler's input buffer */
         buffer_size *= self->priv->io_ratio;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's input buffer: %d bytes\n", __debug__, buffer_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's input buffer: %d bytes", __debug__, buffer_size);
         self->priv->resample_buffer_in = g_try_malloc(buffer_size);
         if (!self->priv->resample_buffer_in) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, Q_("Failed to allocate resampler input buffer!"));
@@ -279,7 +279,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
         /* Adjust stream length */
         length = round(length/self->priv->io_ratio);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampled stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes\n", __debug__, length, length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampled stream length: %" G_GSIZE_MODIFIER "d (0x%" G_GSIZE_MODIFIER "X) bytes", __debug__, length, length);
         mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
     }
 
@@ -295,26 +295,26 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     /* Find the block of frames corresponding to current position; this
      * is within the final, possibly resampled, stream */
     block = position / self->priv->buflen;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %" G_GOFFSET_MODIFIER "d (0x%" G_GOFFSET_MODIFIER "X) -> block #%d (cached: #%d)", __debug__, position, position, block, self->priv->cached_block);
 
     /* If we do not have block in cache, read it */
     if (block != self->priv->cached_block) {
         gsize read_length;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not cached, reading...", __debug__);
 
         if (self->priv->io_ratio == 1.0) {
             /* Seek to beginning of block */
             sf_count_t offset = block*NUM_FRAMES;
             if (sf_seek(self->priv->sndfile, offset, SEEK_SET) < 0) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, offset);
                 return -1;
             }
 
             /* Read frames */
             read_length = sf_readf_short(self->priv->sndfile, (short *)(void *)self->priv->buffer, NUM_FRAMES);
             if (!read_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?", __debug__);
                 return -1;
             }
         } else {
@@ -324,14 +324,14 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             /* Seek to beginning of block; this is in original,
              * non-resampled, stream */
             if (sf_seek(self->priv->sndfile, offset, SEEK_SET) < 0) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!\n", __debug__, offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to seek to offset %" G_GOFFSET_MODIFIER "d in underlying stream!", __debug__, offset);
                 return -1;
             }
 
             /* Read read frames into resampler's input buffer */
             read_length = sf_readf_float(self->priv->sndfile, self->priv->resample_buffer_in, NUM_FRAMES*self->priv->io_ratio);
             if (!read_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block not read; EOF reached?", __debug__);
                 return -1;
             }
 
@@ -346,11 +346,11 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
             /* Resample */
             resampler_error = src_process(self->priv->resampler, &self->priv->resampler_data);
             if (resampler_error) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to resample frames: %s!\n", __debug__, src_strerror(resampler_error));
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to resample frames: %s!", __debug__, src_strerror(resampler_error));
                 /* Do nothing, though */
             }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: resampler: read %ld input frames, generated %ld output frames\n", __debug__, self->priv->resampler_data.input_frames_used, self->priv->resampler_data.output_frames_gen);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: resampler: read %ld input frames, generated %ld output frames", __debug__, self->priv->resampler_data.input_frames_used, self->priv->resampler_data.output_frames_gen);
 
             /* Convert generated frames to short */
             src_float_to_short_array(self->priv->resample_buffer_out, (short *)(void *)self->priv->buffer, NUM_FRAMES * self->priv->format.channels);
@@ -359,14 +359,14 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
         /* Store the number of currently stored block */
         self->priv->cached_block = block;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: block already cached", __debug__);
     }
 
     /* Copy data */
     gsize block_offset = position % self->priv->buflen;
     count = MIN(count, self->priv->buflen - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within block: %" G_GOFFSET_MODIFIER "d, copying %" G_GSIZE_MODIFIER "d bytes", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->buffer + block_offset, count);
 

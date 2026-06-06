@@ -44,6 +44,7 @@ Currently supported image formats:
  - Roxio / WinOnCD (C2D) file format (readonly)
  - CloneCD (CCD, SUB, IMG) image format (readonly)
  - DiscJuggler (CDI) file format (readonly)
+ - MAME's Compressed Hunks of Data (CHD) file format (readonly)
  - Easy CD Creator (CIF) file format (readonly)
  - CDRwin (CUE, BIN) image format (readonly)
  - Raw track loader (ISO, UDF etc.) image format (read-write)
@@ -90,11 +91,14 @@ smaller blocks, so it cannot be used with libMirage.
 
  - CMake >= 3.16
  - GLib >= 2.38
- - libsndfile >= 1.0.0
- - libsamplerate >= 0.1.0
- - zlib >= 1.2.0
- - libbz2 >= 1.0.0
- - liblzma >= 5.0.0
+
+ - libsndfile >= 1.0.0 (optional)
+ - libsamplerate >= 0.1.0 (optional)
+ - zlib >= 1.2.0 (optional)
+ - libbz2 >= 1.0.0 (optional)
+ - liblzma >= 5.0.0 (optional)
+ - libgcrypt >= 1.2.0 (optional)
+ - libchdr >= 0.3.0 (optional)
 
  - gtk-doc >= 1.4 (optional)
  - gobject-introspection >= 1.0 (optional)

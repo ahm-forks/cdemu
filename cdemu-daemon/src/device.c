@@ -82,7 +82,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     /* Create a MirageContext to use as a debug context for device */
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_name(context, self->priv->device_name);
-    mirage_context_set_debug_domain(context, "CDEMU");
+    mirage_context_set_debug_domain(context, "CDEmu");
     mirage_context_set_debug_mask(context, cdemu_debug_mask);
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
     g_object_unref(context);

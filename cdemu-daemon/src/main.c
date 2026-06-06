@@ -274,8 +274,32 @@ int main (int argc, char **argv)
     bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
     textdomain(GETTEXT_PACKAGE);
 
-    /* Default log handler is local */
-    g_log_set_default_handler(_log_handler_stdout, NULL);
+    /* Set up log handler for following domains:
+     *  - NULL/default: used by daemon initialization code in this file
+     *  - CDEmu: set on context used by CDEmu device code
+     *  - libMirage: set on context used with libMirage
+     * See cdemu_device_initialize().
+     *
+     * Do *not* set default log handler, because that would implicitly
+     * end up enabling debug from all domains! */
+    g_log_set_handler(
+        NULL,
+        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+        _log_handler_stdout,
+        NULL
+    );
+    g_log_set_handler(
+        "libMirage",
+        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+        _log_handler_stdout,
+        NULL
+    );
+    g_log_set_handler(
+        "CDEmu",
+        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+        _log_handler_stdout,
+        NULL
+    );
 
     /* Collect program options from command-line and config file */
     if (!_collect_program_options(argc, argv, &program_options)) {
@@ -289,7 +313,25 @@ int main (int argc, char **argv)
             g_warning(Q_("Failed to open log file %s for writing!"), program_options.log_filename);
             return -1;
         }
-        g_log_set_default_handler(_log_handler_logfile, logfile);
+
+        g_log_set_handler(
+            NULL,
+            G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+            _log_handler_logfile,
+            logfile
+        );
+        g_log_set_handler(
+            "libMirage",
+            G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+            _log_handler_logfile,
+            logfile
+        );
+        g_log_set_handler(
+            "CDEmu",
+            G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+            _log_handler_logfile,
+            logfile
+        );
     }
 
     /* Initialize libMirage */

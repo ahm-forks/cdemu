@@ -55,7 +55,7 @@ static gint _get_config_int (GKeyFile *config, const gchar *group, const gchar *
         }
 
         if (!g_error_matches(error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)) {
-            g_warning(Q_("Failed to read integer (%s:%s) from config: %s\n"), group, key, error->message);
+            g_warning(Q_("Failed to read integer (%s:%s) from config: %s"), group, key, error->message);
         }
         g_error_free(error);
     }
@@ -72,7 +72,7 @@ static gchar *_get_config_str (GKeyFile *config, const gchar *group, const gchar
         }
 
         if (!g_error_matches(error, G_KEY_FILE_ERROR, G_KEY_FILE_ERROR_KEY_NOT_FOUND)) {
-            g_warning(Q_("Failed to read string (%s:%s) from config: %s\n"), group, key, error->message);
+            g_warning(Q_("Failed to read string (%s:%s) from config: %s"), group, key, error->message);
         }
         g_error_free(error);
     }
@@ -140,7 +140,7 @@ static gboolean _collect_program_options (int argc, char **argv, struct _Program
     g_option_context_free(option_context);
 
     if (!succeeded) {
-        g_warning(Q_("Failed to parse options: %s\n"), error->message);
+        g_warning(Q_("Failed to parse options: %s"), error->message);
         g_error_free(error);
         return FALSE;
     }
@@ -157,7 +157,7 @@ static gboolean _collect_program_options (int argc, char **argv, struct _Program
             config_file = g_key_file_new();
             succeeded = g_key_file_load_from_file(config_file, options->config_filename, G_KEY_FILE_NONE, &error);
             if (!succeeded) {
-                g_warning(Q_("Failed to load config file '%s': %s\n"), options->config_filename, error->message);
+                g_warning(Q_("Failed to load config file '%s': %s"), options->config_filename, error->message);
                 g_key_file_free(config_file);
                 g_error_free(error);
                 return FALSE;
@@ -286,7 +286,7 @@ int main (int argc, char **argv)
     if (program_options.log_filename) {
         logfile = g_fopen(program_options.log_filename, "w"); /* Overwrite log file */
         if (!logfile) {
-            g_warning(Q_("Failed to open log file %s for writing!\n"), program_options.log_filename);
+            g_warning(Q_("Failed to open log file %s for writing!"), program_options.log_filename);
             return -1;
         }
         g_log_set_default_handler(_log_handler_logfile, logfile);
@@ -294,7 +294,7 @@ int main (int argc, char **argv)
 
     /* Initialize libMirage */
     if (!mirage_initialize(&error)) {
-        g_warning(Q_("Failed to initialize libMirage: %s!\n"), error->message);
+        g_warning(Q_("Failed to initialize libMirage: %s!"), error->message);
         g_error_free(error);
         if (logfile) {
             fclose(logfile);
@@ -303,20 +303,19 @@ int main (int argc, char **argv)
     }
 
     /* Display status */
-    g_message(Q_("Starting CDEmu daemon with following parameters:\n"));
+    g_message(Q_("Starting CDEmu daemon with following parameters:"));
     if (program_options.config_filename) {
-        g_message(Q_(" - config file: %s (exists: %d)\n"), program_options.config_filename, program_options.config_file_exists);
+        g_message(Q_(" - config file: %s (exists: %d)"), program_options.config_filename, program_options.config_file_exists);
     } else {
-        g_message(Q_(" - config file: N/A\n"));
+        g_message(Q_(" - config file: N/A"));
     }
-    g_message(Q_(" - num devices: %i\n"), program_options.num_devices);
-    g_message(Q_(" - control device: %s\n"), program_options.ctl_device);
-    g_message(Q_(" - audio driver: %s\n"), program_options.audio_driver);
-    g_message(Q_(" - bus type: %s\n"), program_options.bus);
-    g_message(Q_(" - default CDEmu debug mask: 0x%X\n"), program_options.cdemu_debug_mask);
-    g_message(Q_(" - default libMirage debug mask: 0x%X\n"), program_options.mirage_debug_mask);
-    g_message(Q_(" - enable system sleep handler: %d\n"), program_options.use_system_sleep_handler);
-    g_message("\n");
+    g_message(Q_(" - num devices: %i"), program_options.num_devices);
+    g_message(Q_(" - control device: %s"), program_options.ctl_device);
+    g_message(Q_(" - audio driver: %s"), program_options.audio_driver);
+    g_message(Q_(" - bus type: %s"), program_options.bus);
+    g_message(Q_(" - default CDEmu debug mask: 0x%X"), program_options.cdemu_debug_mask);
+    g_message(Q_(" - default libMirage debug mask: 0x%X"), program_options.mirage_debug_mask);
+    g_message(Q_(" - enable system sleep handler: %d"), program_options.use_system_sleep_handler);
 
     /* Prepare daemon settings structure */
     if (!mirage_helper_strcasecmp(program_options.bus, "system")) {
@@ -324,7 +323,7 @@ int main (int argc, char **argv)
     } else if (!mirage_helper_strcasecmp(program_options.bus, "session")) {
         daemon_settings.bus_type = G_BUS_TYPE_SESSION;
     } else {
-        g_warning(Q_("Invalid bus argument '%s', using default bus!\n"), program_options.bus);
+        g_warning(Q_("Invalid bus argument '%s', using default bus!"), program_options.bus);
         daemon_settings.bus_type = G_BUS_TYPE_SESSION;
     }
 
@@ -340,7 +339,7 @@ int main (int argc, char **argv)
 
     /* Discourage the use of system bus */
     if (daemon_settings.bus_type == G_BUS_TYPE_SYSTEM) {
-        g_message(Q_("WARNING: using CDEmu on system bus is deprecated and might lead to security issues on multi-user systems! Consult the README file for more details.\n\n"));
+        g_message(Q_("WARNING: using CDEmu on system bus is deprecated and might lead to security issues on multi-user systems! Consult the README file for more details."));
     }
 
     /* Create daemon */
@@ -348,22 +347,22 @@ int main (int argc, char **argv)
 
     /* Signal trapping */
     if (g_unix_signal_add(SIGTERM, _signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGTERM!\n"));
+        g_warning(Q_("Failed to add signal handler for SIGTERM!"));
     }
     if (g_unix_signal_add(SIGINT, _signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGINT!\n"));
+        g_warning(Q_("Failed to add signal handler for SIGINT!"));
     }
     /* SIGQUIT not supported by g_unix_signal_source_new */
     if (g_unix_signal_add(SIGHUP, _signal_handler, daemon_obj) <= 0) {
-        g_warning(Q_("Failed to add signal handler for SIGHUP!\n"));
+        g_warning(Q_("Failed to add signal handler for SIGHUP!"));
     }
 
     /* Initialize and start daemon */
     if (cdemu_daemon_initialize_and_start(daemon_obj, &daemon_settings)) {
         /* Printed when daemon stops */
-        g_message(Q_("Stopping daemon.\n"));
+        g_message(Q_("Stopping daemon."));
     } else {
-        g_warning(Q_("Daemon initialization and start failed!\n"));
+        g_warning(Q_("Daemon initialization and start failed!"));
         succeeded = FALSE;
     }
 

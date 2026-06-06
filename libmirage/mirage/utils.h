@@ -156,4 +156,8 @@ gchar *mirage_helper_format_stringv (const gchar *format, va_list args);
 gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary);
 
 
+/* Formatted hex representation of buffer contents */
+gchar *mirage_helper_dump_buffer_to_hex (const guint8 *data, gsize data_size, gboolean add_spaces, gint wrap);
+
+
 G_END_DECLS

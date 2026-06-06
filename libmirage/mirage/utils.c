@@ -1477,3 +1477,42 @@ gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary
     g_regex_unref(regex);
     return result;
 }
+
+
+/**********************************************************************\
+ *          Formatted hex representation of buffer contents           *
+\**********************************************************************/
+/*
+ * mirage_helper_dump_buffer_to_hex:
+ * @data: (in) (array length=data_size): buffer
+ * @data_size: (in): length of data in buffer
+ * @add_spaces: (in): add spaces between individual byte representations
+ * @wrap: (in): number of bytes after which new line is added. Set to 0 to disable wrapping.
+ *
+ * Creates a formatted hex representation of the given data buffer contents.
+ * Each byte is represented as two-character hex string, with optional spaces
+ * and fixed-width line wrap.
+ *
+ * Returns: (transfer full): string containing the hex representation
+ * of the given data buffer. The string should be freed using g_free()
+ * when no longer needed.
+ */
+gchar *mirage_helper_dump_buffer_to_hex (const guint8 *data, gsize data_size, gboolean add_spaces, gint wrap)
+{
+    GString *data_dump = g_string_new("");
+
+    for (gsize i = 0; i < data_size; i++) {
+        g_string_append_printf(data_dump, "%02hhx", data[i]);
+        if (wrap > 0 && ((i + 1) % wrap == 0) && (i != data_size - 1)) {
+            g_string_append(data_dump, "\n");
+        } else if (add_spaces) {
+            g_string_append(data_dump, " ");
+        }
+    }
+
+#if GLIB_CHECK_VERSION(2, 73, 0)
+    return g_string_free_and_steal(data_dump);
+#else
+    return g_string_free(data_dump, FALSE); /* Take ownership of the segment data */
+#endif
+}

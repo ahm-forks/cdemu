@@ -1279,21 +1279,14 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStre
 
     /* Dump descriptor data */
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
-        const guint8 *descriptor_data = self->priv->descriptor_data;
-        const guint64 descriptor_size = self->priv->descriptor_size;
-        GString *descriptor_dump = g_string_new("");
-        for (gsize i = 0; i < descriptor_size; i++) {
-            g_string_append_printf(descriptor_dump, "%02hhx", descriptor_data[i]);
-            if (((i + 1) % 32 == 0) && (i != descriptor_size - 1)) {
-                g_string_append(descriptor_dump, "\n");
-            } else {
-                g_string_append(descriptor_dump, " ");
-            }
-        }
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: descriptor data (%" G_GINT64_MODIFIER "d):\n%s", __debug__, descriptor_size, descriptor_dump->str);
-
-        g_string_free(descriptor_dump, TRUE);
+        gchar *descriptor_dump = mirage_helper_dump_buffer_to_hex(
+            self->priv->descriptor_data,
+            self->priv->descriptor_size,
+            TRUE,
+            32
+        );
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: descriptor data (%" G_GINT64_MODIFIER "d):\n%s", __debug__, self->priv->descriptor_size, descriptor_dump);
+        g_free(descriptor_dump);
     }
 
     /* Fix endianness on descriptor header, and display it */

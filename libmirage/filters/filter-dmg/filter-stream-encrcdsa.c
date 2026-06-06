@@ -123,26 +123,6 @@ static inline void mirage_filter_stream_encrcdsa_passphrase_wrapped_key_header_f
 
 
 /**********************************************************************\
- *                         Debug functions                            *
-\**********************************************************************/
-static GString *dump_buffer_to_hex (const guint8 *data, gsize data_size, gboolean add_spaces, gint wrap)
-{
-    GString *data_dump = g_string_new("");
-
-    for (gsize i = 0; i < data_size; i++) {
-        g_string_append_printf(data_dump, "%02hhx", data[i]);
-        if (wrap > 0 && ((i + 1) % wrap == 0) && (i != data_size - 1)) {
-            g_string_append(data_dump, "\n");
-        } else if (add_spaces) {
-            g_string_append(data_dump, " ");
-        }
-    }
-
-    return data_dump;
-}
-
-
-/**********************************************************************\
  *                         Parsing functions                          *
 \**********************************************************************/
 static gboolean mirage_filter_stream_encrcdsa_find_compatible_key_header (MirageFilterStreamEncrCdsa *self, GError **error)
@@ -263,9 +243,9 @@ static gboolean mirage_filter_stream_encrcdsa_read_passphrase_wrapped_key (Mirag
     }
 
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
-        GString *key_data_dump = dump_buffer_to_hex(key_data, key_header->blob_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key blob (%u): %s", __debug__, key_header->blob_len, key_data_dump->str);
-        g_string_free(key_data_dump, TRUE);
+        gchar *key_data_dump = mirage_helper_dump_buffer_to_hex(key_data, key_header->blob_len, FALSE, 0);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: passphrase-wrapped key blob (%u): %s", __debug__, key_header->blob_len, key_data_dump);
+        g_free(key_data_dump);
     }
 
     return TRUE;
@@ -305,13 +285,13 @@ static gboolean mirage_filter_stream_encrcdsa_unwrap_passphrase_wrapped_key (Mir
     /* Dump derived key and IV */
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
         const gsize derived_key_len = key_header->blob_enc_key_bits / 8;
-        GString *derived_key_dump = dump_buffer_to_hex(derived_key, derived_key_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: derived key (%" G_GINT64_MODIFIER "u): %s", __debug__, derived_key_len, derived_key_dump->str);
-        g_string_free(derived_key_dump, TRUE);
+        gchar *derived_key_dump = mirage_helper_dump_buffer_to_hex(derived_key, derived_key_len, FALSE, 0);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: derived key (%" G_GINT64_MODIFIER "u): %s", __debug__, derived_key_len, derived_key_dump);
+        g_free(derived_key_dump);
 
-        GString *iv_dump = dump_buffer_to_hex(key_header->blob_enc_iv, key_header->blob_enc_iv_len, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV (%u): %s", __debug__, key_header->blob_enc_iv_len, iv_dump->str);
-        g_string_free(iv_dump, TRUE);
+        gchar *iv_dump = mirage_helper_dump_buffer_to_hex(key_header->blob_enc_iv, key_header->blob_enc_iv_len, FALSE, 0);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV (%u): %s", __debug__, key_header->blob_enc_iv_len, iv_dump);
+        g_free(iv_dump);
     }
 
     /* Decrypt key blob */
@@ -555,9 +535,9 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
 
     /* Dump decrypted key blob */
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
-        GString *key_data_dump = dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump->str);
-        g_string_free(key_data_dump, TRUE);
+        gchar *key_data_dump = mirage_helper_dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: decrypted key blob (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump);
+        g_free(key_data_dump);
     }
 
     /* Remove PKCS#7 padding - failure to do so may indicate that decryption
@@ -580,9 +560,9 @@ static gboolean mirage_filter_stream_encrcdsa_open (MirageFilterStream *_self, M
     self->priv->key_length -= 5;
 
     if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_PARSER)) {
-        GString *key_data_dump = dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image key (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump->str);
-        g_string_free(key_data_dump, TRUE);
+        gchar *key_data_dump = mirage_helper_dump_buffer_to_hex(self->priv->key_data, self->priv->key_length, FALSE, 0);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image key (%" G_GSIZE_MODIFIER "u): %s", __debug__, self->priv->key_length, key_data_dump);
+        g_free(key_data_dump);
     }
 
     /* If we successfully decrypted key blob with provided password, and
@@ -700,9 +680,9 @@ static gssize mirage_filter_stream_encrcdsa_partial_read (MirageFilterStream *_s
 
         /* Dump IV for debug purposes */
         if (MIRAGE_DEBUG_ON(self, MIRAGE_DEBUG_STREAM)) {
-            GString *iv_dump = dump_buffer_to_hex(self->priv->block_iv, iv_length, FALSE, 0);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV for block #%u (%" G_GSIZE_MODIFIER "u): %s", __debug__, block_idx, iv_length, iv_dump->str);
-            g_string_free(iv_dump, TRUE);
+            gchar *iv_dump = mirage_helper_dump_buffer_to_hex(self->priv->block_iv, iv_length, FALSE, 0);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IV for block #%u (%" G_GSIZE_MODIFIER "u): %s", __debug__, block_idx, iv_length, iv_dump);
+            g_free(iv_dump);
         }
 
         /* Decrypt */

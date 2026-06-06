@@ -1059,7 +1059,7 @@ class LogWindow (Gtk.Window):
         txt_buffer = self.text_view.get_buffer()
         txt_buffer.insert(
             txt_buffer.get_end_iter(),
-            message,
+            message + "\n",
         )
 
     def get_log_text(self):
@@ -2784,15 +2784,15 @@ class MainWindow(Gtk.ApplicationWindow):
         # Print to stdout?
         if log_level & GLib.LogLevelFlags.LEVEL_ERROR:
             level_str = _("ERROR")
-            print(f"{log_domain}: {level_str}: {message}", end="")
+            print(f"{log_domain}: {level_str}: {message}")
         elif log_level & GLib.LogLevelFlags.LEVEL_CRITICAL:
             level_str = _("CRITICAL")
-            print(f"{log_domain}: {level_str}: {message}", end="")
+            print(f"{log_domain}: {level_str}: {message}")
         elif log_level & GLib.LogLevelFlags.LEVEL_WARNING:
             level_str = _("WARNING")
-            print(f"{log_domain}: {level_str}: {message}", end="")
+            print(f"{log_domain}: {level_str}: {message}")
         elif self.log_window.get_debug_to_stdout():
-            print(f"{log_domain}: {message}", end="")
+            print(f"{log_domain}: {message}")
 
     def update_window_title(self):
         title = _("Image analyzer #%02d") % (self.instance_id)

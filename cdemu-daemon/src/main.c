@@ -24,13 +24,13 @@
 /* Log handler: writing to stdout */
 static void _log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
 {
-    g_print("%s", message);
+    g_print("%s\n", message);
 }
 
 static void _log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer user_data)
 {
     FILE *logfile = (FILE *)user_data;
-    g_fprintf(logfile, "%s", message);
+    g_fprintf(logfile, "%s\n", message);
     fflush(logfile);
 }
 

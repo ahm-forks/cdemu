@@ -388,7 +388,7 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
  * mirage_fragment_read_main_data_fast:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (optional) (array length=length): location of a buffer to read the data into, or %NULL
+ * @buffer: (in) (nullable) (array length=length): location of a buffer to read the data into, or %NULL
  * @length: (in): length of @buffer
  * @error: (out) (optional): location to store error, or %NULL
  *
@@ -779,7 +779,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
  * mirage_fragment_read_subchannel_data_fast:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (in) (optional) (array length=length): location of a buffer to read the data into, or %NULL
+ * @buffer: (in) (nullable) (array length=length): location of a buffer to read the data into, or %NULL
  * @length: (in): length of @buffer
  * @error: (out) (optional): location to store error, or %NULL
  *

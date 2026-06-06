@@ -1482,7 +1482,7 @@ gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary
 /**********************************************************************\
  *          Formatted hex representation of buffer contents           *
 \**********************************************************************/
-/*
+/**
  * mirage_helper_dump_buffer_to_hex:
  * @data: (in) (array length=data_size): buffer
  * @data_size: (in): length of data in buffer

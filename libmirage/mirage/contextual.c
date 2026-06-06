@@ -78,9 +78,9 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self)
 }
 
 /**
- * mirage_contextual_inehrit_context
+ * mirage_contextual_inherit_context
  * @self: a #MirageContextual
- * @other: a #MirageContextual from which context should be inherited
+ * @other: (in): a #MirageContextual from which context should be inherited
  *
  * A convenience function that retrieves the context from @other and
  * sets it to @self.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-daemon\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-30 22:18+0100\n"
+"POT-Creation-Date: 2026-06-06 12:40+0200\n"
 "PO-Revision-Date: 2026-02-11 17:09+0100\n"
 "Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
 "Language-Team: Georgian <(nothing)>\n"
@@ -73,13 +73,13 @@ msgstr "არასწორი მეთოდის სახელი '%s'!"
 
 #: ../src/main.c:58
 #, c-format
-msgid "Failed to read integer (%s:%s) from config: %s\n"
-msgstr "მთელი რიცხვის (%s:%s) წაკითხვის შეცდომა კონფიგურაციიდან: %s\n"
+msgid "Failed to read integer (%s:%s) from config: %s"
+msgstr "მთელი რიცხვის (%s:%s) წაკითხვის შეცდომა კონფიგურაციიდან: %s"
 
 #: ../src/main.c:75
 #, c-format
-msgid "Failed to read string (%s:%s) from config: %s\n"
-msgstr "სტრიქონის (%s:%s) წაკითხვის შეცდომა კონფიგურაციიდან: %s\n"
+msgid "Failed to read string (%s:%s) from config: %s"
+msgstr "სტრიქონის (%s:%s) წაკითხვის შეცდომა კონფიგურაციიდან: %s"
 
 #: ../src/main.c:108
 msgid "Config file"
@@ -151,106 +151,104 @@ msgstr ""
 
 #: ../src/main.c:143
 #, c-format
-msgid "Failed to parse options: %s\n"
-msgstr "პარამეტრების დამუშავების შეცდომა: %s\n"
+msgid "Failed to parse options: %s"
+msgstr "პარამეტრების დამუშავების შეცდომა: %s"
 
 #: ../src/main.c:160
 #, c-format
-msgid "Failed to load config file '%s': %s\n"
-msgstr "ჩატვირთვის შეცდომა კონფიგურაციის ფაილისთვის '%s': %s\n"
+msgid "Failed to load config file '%s': %s"
+msgstr "ჩატვირთვის შეცდომა კონფიგურაციის ფაილისთვის '%s': %s"
 
 #: ../src/main.c:289
 #, c-format
-msgid "Failed to open log file %s for writing!\n"
-msgstr "ჟურნალის ფაილის %s ჩასაწერად გახსნის შეცდომა!\n"
+msgid "Failed to open log file %s for writing!"
+msgstr "ჟურნალის ფაილის %s ჩასაწერად გახსნის შეცდომა!"
 
 #: ../src/main.c:297
 #, c-format
-msgid "Failed to initialize libMirage: %s!\n"
-msgstr "libMirage-ის ინიციალიზაცია ჩავარდა: %s!\n"
+msgid "Failed to initialize libMirage: %s!"
+msgstr "libMirage-ის ინიციალიზაცია ჩავარდა: %s!"
 
 #. Display status
-#: ../src/main.c:303
-msgid "Starting CDEmu daemon with following parameters:\n"
-msgstr "CDEmu-ის დემონის გაშვება შემდეგი პარამეტრებით:\n"
+#: ../src/main.c:306
+msgid "Starting CDEmu daemon with following parameters:"
+msgstr "CDEmu-ის დემონის გაშვება შემდეგი პარამეტრებით:"
 
-#: ../src/main.c:305
+#: ../src/main.c:308
 #, c-format
-msgid " - config file: %s (exists: %d)\n"
-msgstr " - კონფიგურაციის ფაილი: %s (არსებობს: %d)\n"
-
-#: ../src/main.c:307
-msgid " - config file: N/A\n"
-msgstr " - კონფიგურაციის ფაილი: N/A\n"
-
-#: ../src/main.c:309
-#, c-format
-msgid " - num devices: %i\n"
-msgstr " - მოწყობილობების რ-ბა: %i\n"
+msgid " - config file: %s (exists: %d)"
+msgstr " - კონფიგურაციის ფაილი: %s (არსებობს: %d)"
 
 #: ../src/main.c:310
-#, c-format
-msgid " - control device: %s\n"
-msgstr " - კონტროლის მოწყობილობა: %s\n"
-
-#: ../src/main.c:311
-#, c-format
-msgid " - audio driver: %s\n"
-msgstr " - აუდიოდრაივერი: %s\n"
+msgid " - config file: N/A"
+msgstr " - კონფიგურაციის ფაილი: N/A"
 
 #: ../src/main.c:312
 #, c-format
-msgid " - bus type: %s\n"
-msgstr " - სალტეს ტიპი: %s\n"
+msgid " - num devices: %i"
+msgstr " - მოწყობილობების რ-ბა: %i"
 
 #: ../src/main.c:313
 #, c-format
-msgid " - default CDEmu debug mask: 0x%X\n"
-msgstr " - ნაგულისხმევი CDEmu-ის გამართვის ნიღაბი: 0x%X\n"
+msgid " - control device: %s"
+msgstr " - კონტროლის მოწყობილობა: %s"
 
 #: ../src/main.c:314
 #, c-format
-msgid " - default libMirage debug mask: 0x%X\n"
-msgstr " - ნაგულისხმევი libMirage-ის გამართვის ნიღაბი: 0x%X\n"
+msgid " - audio driver: %s"
+msgstr " - აუდიოდრაივერი: %s"
 
 #: ../src/main.c:315
 #, c-format
-msgid " - enable system sleep handler: %d\n"
-msgstr " - სისტემის ძილის დამმუშავებლის ჩართვა: %d\n"
+msgid " - bus type: %s"
+msgstr " - სალტეს ტიპი: %s"
 
-#: ../src/main.c:324
+#: ../src/main.c:316
 #, c-format
-msgid "Invalid bus argument '%s', using default bus!\n"
-msgstr "არასწორი სალტეს არგუმენტი '%s'. გამოიყენება ნაგულისხმევი სალტე!\n"
+msgid " - default CDEmu debug mask: 0x%X"
+msgstr " - ნაგულისხმევი CDEmu-ის გამართვის ნიღაბი: 0x%X"
 
-#: ../src/main.c:340
+#: ../src/main.c:317
+#, c-format
+msgid " - default libMirage debug mask: 0x%X"
+msgstr " - ნაგულისხმევი libMirage-ის გამართვის ნიღაბი: 0x%X"
+
+#: ../src/main.c:318
+#, c-format
+msgid " - enable system sleep handler: %d"
+msgstr " - სისტემის ძილის დამმუშავებლის ჩართვა: %d"
+
+#: ../src/main.c:326
+#, c-format
+msgid "Invalid bus argument '%s', using default bus!"
+msgstr "არასწორი სალტეს არგუმენტი '%s'. გამოიყენება ნაგულისხმევი სალტე!"
+
+#: ../src/main.c:342
 msgid ""
 "WARNING: using CDEmu on system bus is deprecated and might lead to security "
-"issues on multi-user systems! Consult the README file for more details.\n"
-"\n"
+"issues on multi-user systems! Consult the README file for more details."
 msgstr ""
 "გაფრთხილება: CDEmu-ის სისტემურ სალტეზე გამოყენება მოძველებულია და შეიძლება, "
 "უსაფრთხოების პრობლემებამდე მიგიყვანოთ მრავალმომხმარებლიან სისტემაზე! მეტი "
-"დეტალებისთვის იხილეთ ფაილი README.\n"
-"\n"
+"დეტალებისთვის იხილეთ ფაილი README."
 
-#: ../src/main.c:348
-msgid "Failed to add signal handler for SIGTERM!\n"
-msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGTERM!\n"
+#: ../src/main.c:350
+msgid "Failed to add signal handler for SIGTERM!"
+msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGTERM!"
 
-#: ../src/main.c:351
-msgid "Failed to add signal handler for SIGINT!\n"
-msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGINT!\n"
+#: ../src/main.c:353
+msgid "Failed to add signal handler for SIGINT!"
+msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGINT!"
 
-#: ../src/main.c:355
-msgid "Failed to add signal handler for SIGHUP!\n"
-msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGHUP!\n"
+#: ../src/main.c:357
+msgid "Failed to add signal handler for SIGHUP!"
+msgstr "სიგნალის დამმუშავებლის დამატების შეცდომა სიგნალისთვის SIGHUP!"
 
 #. Printed when daemon stops
-#: ../src/main.c:361
-msgid "Stopping daemon.\n"
-msgstr "დემონი ჩერდება.\n"
-
 #: ../src/main.c:363
-msgid "Daemon initialization and start failed!\n"
-msgstr "დემონის ინიციალიზაცია და გაშვება ჩავარდა!\n"
+msgid "Stopping daemon."
+msgstr "დემონი ჩერდება."
+
+#: ../src/main.c:365
+msgid "Daemon initialization and start failed!"
+msgstr "დემონის ინიციალიზაცია და გაშვება ჩავარდა!"

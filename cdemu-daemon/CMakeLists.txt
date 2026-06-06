@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(cdemu-daemon VERSION 3.3.0 LANGUAGES C)
+project(cdemu-daemon VERSION 3.3.1 LANGUAGES C)
 
 option(ENABLE_LOGIND_SLEEP_HANDLER "Enable support for systemd-logind sleep/hibernation signal handler." ON)
 option(PEDANTIC_MODE "Enable -pedantic flag on gcc compiler" OFF)
@@ -27,7 +27,7 @@ else()
     set(MIN_GLIB_VERSION 2.38)
 endif()
 
-pkg_check_modules(LIBMIRAGE REQUIRED libmirage>=3.2.0 IMPORTED_TARGET)
+pkg_check_modules(LIBMIRAGE REQUIRED libmirage>=3.3.2 IMPORTED_TARGET)
 pkg_check_modules(GLIB REQUIRED glib-2.0>=${MIN_GLIB_VERSION} gobject-2.0>=${MIN_GLIB_VERSION} gthread-2.0>=${MIN_GLIB_VERSION} gio-2.0>=${MIN_GLIB_VERSION} IMPORTED_TARGET)
 pkg_check_modules(AO REQUIRED ao>=0.8.0 IMPORTED_TARGET)
 

@@ -1496,6 +1496,8 @@ gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary
  * Returns: (transfer full): string containing the hex representation
  * of the given data buffer. The string should be freed using g_free()
  * when no longer needed.
+ *
+ * Since: 3.3.2
  */
 gchar *mirage_helper_dump_buffer_to_hex (const guint8 *data, gsize data_size, gboolean add_spaces, gint wrap)
 {

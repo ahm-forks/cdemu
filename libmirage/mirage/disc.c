@@ -1392,6 +1392,8 @@ MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **e
  * sector, and is thus faster when reading multiple sectors in a row.
  *
  * Returns: %TRUE on success, %FALSE otherwise.
+ *
+ * Since: 3.3.2
  */
 gboolean mirage_disc_read_sector (MirageDisc *self, gint address, MirageSector *sector, GError **error)
 {

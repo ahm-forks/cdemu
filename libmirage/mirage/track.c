@@ -501,6 +501,8 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
  * sector, and is thus faster when reading multiple sectors in a row.
  *
  * Returns: %TRUE on success, %FALSE otherwise.
+ *
+ * Since: 3.3.2
  */
 gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, MirageSector *sector, GError **error)
 {

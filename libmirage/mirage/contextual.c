@@ -84,6 +84,8 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self)
  *
  * A convenience function that retrieves the context from @other and
  * sets it to @self.
+ *
+ * Since: 3.3.2
  */
 void mirage_contextual_inherit_context (MirageContextual *self, MirageContextual *other)
 {

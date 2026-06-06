@@ -400,6 +400,8 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
  * mirage_fragment_main_data_get_size().
  *
  * Returns: size of the read data in bytes, or -1 on failure
+ *
+ * Since: 3.3.2
  */
 gint mirage_fragment_read_main_data_fast (MirageFragment *self, gint address, guint8 *buffer, gint length, GError **error)
 {
@@ -790,6 +792,8 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
  * The buffer must have a size equal to or larger than 96 bytes.
  *
  * Returns: size of the read data in bytes, or -1 on failure
+ *
+ * Since: 3.3.2
  */
 gint mirage_fragment_read_subchannel_data_fast (MirageFragment *self, gint address, guint8 *buffer, gint length, GError **error)
 {

@@ -9,7 +9,7 @@ project(libmirage VERSION 3.3.1 LANGUAGES C)
 # of interfaces). In this case, PATCH should be reset to zero.
 # PATCH is increased for all other changes such as bug-fixes.
 set(MIRAGE_SOVERSION_MAJOR 12)
-set(MIRAGE_SOVERSION_MINOR 0)
+set(MIRAGE_SOVERSION_MINOR 1)
 set(MIRAGE_SOVERSION_PATCH 0)
 
 # The version if GIR (GObject Introspection) namespace. Similar to the

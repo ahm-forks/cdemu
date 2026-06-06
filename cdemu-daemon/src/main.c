@@ -21,10 +21,10 @@
 #include "cdemu.h"
 
 
-/* Log handler: writing to stdout */
-static void _log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
+/* Log handler: writing to stderr */
+static void _log_handler_stderr (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
 {
-    g_print("%s\n", message);
+    g_printerr("%s\n", message);
 }
 
 static void _log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer user_data)
@@ -285,19 +285,19 @@ int main (int argc, char **argv)
     g_log_set_handler(
         NULL,
         G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-        _log_handler_stdout,
+        _log_handler_stderr,
         NULL
     );
     g_log_set_handler(
         "libMirage",
         G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-        _log_handler_stdout,
+        _log_handler_stderr,
         NULL
     );
     g_log_set_handler(
         "CDEmu",
         G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-        _log_handler_stdout,
+        _log_handler_stderr,
         NULL
     );
 

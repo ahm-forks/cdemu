@@ -32,7 +32,19 @@
 G_BEGIN_DECLS
 
 
-/* Missing from earlier libchdr versions; see https://github.com/rtissera/libchdr/commit/ba5656f6f674331e4f512fb25cd7ac8bf7bbd6f0 */
+/* Missing from libchdr 0.0~git20230918.9108f34+dfsg-2 packaged by
+ * Ubuntu 24.04; added by https://github.com/rtissera/libchdr/pull/106
+ * We need these tags just for diagnostic purposes. */
+#if !defined(CHD_CODEC_ZSTD)
+#define CHD_CODEC_ZSTD CHD_MAKE_TAG('z', 's', 't', 'd')
+#endif
+#if !defined(CHD_CODEC_CD_ZSTD)
+#define CHD_CODEC_CD_ZSTD CHD_MAKE_TAG('c','d','z','s')
+#endif
+
+/* Missing from libchdr 0.0~git20240929.aaca599+dfsg-1 packaged by
+ * Debian Trixie; added by https://github.com/rtissera/libchdr/commit/ba5656f6f674331e4f512fb25cd7ac8bf7bbd6f0
+ * We need this tag to properly handle DVD images. */
 #if !defined(DVD_METADATA_TAG)
 #define DVD_METADATA_TAG CHD_MAKE_TAG('D','V','D',' ')
 #endif

@@ -115,7 +115,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_main_data_fast@Base 3.3.2
  mirage_fragment_read_subchannel_data@Base 1.0.0
- mirage_fragment_read_subchannel_data_fast@Base 3.32
+ mirage_fragment_read_subchannel_data_fast@Base 3.3.2
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
  mirage_fragment_subchannel_data_get_filename@Base 2.0.0

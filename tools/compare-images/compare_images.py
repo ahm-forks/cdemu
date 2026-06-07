@@ -361,23 +361,37 @@ def libmirage_log_handler(log_domain, log_level, message):
     print(message)
 
 
+# In contemporary versions of PyGObject, Mirage.DebugMask is an instance of `enum.EnumType`, and we could iterate
+# over it to obtain the entries and their (short) names. In older versions, this is more complicated, and so for
+# compatibility reasons, it is easier to keep a manually defined dictionary of short enum names. This way, we also
+# do not need to worry about Mirage.DebugMask.ERROR and Mirage.DebugMask.WARNING.
+_DEBUG_MASK_ENTRIES = {
+    "PARSER": Mirage.DebugMask.PARSER,
+    "DISC": Mirage.DebugMask.DISC,
+    "SESSION": Mirage.DebugMask.SESSION,
+    "TRACK": Mirage.DebugMask.TRACK,
+    "SECTOR": Mirage.DebugMask.SECTOR,
+    "FRAGMENT": Mirage.DebugMask.FRAGMENT,
+    "CDTEXT": Mirage.DebugMask.CDTEXT,
+    "STREAM": Mirage.DebugMask.STREAM,
+    "IMAGE_ID": Mirage.DebugMask.IMAGE_ID,
+    "WRITER": Mirage.DebugMask.WRITER,
+}
+
+
 def debug_mask_to_string(mask):
     mask_names = [
-        value.name for value in Mirage.DebugMask
-        if value not in {Mirage.DebugMask.ERROR, Mirage.DebugMask.WARNING}
-        and mask & value != 0
+        name for name, value in _DEBUG_MASK_ENTRIES.items()
+        if mask & value != 0
     ]
     return '|'.join(mask_names)
 
 
 def debug_mask_from_string(mask_str):
     # Allow both short names as exposed by GI bindings, and original names with "MIRAGE_DEBUG_" prefix.
-    _mapping = {
-        value.name: value for value in Mirage.DebugMask
-        if value not in {Mirage.DebugMask.ERROR, Mirage.DebugMask.WARNING}
-    }
+    _mapping = _DEBUG_MASK_ENTRIES.copy()
     _mapping.update({
-        f"MIRAGE_DEBUG_{name}": value for name, value in _mapping.items()
+        f"MIRAGE_DEBUG_{name}": value for name, value in _DEBUG_MASK_ENTRIES.items()
     })
 
     mask = 0

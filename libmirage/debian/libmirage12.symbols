@@ -36,6 +36,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_contextual_get_context@Base 2.0.0
  mirage_contextual_get_option@Base 2.0.0
  mirage_contextual_get_type@Base 2.0.0
+ mirage_contextual_inherit_context@Base 3.3.2
  mirage_contextual_obtain_password@Base 2.0.0
  mirage_contextual_set_context@Base 2.0.0
  mirage_create_writer@Base 3.0.0
@@ -71,6 +72,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_disc_layout_set_first_track@Base 1.0.0
  mirage_disc_layout_set_start_sector@Base 1.0.0
  mirage_disc_put_sector@Base 3.0.0
+ mirage_disc_read_sector@Base 3.3.2
  mirage_disc_remove_session_by_index@Base 1.0.0
  mirage_disc_remove_session_by_number@Base 1.0.0
  mirage_disc_remove_session_by_object@Base 1.0.0
@@ -111,7 +113,9 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_fragment_main_data_set_size@Base 2.0.0
  mirage_fragment_main_data_set_stream@Base 2.0.0
  mirage_fragment_read_main_data@Base 1.0.0
+ mirage_fragment_read_main_data_fast@Base 3.3.2
  mirage_fragment_read_subchannel_data@Base 1.0.0
+ mirage_fragment_read_subchannel_data_fast@Base 3.32
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
  mirage_fragment_subchannel_data_get_filename@Base 2.0.0
@@ -138,6 +142,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_helper_calculate_crc32_fast@Base 3.0.0
  mirage_helper_calculate_crc32_standard@Base 3.0.0
  mirage_helper_determine_sector_type@Base 2.0.0
+ mirage_helper_dump_buffer_to_hex@Base 3.3.2
  mirage_helper_encoding_from_bom@Base 2.0.0
  mirage_helper_find_data_file@Base 1.1.0
  mirage_helper_format_string@Base 3.0.0
@@ -300,6 +305,7 @@ libmirage.so.12 libmirage12 #MINVER#
  mirage_track_layout_set_start_sector@Base 1.0.0
  mirage_track_layout_set_track_number@Base 1.0.0
  mirage_track_put_sector@Base 3.0.0
+ mirage_track_read_sector@Base 3.3.2
  mirage_track_remove_fragment_by_index@Base 1.0.0
  mirage_track_remove_fragment_by_object@Base 1.0.0
  mirage_track_remove_index_by_number@Base 1.0.0

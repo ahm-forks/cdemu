@@ -1,3 +1,11 @@
+image-analyzer (3.3.1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * debian/appstream/net.sf.cdemu.image_analyzer.metainfo.xml:
+    - Change version requirement for libmirage to 3.3.2.
+
+ -- Matteo Bini <matteobin@tiepi.it>  Sun, 07 Jun 2026 18:30:00 +0200
+
 image-analyzer (3.3.0-1) unstable; urgency=medium
 
   * New upstream version.

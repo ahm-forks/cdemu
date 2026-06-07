@@ -17,6 +17,9 @@
 		<dbus type="user">net.sf.cdemu.CDEmuDaemon</dbus>
 	</provides>
 	<releases>
+		<release version="3.3.1" date="2026-06-07" type="stable">
+			<url>https://sourceforge.net/projects/cdemu/files/cdemu-daemon/cdemu-daemon-3.3.1.tar.xz/download</url>
+		</release>
 		<release version="3.3.0" date="2026-02-15" type="stable">
 			<url>https://sourceforge.net/projects/cdemu/files/cdemu-daemon/cdemu-daemon-3.3.0.tar.xz/download</url>
 		</release>
@@ -92,7 +95,7 @@
 	</releases>
 	<requires>
 		<id version="20170610" compare="ge">net.sf.cdemu.vhba_module</id>
-		<id version="3.0.0" compare="ge">net.sf.cdemu.libmirage</id>
+		<id version="3.3.2" compare="ge">net.sf.cdemu.libmirage</id>
 	</requires>
 	<summary>Main CDEmu daemon</summary>
 	<url type="bugtracker">https://sourceforge.net/p/cdemu/bugs/</url>

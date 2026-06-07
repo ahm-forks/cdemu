@@ -207,10 +207,11 @@ void _run_interative_mode (MirageDisc *disc)
 
         // Help
         if (g_ascii_strcasecmp(input_msg, "help") == 0
-            || g_ascii_strcasecmp(input_msg, "h") == 0) {
+            || g_ascii_strcasecmp(input_msg, "h") == 0
+            || g_ascii_strcasecmp(input_msg, "?") == 0) {
             g_print("Supported commands:\n");
             g_print("  quit|exit|q|x: exits the interactive mode\n");
-            g_print("  help|h: display this message\n");
+            g_print("  help|h|?: display this message\n");
             g_print("  debug-mask: displays currently set debug mask value\n");
             g_print("  debug-mask <value>: sets new debug mask value\n");
             g_print("  read-sector <address>: attempts to read sector at the specified address\n");

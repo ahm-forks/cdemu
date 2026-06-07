@@ -570,6 +570,8 @@ void _run_interative_mode (MirageDisc *disc)
 
             continue;
         }
+
+        g_print("Unrecognized command string: %s\n", input_msg);
     }
 
     g_print("Exited interactive mode!\n");

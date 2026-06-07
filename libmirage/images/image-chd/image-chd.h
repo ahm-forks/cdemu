@@ -32,10 +32,21 @@
 G_BEGIN_DECLS
 
 
+/* Missing from earlier libchdr versions; see https://github.com/rtissera/libchdr/commit/ba5656f6f674331e4f512fb25cd7ac8bf7bbd6f0 */
+#if !defined(DVD_METADATA_TAG)
+#define DVD_METADATA_TAG CHD_MAKE_TAG('D','V','D',' ')
+#endif
+
+
 typedef struct _shared_chd_file_t
 {
     chd_file *chd_file;
     MirageStream *stream;
+
+    /* Legacy I/O adapter structure */
+#if !defined(HAVE_NEW_IO_API)
+    struct chd_core_file legacy_io_adapter;
+#endif
 } shared_chd_file_t;
 
 void shared_chd_file_cleanup (shared_chd_file_t *p);

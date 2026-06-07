@@ -146,9 +146,23 @@ const char *_chd_tag_str (uint32_t tag)
 /**********************************************************************\
  *               I/O adapter for chd_core_file_callbacks               *
 \**********************************************************************/
-static uint64_t _chd_fsize (void *fp)
+/* In the new I/O API, the "fp" argument is the pointer to user data that
+ * was passed to chd_open_core_file_callbacks() function call. In the
+ * legacy API, it is the chd_core_file structure, which can store the
+ * user data pointer in "argp" member. */
+#if defined(HAVE_NEW_IO_API)
+    #define FP_TYPE void
+#else
+    #define FP_TYPE struct chd_core_file
+#endif
+
+static uint64_t _chd_fsize (FP_TYPE *fp)
 {
+#if defined(HAVE_NEW_IO_API)
     MirageStream *stream = MIRAGE_STREAM(fp);
+#else
+    MirageStream *stream = MIRAGE_STREAM(fp->argp);
+#endif
 
     goffset cur_position;
     goffset end_position;
@@ -173,13 +187,16 @@ static uint64_t _chd_fsize (void *fp)
     return end_position;
 }
 
-static size_t _chd_fread (void *ptr, size_t size, size_t n, void *fp)
+static size_t _chd_fread (void *ptr, size_t size, size_t n, FP_TYPE *fp)
 {
+#if defined(HAVE_NEW_IO_API)
     MirageStream *stream = MIRAGE_STREAM(fp);
+#else
+    MirageStream *stream = MIRAGE_STREAM(fp->argp);
+#endif
 
     GError *local_error = NULL;
     gssize ret;
-
 
     ret = mirage_stream_read(stream, ptr, n * size, &local_error);
     if (ret < 0) {
@@ -192,16 +209,26 @@ static size_t _chd_fread (void *ptr, size_t size, size_t n, void *fp)
     return ret;
 }
 
-static int _chd_fclose (void *fp)
+static int _chd_fclose (FP_TYPE *fp)
 {
+#if defined(HAVE_NEW_IO_API)
     MirageStream *stream = MIRAGE_STREAM(fp);
+#else
+    MirageStream *stream = MIRAGE_STREAM(fp->argp);
+#endif
+
     g_object_unref(stream); /* Release the stream reference */
     return 0;
 }
 
-static int _chd_fseek (void *fp, int64_t where, int whence)
+static int _chd_fseek (FP_TYPE *fp, int64_t where, int whence)
 {
+#if defined(HAVE_NEW_IO_API)
     MirageStream *stream = MIRAGE_STREAM(fp);
+#else
+    MirageStream *stream = MIRAGE_STREAM(fp->argp);
+#endif
+
     GError *local_error = NULL;
     gint seek_type;
 
@@ -231,13 +258,20 @@ static int _chd_fseek (void *fp, int64_t where, int whence)
     return 0;
 }
 
+/* With the new I/O API, we can allocate a single static structure of
+ * callbacks; with the legacy API, the structure includes pointer to
+ * user data, so we allocate the said structure as part of our own
+ * shared_chd_file_t structure. */
+#if defined(HAVE_NEW_IO_API)
 
-static const struct chd_core_file_callbacks _chd_file_adapter = {
+static const struct chd_core_file_callbacks _chd_io_adapter = {
     .fsize = _chd_fsize,
     .fread = _chd_fread,
     .fclose = _chd_fclose,
     .fseek = _chd_fseek
 };
+
+#endif
 
 
 /* Cleanup helper for shared_chd_file_t, to be used with g_rc_box_release_full() */
@@ -776,13 +810,23 @@ static MirageDisc *mirage_parser_chd_load_image (MirageParser *_self, MirageStre
      * count on the stream! */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...", __debug__);
 
+#if defined(HAVE_NEW_IO_API)
     status = chd_open_core_file_callbacks(
-        &_chd_file_adapter,
+        &_chd_io_adapter,
         g_object_ref(streams[0]),
         CHD_OPEN_READ,
         NULL,
         &self->priv->chd_file_ptr->chd_file
     );
+#else
+    self->priv->chd_file_ptr->legacy_io_adapter.argp = g_object_ref(streams[0]);
+    status = chd_open_core_file(
+        &self->priv->chd_file_ptr->legacy_io_adapter,
+        CHD_OPEN_READ,
+        NULL,
+        &self->priv->chd_file_ptr->chd_file
+    );
+#endif
 
     if (status != CHDERR_NONE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: chd_open() failed with error code %d (%s)", __debug__, status, _chd_error_str(status));
@@ -941,6 +985,16 @@ static void mirage_parser_chd_init (MirageParserChd *self)
 
     /* Allocate box structure for libchdr file reader object */
     self->priv->chd_file_ptr = g_rc_box_new0(shared_chd_file_t);
+
+    /* If using legacy I/O API, also initialize methods of the I/O
+     * adapter */
+#if !defined(HAVE_NEW_IO_API)
+    self->priv->chd_file_ptr->legacy_io_adapter.argp = NULL; /* initialized by mirage_parser_chd_load_image() */
+    self->priv->chd_file_ptr->legacy_io_adapter.fsize = _chd_fsize;
+    self->priv->chd_file_ptr->legacy_io_adapter.fread = _chd_fread;
+    self->priv->chd_file_ptr->legacy_io_adapter.fclose = _chd_fclose;
+    self->priv->chd_file_ptr->legacy_io_adapter.fseek = _chd_fseek;
+#endif
 
     self->priv->metadata_tag = 0;
 }

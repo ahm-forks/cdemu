@@ -259,15 +259,14 @@ void _run_interative_mode (MirageDisc *disc)
         }
 
         // Read sector / dump sector
-        if (g_ascii_strncasecmp(input_msg, "read-sector", 11) == 0
-            || g_ascii_strncasecmp(input_msg, "dump-sector", 11) == 0) {
-            const gchar *address_str = input_msg + 11;
+        if (g_ascii_strncasecmp(input_msg, "read-sector ", 12) == 0
+            || g_ascii_strncasecmp(input_msg, "dump-sector ", 12) == 0) {
+            const gchar *address_str = input_msg + 12;
 
-            if (input_len < 13 || *address_str != ' ') {
+            if (input_len < 13) {
                 g_print("Usage: %.12s <address>\n", input_msg);
                 continue;
             }
-            address_str++;
 
             gchar *end_ptr;
             guint64 address = strtoll(address_str, &end_ptr, 0);
@@ -484,14 +483,13 @@ void _run_interative_mode (MirageDisc *disc)
         }
 
         // Dump raw sector data (directly from fragment)
-        if (g_ascii_strncasecmp(input_msg, "dump-raw-sector", 15) == 0) {
-            const gchar *address_str = input_msg + 15;
+        if (g_ascii_strncasecmp(input_msg, "dump-raw-sector ", 16) == 0) {
+            const gchar *address_str = input_msg + 16;
 
-            if (input_len < 17 || *address_str != ' ') {
+            if (input_len < 17) {
                 g_print("Usage: %.15s <address>\n", input_msg);
                 continue;
             }
-            address_str++;
 
             gchar *end_ptr;
             guint64 address = strtoll(address_str, &end_ptr, 0);
